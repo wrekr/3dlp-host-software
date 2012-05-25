@@ -9,7 +9,6 @@ Still to add/known issues:
     -clean exiting of threads, possibly using constant timers? ARGHHH
     -after the printmodel and slicemodel classes are perfected combine them into print&slice.. or maybe call each in succession? (less code..)
     -fix ETA and advance time etc.
-    -Still having issues with arduino communication.
     -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU. 
     -Clean up the code. There's random junk EVERYWHERE.
     
@@ -24,6 +23,8 @@ import Queue
 import threading
 import comscan
 import pymcu
+#from pyfirmata import Arduino, util
+from firmata import *
 import webbrowser
 import re
 from slice import *
@@ -207,21 +208,47 @@ class printmodel(QtCore.QThread):
         self.exiting = False
         self.alive = 1
         self.running = 0
-    
+        self.timer = QtCore.QTimer()
+        self.timer.start(10)
+
+        
+        QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.checkIfClose)
+
     def run(self):
         self.printmodel(ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port)   
         
     def stop(self):
+        print "entered stop method!!!!!!!!!"
         return
         
     def getValues(self):
         return "test"
+    
+    def checkIfClose(self):
+        #print IsStopped
+        return
+        if IsStopped == True:
+            try:
+                print "closing connection to PyMCU...."
+                pymcuboard.close()
+            except:
+                print "No PyMCU to close!"
+                pass
+            try:
+                print "closing connection to Arduino..."
+                board.exit()
+            except:
+                print "No Arduino to close!"
+                pass
+            #board.exit()
+            #self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+            self.terminate() #no more mr. nice guy... this is the only thing that works!!! ADVICE WELCOMED
      
     def printmodel(self, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port):
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
         global pm        
         #************Start custom z scripting*******
-        print zscript 
+        #print zscript 
         """
         syntax for custom z scripting; 
         
@@ -253,12 +280,12 @@ class printmodel(QtCore.QThread):
                 print "end bracket found at:", endbracketslocation[x-1]
                 start = endbracketslocation[x-1]
          """
-        print "Custom Scripting:\n"
+        #print "Custom Scripting:\n"
         commands = []
         for match in re.findall("\[(.*?)\]", zscript):
             #print match
             commands.append(match)
-            
+        """  
         for command in commands:
             if command == "Z_UP":
                 print "sending z-up"
@@ -277,7 +304,7 @@ class printmodel(QtCore.QThread):
                 amount = command[2:command.size()]
                 print "X command: XMOVE_%s"%amount
                 #arduino.write("XMOVE_%s"%amount)
-
+        """
             
 #        print "X matches:"
 #        xmatches = []
@@ -300,10 +327,9 @@ class printmodel(QtCore.QThread):
         #print projector_stopbits_lookup
         #print projector_databits_lookup
         
-        print printercontrolenabled, arduinocontrolled, pymcucontrolled
+        #print printercontrolenabled, arduinocontrolled, pymcucontrolled
         
-        
-        if printercontrolenabled==True:
+        if projectorcontrolenabled==True:
             #try connecting to projector com port
             print "Attempting to connect to projector for RS232 control..."
             try:
@@ -325,16 +351,36 @@ class printmodel(QtCore.QThread):
         executionpath = os.getcwd() #get current execution (working) directory
         global startingexecutionpath
         startingexecutionpath = executionpath
+        #**********************************************
         if printercontrolenabled==True and arduinocontrolled==True:
             try:
                 #print COM_Port, Printer_Baud
-                arduino = serial.Serial("%s"%COM_Port, Printer_Baud)
-                print"\nConnected successfully to %s! Engaged communications at %sbps." %(COM_Port, Printer_Baud)
+                #arduino = serial.Serial("%s"%COM_Port, Printer_Baud)
+                print "Connecting to printer firmware..."
+                global board
+                board = Arduino("%s"%COM_Port)
+                print "no issues opening serial connection to firmata..."
+                #print"\nConnected successfully to %s! Engaged communications at %sbps." %(COM_Port, Printer_Baud)
             except:
-                print"Failed to connect on %s. Check connections and settings, restart the program, and try again." %COM_Port
+                print"Failed to connect to firmata. Check connections and settings, restart the program, and try again." %COM_Port
                 self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
                 return
-
+            try:
+                print "setting up Arduino pin mapping..."
+                ##pin definitions... there's probably a better place for this but for now here it is..
+                ZStepPin = 13     
+                ZDirPin = 3
+                XStepPin = 5
+                XDirPin = 6
+                board.pin_mode(ZStepPin, firmata.OUTPUT)
+                board.pin_mode(XStepPin, firmata.OUTPUT)
+                board.pin_mode(ZDirPin, firmata.OUTPUT)
+                board.pin_mode(XDirPin, firmata.OUTPUT)
+                sleep(5)
+            except:
+                print "Failed trying to configure the pins on Arduino. Crap. "
+                return
+        #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
         
         #slideshow starts around here so if it's disabled kill the thread now 
@@ -386,6 +432,9 @@ class printmodel(QtCore.QThread):
              #print size 
              #start slideshow
         print "Printing..." 
+        
+        
+        
         #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
         eta = 500000
         percentagechunk = (100.0/float(NumberOfImages))
@@ -397,7 +446,10 @@ class printmodel(QtCore.QThread):
             else:
                 ExposureTime = StartLayersExposureTime
             if slideshowenabled:
-                self.SlideShow.label.setPixmap(QtGui.QPixmap()) #set null pixmap for blank slide
+                blankpath = "%s\\10x10black.png" %(startingexecutionpath)
+                pm = QtGui.QPixmap(blankpath)
+                pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
+                self.SlideShow.label.setPixmap(pmscaled) #set black pixmap for blank slide     
                 QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
@@ -407,30 +459,53 @@ class printmodel(QtCore.QThread):
                 print "sending custom scripted command sequence..."
                 for command in commands:
                     if command == "Z_UP":
-                        arduino.write("Z_UP\n")
-                        print arduino.readline()
+                        board.digital_write(ZDirPin, HIGH)                     
+                        #print "send Z_Up"
+                        #board.digital[ZDirPin].write(1)
+                        #arduino.write("Z_UP\n")
+                        #print arduino.readline()
                     elif command == "Z_DOWN":
-                        arduino.write("Z_DOWN\n")
-                        print arduino.readline()
+                        board.digital_write(ZDirPin, LOW)  
+                        #board.digital[ZDirPin].write(0)
+                        #arduino.write("Z_DOWN\n")
+                        #print arduino.readline()
                     elif command == "X_UP":
-                        print "sending now"
-                        arduino.write("X_UP\n")
-                        print "sent. waiting for response."
-                        print arduino.readline()
+                        board.digital_write(XDirPin, HIGH)  
+                        #board.digital[XDirPin].write(1)
+                        #print "sending now"
+                        #arduino.write("X_UP\n")
+                        #print "sent. waiting for response."
+                        #print arduino.readline()
                     elif command == "X_DOWN":
-                        arduino.write("X_DOWN\n")
-                        print arduino.readline()
+                        board.digital_write(XDirPin, LOW) 
+                        #board.digital[XDirPin].write(0)
+                        #arduino.write("X_DOWN\n")
+                        #print arduino.readline()
                     #make sure the next two cases are last to avoid false positives
                     elif command.startsWith("Z"):
                         amount = command[2:command.size()]
-                        arduino.write("ZMOVE_%s\n"%amount)
-                        response = arduino.readline() #wait until Arduino sends "DONE"
-                        print response
+                        numsteps = int(amount)
+                        for step in range(numsteps):
+                            board.digital_write(ZStepPin, HIGH)                             
+                            #board.digital[ZStepPin].write(1)
+                            sleep(.001)
+                            board.digital_write(ZStepPin, LOW)
+                            #board.digital[ZStepPin].write(0)
+                        #arduino.write("ZMOVE_%s\n"%amount)
+                        #response = arduino.readline() #wait until Arduino sends "DONE"
+                        #print response
                     elif command.startsWith("X"):
                         amount = command[2:command.size()]
-                        arduino.write("XMOVE_%s\n"%amount)
-                        response = arduino.readline() #wait until Arduino sends "DONE"
-                        print response
+                        numsteps = int(amount)
+                        for step in range(numsteps):
+                            board.digital_write(XStepPin, HIGH)
+                            #board.digital[XStepPin].write(1)
+                            sleep(.001)
+                            board.digital_write(XStepPin, LOW)
+                            #board.digital[XStepPin].write(0)
+                        #arduino.write("XMOVE_%s\n"%amount)
+                        #response = arduino.readline() #wait until Arduino sends "DONE"
+                        #print response
                     
             #**
             #sleep(AdvanceTime)
@@ -455,8 +530,11 @@ class printmodel(QtCore.QThread):
             ProgPercentage = ProgPercentage + percentagechunk         
 
         print "\nPrint job completed successfully. %d layers were built." %layers
-        pymcuboard.lcd(1, "Print finished")
-        pymcuboard.close()
+        if printercontrolenabled==True and pymcucontrolled==True:        
+            pymcuboard.lcd(1, "Print finished")
+            pymcuboard.close()
+        if printercontrolenabled==True and arduinocontrolled==True:
+            board.exit() #close firmata connection 
         if projectorcontrolenabled:
             print "Sending power off command to projector."
             sendtoprojectorpymcu(poweroffcommand)
@@ -664,8 +742,9 @@ class Main(QtGui.QMainWindow):
             printercontrolenabled = False
     
     def stopthread(self):
-        self.thread.stop()
-
+        global IsStopped
+        IsStopped = True
+ 
     def selectfile(self):
         Filename = QtGui.QFileDialog.getOpenFileName()
         self.ui.displayfilenamelabel.setText(Filename)
@@ -698,12 +777,12 @@ class Main(QtGui.QMainWindow):
         self.SlideShow.label.setPixmap(pmscaled)
         
     def updatepreview(self):
-        print"updating pictire"        
+        #print"updating picture"        
         pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
         self.ui.imagepreview.setPixmap(pmscaled)
         
     def updatepreviewblank(self):
-        print"updating pictire to blank slide"    
+        #print"updating pictire to blank slide"    
         blankpath = "%s\\10x10black.png" %(startingexecutionpath)
         pm = QtGui.QPixmap(blankpath)
         pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
@@ -797,6 +876,8 @@ class Main(QtGui.QMainWindow):
         global slideshowenabled
         global zscript
         global projector_com, projector_parity, projector_baud, projector_databits, projector_stopbits
+        global IsStopped
+        IsStopped = False
         COM_Port = self.ui.pickcom.currentText()
         Printer_Baud = int(self.ui.printerbaud.currentText())
         ExposeTime = float(self.ui.exposure_time.text())
@@ -814,9 +895,9 @@ class Main(QtGui.QMainWindow):
         #myBoard = pymcu.mcuModule() #connect to pymcu module
         if self.ui.projectorcontrol.isChecked():
             projectorcontrolenabled = True
-        print "checking now."
+        else:
+            projectorcontrolenabled = False
         if self.ui.enableprintercontrol.isChecked():
-            print "got in!"
             printercontrolenabled = True
            
         else:

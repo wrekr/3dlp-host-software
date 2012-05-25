@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Tue May 15 03:05:11 2012
+# Created: Thu May 24 23:41:30 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -73,26 +73,14 @@ class Ui_MainWindow(object):
         self.exposure_time.setGeometry(QtCore.QRect(10, 150, 81, 20))
         self.exposure_time.setText(QtGui.QApplication.translate("MainWindow", "6", None, QtGui.QApplication.UnicodeUTF8))
         self.exposure_time.setObjectName(_fromUtf8("exposure_time"))
-        self.advance_time = QtGui.QLineEdit(self.groupBox)
-        self.advance_time.setGeometry(QtCore.QRect(140, 150, 71, 20))
-        self.advance_time.setText(QtGui.QApplication.translate("MainWindow", "2", None, QtGui.QApplication.UnicodeUTF8))
-        self.advance_time.setObjectName(_fromUtf8("advance_time"))
         self.label_3 = QtGui.QLabel(self.groupBox)
         self.label_3.setGeometry(QtCore.QRect(10, 130, 81, 16))
         self.label_3.setText(QtGui.QApplication.translate("MainWindow", "Exposure Time", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setObjectName(_fromUtf8("label_3"))
-        self.label_4 = QtGui.QLabel(self.groupBox)
-        self.label_4.setGeometry(QtCore.QRect(140, 130, 81, 16))
-        self.label_4.setText(QtGui.QApplication.translate("MainWindow", "Advance Time", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_4.setObjectName(_fromUtf8("label_4"))
         self.label_5 = QtGui.QLabel(self.groupBox)
         self.label_5.setGeometry(QtCore.QRect(100, 150, 46, 13))
         self.label_5.setText(QtGui.QApplication.translate("MainWindow", "s", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setObjectName(_fromUtf8("label_5"))
-        self.label_6 = QtGui.QLabel(self.groupBox)
-        self.label_6.setGeometry(QtCore.QRect(220, 150, 46, 13))
-        self.label_6.setText(QtGui.QApplication.translate("MainWindow", "s", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_6.setObjectName(_fromUtf8("label_6"))
         self.starting_layers = QtGui.QLineEdit(self.groupBox)
         self.starting_layers.setGeometry(QtCore.QRect(10, 200, 41, 20))
         self.starting_layers.setText(QtGui.QApplication.translate("MainWindow", "3", None, QtGui.QApplication.UnicodeUTF8))

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Thu May 24 23:41:30 2012
+# Created: Mon May 28 18:26:05 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -135,12 +135,16 @@ class Ui_MainWindow(object):
         self.radio_pymcu.setText(QtGui.QApplication.translate("MainWindow", "PyMCU", None, QtGui.QApplication.UnicodeUTF8))
         self.radio_pymcu.setChecked(False)
         self.radio_pymcu.setObjectName(_fromUtf8("radio_pymcu"))
+        self.buttonGroup_2 = QtGui.QButtonGroup(MainWindow)
+        self.buttonGroup_2.setObjectName(_fromUtf8("buttonGroup_2"))
+        self.buttonGroup_2.addButton(self.radio_pymcu)
         self.radio_arduino = QtGui.QRadioButton(self.groupBox)
         self.radio_arduino.setGeometry(QtCore.QRect(170, 70, 82, 17))
         self.radio_arduino.setText(QtGui.QApplication.translate("MainWindow", "Arduino", None, QtGui.QApplication.UnicodeUTF8))
         self.radio_arduino.setCheckable(True)
         self.radio_arduino.setChecked(True)
         self.radio_arduino.setObjectName(_fromUtf8("radio_arduino"))
+        self.buttonGroup_2.addButton(self.radio_arduino)
         self.label_14 = QtGui.QLabel(self.groupBox)
         self.label_14.setGeometry(QtCore.QRect(20, 250, 141, 16))
         self.label_14.setText(QtGui.QApplication.translate("MainWindow", "Choose monitor to print on:", None, QtGui.QApplication.UnicodeUTF8))
@@ -153,6 +157,19 @@ class Ui_MainWindow(object):
         self.enableslideshow.setText(QtGui.QApplication.translate("MainWindow", "Slideshow enabled?", None, QtGui.QApplication.UnicodeUTF8))
         self.enableslideshow.setChecked(True)
         self.enableslideshow.setObjectName(_fromUtf8("enableslideshow"))
+        self.radio_uno = QtGui.QRadioButton(self.groupBox)
+        self.radio_uno.setGeometry(QtCore.QRect(140, 130, 82, 17))
+        self.radio_uno.setText(QtGui.QApplication.translate("MainWindow", "Arduino Uno", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_uno.setChecked(True)
+        self.radio_uno.setObjectName(_fromUtf8("radio_uno"))
+        self.buttonGroup = QtGui.QButtonGroup(MainWindow)
+        self.buttonGroup.setObjectName(_fromUtf8("buttonGroup"))
+        self.buttonGroup.addButton(self.radio_uno)
+        self.radio_mega = QtGui.QRadioButton(self.groupBox)
+        self.radio_mega.setGeometry(QtCore.QRect(140, 150, 91, 17))
+        self.radio_mega.setText(QtGui.QApplication.translate("MainWindow", "Arduino Mega", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_mega.setObjectName(_fromUtf8("radio_mega"))
+        self.buttonGroup.addButton(self.radio_mega)
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))

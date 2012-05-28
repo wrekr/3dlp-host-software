@@ -23,8 +23,7 @@ import Queue
 import threading
 import comscan
 import pymcu
-#from pyfirmata import Arduino, util
-from firmata import *
+import pyfirmata
 import webbrowser
 import re
 from slice import *
@@ -226,8 +225,10 @@ class printmodel(QtCore.QThread):
     
     def checkIfClose(self):
         #print IsStopped
+       
         return
         if IsStopped == True:
+            self.SlideShow.close()
             try:
                 print "closing connection to PyMCU...."
                 pymcuboard.close()
@@ -353,25 +354,33 @@ class printmodel(QtCore.QThread):
         startingexecutionpath = executionpath
         #**********************************************
         if printercontrolenabled==True and arduinocontrolled==True:
-            try:
-                #print COM_Port, Printer_Baud
-                #arduino = serial.Serial("%s"%COM_Port, Printer_Baud)
-                print "Connecting to printer firmware..."
-                global board
-                board = Arduino("%s"%COM_Port)
-                print "no issues opening serial connection to firmata..."
-                #print"\nConnected successfully to %s! Engaged communications at %sbps." %(COM_Port, Printer_Baud)
-            except:
-                print"Failed to connect to firmata. Check connections and settings, restart the program, and try again." %COM_Port
-                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                return
+            print "Connecting to printer firmware..."
+            global board
+            if IsArduinoUno == True:
+                try:
+                    board = pyfirmata.Arduino("%s"%COM_Port)
+                    print "no issues opening serial connection to firmata..."
+                except:
+                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
+                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+                    return
+            if IsArduinoMega == True:
+                try:
+                    board = pyfirmata.ArduinoMega("%s"%COM_Port)
+                    print "no issues opening serial connection to firmata..."
+                except:
+                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
+                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+                    return
+            ##pin definitions... there's probably a better place for this but for now here it is..
+            ZStepPin = 13     
+            ZDirPin = 5
+            XStepPin = 3
+            XDirPin = 6
+
+            """
             try:
                 print "setting up Arduino pin mapping..."
-                ##pin definitions... there's probably a better place for this but for now here it is..
-                ZStepPin = 13     
-                ZDirPin = 3
-                XStepPin = 5
-                XDirPin = 6
                 board.pin_mode(ZStepPin, firmata.OUTPUT)
                 board.pin_mode(XStepPin, firmata.OUTPUT)
                 board.pin_mode(ZDirPin, firmata.OUTPUT)
@@ -380,6 +389,7 @@ class printmodel(QtCore.QThread):
             except:
                 print "Failed trying to configure the pins on Arduino. Crap. "
                 return
+            """
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
         
@@ -459,53 +469,37 @@ class printmodel(QtCore.QThread):
                 print "sending custom scripted command sequence..."
                 for command in commands:
                     if command == "Z_UP":
-                        board.digital_write(ZDirPin, HIGH)                     
+                        #board.digital_write(ZDirPin, HIGH)                     
                         #print "send Z_Up"
-                        #board.digital[ZDirPin].write(1)
-                        #arduino.write("Z_UP\n")
-                        #print arduino.readline()
+                        board.digital[ZDirPin].write(1)
                     elif command == "Z_DOWN":
-                        board.digital_write(ZDirPin, LOW)  
-                        #board.digital[ZDirPin].write(0)
-                        #arduino.write("Z_DOWN\n")
-                        #print arduino.readline()
+                        #board.digital_write(ZDirPin, LOW)  
+                        board.digital[ZDirPin].write(0)
                     elif command == "X_UP":
-                        board.digital_write(XDirPin, HIGH)  
-                        #board.digital[XDirPin].write(1)
-                        #print "sending now"
-                        #arduino.write("X_UP\n")
-                        #print "sent. waiting for response."
-                        #print arduino.readline()
+                        #board.digital_write(XDirPin, HIGH)  
+                        board.digital[XDirPin].write(1)
                     elif command == "X_DOWN":
-                        board.digital_write(XDirPin, LOW) 
-                        #board.digital[XDirPin].write(0)
-                        #arduino.write("X_DOWN\n")
-                        #print arduino.readline()
+                        #board.digital_write(XDirPin, LOW) 
+                        board.digital[XDirPin].write(0)
                     #make sure the next two cases are last to avoid false positives
                     elif command.startsWith("Z"):
                         amount = command[2:command.size()]
                         numsteps = int(amount)
                         for step in range(numsteps):
-                            board.digital_write(ZStepPin, HIGH)                             
-                            #board.digital[ZStepPin].write(1)
+                            #board.digital_write(ZStepPin, HIGH)                             
+                            board.digital[ZStepPin].write(1)
                             sleep(.001)
-                            board.digital_write(ZStepPin, LOW)
-                            #board.digital[ZStepPin].write(0)
-                        #arduino.write("ZMOVE_%s\n"%amount)
-                        #response = arduino.readline() #wait until Arduino sends "DONE"
-                        #print response
+                            #board.digital_write(ZStepPin, LOW)
+                            board.digital[ZStepPin].write(0)
                     elif command.startsWith("X"):
                         amount = command[2:command.size()]
                         numsteps = int(amount)
                         for step in range(numsteps):
-                            board.digital_write(XStepPin, HIGH)
-                            #board.digital[XStepPin].write(1)
+                            #board.digital_write(XStepPin, HIGH)
+                            board.digital[XStepPin].write(1)
                             sleep(.001)
-                            board.digital_write(XStepPin, LOW)
-                            #board.digital[XStepPin].write(0)
-                        #arduino.write("XMOVE_%s\n"%amount)
-                        #response = arduino.readline() #wait until Arduino sends "DONE"
-                        #print response
+                            #board.digital_write(XStepPin, LOW)
+                            board.digital[XStepPin].write(0)
                     
             #**
             #sleep(AdvanceTime)
@@ -877,6 +871,8 @@ class Main(QtGui.QMainWindow):
         global zscript
         global projector_com, projector_parity, projector_baud, projector_databits, projector_stopbits
         global IsStopped
+        global IsArduinoUno
+        global IsArduinoMega
         IsStopped = False
         COM_Port = self.ui.pickcom.currentText()
         Printer_Baud = int(self.ui.printerbaud.currentText())
@@ -912,6 +908,12 @@ class Main(QtGui.QMainWindow):
             arduinocontrolled = True
             pymcucontrolled = False
         screennumber = self.ui.pickscreen.currentText() #get the screen number from picker
+        if self.ui.radio_uno.isChecked():
+            IsArduinoUno = True
+            IsArduinoMega = False
+        if self.ui.radio_mega.isChecked():
+            IsArduinoMega = True
+            IsArduinoUno = False
        
         self.thread = printmodel()#.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)#, args=(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber))
         #connect to slideshow signal

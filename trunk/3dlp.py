@@ -369,7 +369,7 @@ class printmodel(QtCore.QThread):
         print "Printing..." 
  
         #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
-        eta = 500000
+        eta = 0
         percentagechunk = (100.0/float(NumberOfImages))
         ProgPercentage = 0.0
         for layer in range(NumberOfImages):
@@ -485,7 +485,7 @@ class Main(QtGui.QMainWindow):
         global ImageFilename
         global Filename
 
-        global ZStepPin, ZDirPin, XStepPin, XDirPin
+        global ZStepPin, ZDirPin, XStepPin, XDirPin, ZEnablePin, XEnablePin
         
         ZStepPin = int(parser.get('pin_mapping', 'zstep'))
         ZDirPin = int(parser.get('pin_mapping', 'zdir'))

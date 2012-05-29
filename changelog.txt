@@ -4,6 +4,7 @@ For v1.3.0:
 -changed default baud rate to 57600 for Firmata communication
 -Added config.ini file to set default program behavior
 -consolidated lots of code
+-got rid of more old code
 
 
 For v1.2.2:

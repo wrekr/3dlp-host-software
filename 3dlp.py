@@ -10,6 +10,8 @@ Still to add/known issues:
     -after the printmodel and slicemodel classes are perfected combine them into print&slice
     -fix ETA and advance time
     -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU.  
+    -projector control functionality is not finished.
+    -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
 """
 from subprocess import Popen, PIPE
 import sys
@@ -40,8 +42,6 @@ try:
 except ImportError:
     QString = str
 
-
-
 class EmittingStream(QtCore.QObject):
 
     textWritten = QtCore.pyqtSignal(str)
@@ -54,9 +54,7 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
-        
-
-        
+    
 #*******************************************************************************
 class sliceandprintmodel(QtCore.QThread):
     def __init__(self, parent = None):
@@ -71,7 +69,6 @@ class sliceandprintmodel(QtCore.QThread):
         pass
         
 #**********************************************************************************************************************************
-#*********************************************************************************************************************************
 class slicemodel(QtCore.QThread):
     def __init__(self, parent = None):
         QtCore.QThread.__init__(self, parent)
@@ -89,9 +86,7 @@ class slicemodel(QtCore.QThread):
         global progressBLAH   
         Z_options = "%s,%s,%s"%(Z_options_start, Z_options_end, Z_options_increment)
         executionpath = os.getcwd() #get current execution (working) directory
-        #**********************#clear any previous slices by removing the "slices" directory. This is re-built when freesteel slices new layers.
-        shutil.rmtree('slices', ignore_errors = True)
-        #proc = subprocess.Popen("slice -z %s -a %s -l %s --core=white --cavity=black -o slices\layer.png models\%s"%(args.Z_options, args.plane, args.LayerThickness, args.filename), shell=True, bufsize=256, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        shutil.rmtree('slices', ignore_errors = True)#clear any previous slices by removing the "slices" directory. This is re-built when freesteel slices new layers.
         print "\nslicing images..."
         
         #begin freesteel code
@@ -241,7 +236,7 @@ class printmodel(QtCore.QThread):
                 pass
             #board.exit()
             #self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-            self.terminate() #no more mr. nice guy... this is the only thing that works!!! ADVICE WELCOMED
+            self.terminate() #no more mr. nice guy... this is the only thing that works!!! ADVICE WELCOMED!!!!
      
     def printmodel(self, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port):
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
@@ -648,23 +643,6 @@ class Main(QtGui.QMainWindow):
     
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
-    
-    def openpopup(self):
-        print "opening window"
-        self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
-        self.SlideShow.show() #show slideshow window
-        self.ui2=SlideShowWindow()
-        self.SlideShow.setupUi(self)
-        screennumber = self.ui.pickscreen.currentText() #get the screen number from picker
-        screennumber = int(screennumber) #convert to integer
-        screen = QtGui.QDesktopWidget().availableGeometry(screen = screennumber) #get available geometry of the screen chosen
-        self.SlideShow.move(screen.left(), screen.top()) #move window to the top-left of the chosen screen
-        self.SlideShow.resize(screen.width(), screen.height()) #resize the window to fit the chosen screen
-        self.SlideShow.showMaximized()
-        #self.SlideShow.showFullScreen()
-        pm = QtGui.QPixmap("C:/Users/Chris/.xy/startups/3dlp/gui/slices/layer_0170(z=1.700).png")
-        pmscaled = pm.scaled(800, 800, QtCore.Qt.KeepAspectRatio)
-        self.SlideShow.label.setPixmap(pmscaled)
         
     def updatepreview(self):
         #print"updating picture"        
@@ -688,22 +666,9 @@ class Main(QtGui.QMainWindow):
         dialog = OpenAbout(self)
         dialog.exec_()
         
-    def testprojectorpoweroff(self):
-        print "Connecting to PyMCU module..."
-        try:
-            pymcuboard = pymcu.mcuModule(port='COM9')
-        except:
-            print"OOPS"
-        pymcuboard.lcd()
-        pymcuboard.lcd(1, "Initialized.")
-        poweroffcommand = self.ui.projector_poweroffcommand.text()
-        pymcuboard.serialWrite(13, 3, poweroffcommand)
-        pymcuboard.close()
-        
     def sliceandprintpressed(self):
         #combine slice and print classes here
-        self.thread = sliceandprintmodel()#.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)#, args=(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber))
-        self.thread.start()
+        pass
 
     def slicepressed(self):
         print "applying slicing settings"
@@ -721,13 +686,12 @@ class Main(QtGui.QMainWindow):
         ImageWidth = float(self.ui.image_width.text())
         ImageHeight = float(self.ui.image_height.text())
         plane= self.ui.slicing_plane.currentText()
-        self.thread = slicemodel()#.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)#, args=(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber))
+        self.thread = slicemodel()
         self.thread.start()
         sleep(1)
         progress = OpenProgressBar(self)
         progress.exec_()
-        
-         
+               
     def printpressed(self):
         print "applying printing settings"
         global ExposeTime
@@ -791,7 +755,7 @@ class Main(QtGui.QMainWindow):
             IsArduinoMega = True
             IsArduinoUno = False
        
-        self.thread = printmodel()#.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)#, args=(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber))
+        self.thread = printmodel()
         #connect to slideshow signal
         self.connect(self.thread
                      ,QtCore.SIGNAL('updatePreview')

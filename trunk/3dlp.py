@@ -12,6 +12,8 @@ Still to add/known issues:
     -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU.  
     -projector control functionality is not finished.
     -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
+    -Manual printer control dialog for manually jogging each printer axis
+    -still looking for a good method of calibrating for X and Y (image size)
 """
 from subprocess import Popen, PIPE
 import sys
@@ -74,8 +76,7 @@ class slicemodel(QtCore.QThread):
         QtCore.QThread.__init__(self, parent)
         self.exiting = False
         self.alive = 1
-        self.running = 0
-        
+        self.running = 0       
         
     def run(self):
         self.slice(plane, LayerThickness, ImageHeight, ImageWidth, Filename)   
@@ -359,6 +360,12 @@ class printmodel(QtCore.QThread):
              #size = self.SlideShow.frameGeometry()
              #print size 
              #start slideshow
+        if printercontrolenabled == True and arduinocontrolled == True:
+            print "Enabling Stepper Motor Drivers..."
+            board.digital[ZEnablePin].write(1)
+            board.digital[XEnablePin].write(1)
+            print "..ok."
+            
         print "Printing..." 
  
         #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
@@ -483,7 +490,9 @@ class Main(QtGui.QMainWindow):
         ZStepPin = int(parser.get('pin_mapping', 'zstep'))
         ZDirPin = int(parser.get('pin_mapping', 'zdir'))
         XStepPin = int(parser.get('pin_mapping', 'xstep'))
-        ZDirPin = int(parser.get('pin_mapping', 'xdir'))
+        XDirPin = int(parser.get('pin_mapping', 'xdir'))
+        ZEnablePin = int(parser.get('pin_mapping', 'zenable'))
+        XEnablePin = int(parser.get('pin_mapping', 'xenable'))
         
         self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
         self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
@@ -643,6 +652,9 @@ class Main(QtGui.QMainWindow):
     
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
+        
+    def openmanualcontrol(self):
+        pass
         
     def updatepreview(self):
         #print"updating picture"        

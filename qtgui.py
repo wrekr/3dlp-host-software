@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Mon May 28 20:48:18 2012
+# Created: Mon May 28 22:23:17 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -405,6 +405,11 @@ class Ui_MainWindow(object):
         self.button_stop_printing.setGeometry(QtCore.QRect(420, 560, 75, 23))
         self.button_stop_printing.setText(QtGui.QApplication.translate("MainWindow", "Stop Printing", None, QtGui.QApplication.UnicodeUTF8))
         self.button_stop_printing.setObjectName(_fromUtf8("button_stop_printing"))
+        self.pushButton = QtGui.QPushButton(self.centralwidget)
+        self.pushButton.setEnabled(False)
+        self.pushButton.setGeometry(QtCore.QRect(540, 560, 151, 23))
+        self.pushButton.setText(QtGui.QApplication.translate("MainWindow", "Start Manual Printer Control", None, QtGui.QApplication.UnicodeUTF8))
+        self.pushButton.setObjectName(_fromUtf8("pushButton"))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1024, 21))
@@ -452,11 +457,11 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.projectorcontrol, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.projectorcontroltoggle)
         QtCore.QObject.connect(self.button_stop_printing, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.stopthread)
         QtCore.QObject.connect(self.actionAbout, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openaboutdialog)
-        QtCore.QObject.connect(self.projector_testpoweroffcommand, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.testprojectorpoweroff)
         QtCore.QObject.connect(self.actionHelp, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openhelp)
         QtCore.QObject.connect(self.radio_pymcu, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.printercontroltoggle)
         QtCore.QObject.connect(self.enableprintercontrol, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.enableprintercontroltoggled)
         QtCore.QObject.connect(self.enableslideshow, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.slideshowcontroltoggled)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.openmanualcontrol)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

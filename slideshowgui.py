@@ -2,7 +2,7 @@
 """
 Created on Wed Apr 11 13:35:14 2012
 
-@author: Chris
+@author: Chris Marion - www.chrismarion.net
 """
 from PyQt4 import QtCore, QtGui
 from PyQt4.Qt import *
@@ -29,7 +29,3 @@ class SlideShowWindow(QMainWindow):
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
         self.setPalette(palette)
-
-#        pm = QtGui.QPixmap("C:/Users/Chris/.xy/startups/3dlp/gui/slices/layer_0170(z=1.700).png")
-#        pmscaled = pm.scaled(800, 800, QtCore.Qt.KeepAspectRatio)
-#        self.label.setPixmap(pmscaled)

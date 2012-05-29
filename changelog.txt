@@ -1,0 +1,13 @@
+For v1.3.0:
+-re-wrote arduino communication to use Firmata firmware
+-added support for both Arduino Uno and Arduino Mega
+-changed default baud rate to 57600 for Firmata communication
+-Added config.ini file to set default program behavior
+-consolidated lots of code
+
+
+For v1.2.2:
+-fixed bug in projector control enable/disable
+-fixed bug caused by trying to close pymcu connection even if it was never established
+-cleaned up a lot of old code from early development
+

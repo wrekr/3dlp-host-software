@@ -7,15 +7,12 @@ www.chrismarion.net
 
 Still to add/known issues:
     -clean exiting of threads, possibly using constant timers? ARGHHH
-    -after the printmodel and slicemodel classes are perfected combine them into print&slice.. or maybe call each in succession? (less code..)
-    -fix ETA and advance time etc.
-    -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU. 
-    -Clean up the code. There's random junk EVERYWHERE.
-    
+    -after the printmodel and slicemodel classes are perfected combine them into print&slice
+    -fix ETA and advance time
+    -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU.  
 """
 from subprocess import Popen, PIPE
 import sys
-#import win32com
 import shutil
 import serial
 import socket
@@ -25,6 +22,7 @@ import comscan
 import pymcu
 import pyfirmata
 import webbrowser
+from ConfigParser import *
 import re
 from slice import *
 from time import sleep
@@ -249,7 +247,6 @@ class printmodel(QtCore.QThread):
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
         global pm        
         #************Start custom z scripting*******
-        #print zscript 
         """
         syntax for custom z scripting; 
         
@@ -262,58 +259,11 @@ class printmodel(QtCore.QThread):
         X_DOWN - change direction of x axis to move down
         
         """
-        """
-        startbracketslocation = []
-        endbracketslocation = []
-        start = 0
-        x = 0
-        scanfinished = False
-        while not scanfinished:
-            x = x + 1
-            print x
-            startbracketslocation.append(zscript.indexOf("[", start, len(zscript)))#find [ symbol - lowest index location from the left
-            if startbracketslocation[x-1] == -1:
-                scanfinished = True
-                del startbracketslocation[x-1]
-            if not scanfinished:    
-                print "start bracket found at:", startbracketslocation[x-1]
-                endbracketslocation.append(zscript.indexOf("]", start, len(zscript)))
-                print "end bracket found at:", endbracketslocation[x-1]
-                start = endbracketslocation[x-1]
-         """
         #print "Custom Scripting:\n"
         commands = []
         for match in re.findall("\[(.*?)\]", zscript):
             #print match
             commands.append(match)
-        """  
-        for command in commands:
-            if command == "Z_UP":
-                print "sending z-up"
-            elif command == "Z_DOWN":
-                print "sending z-down"
-            elif command == "X_UP":
-                print "sending x-up"
-            elif command == "X_DOWN":
-                print "sending x-down"
-            #make sure the next two cases are last to avoid false positives
-            elif command.startsWith("Z"):
-                amount = command[2:command.size()]
-                print "Z command: ZMOVE_%s"%amount
-                #arduino.write("ZMOVE_%s"%amount)
-            elif command.startsWith("X"):
-                amount = command[2:command.size()]
-                print "X command: XMOVE_%s"%amount
-                #arduino.write("XMOVE_%s"%amount)
-        """
-            
-#        print "X matches:"
-#        xmatches = []
-#        for xmatch in re.findall("\[(X.*?)\]", zscript):
-#            print xmatch
-#            xmatches.append(xmatch)
-#            #print "%s: %s" % (xmatch.start(), xmatch.group(1))
-
         
         #*******************************************
         parity = {'None':'N', 'Even':'E', 'Odd':'O', 'Mark':'M', 'Space':'S'}
@@ -322,14 +272,8 @@ class printmodel(QtCore.QThread):
         projector_parity_lookup = parity['%s'%projector_parity]
         projector_stopbits_lookup = stopbits['%s'%projector_stopbits]
         projector_databits_lookup = databits['%s'%projector_databits]
-        #projector_stopbits_lookup = float(projector_stopbits_lookup)
         projector_databits_lookup = int(projector_databits_lookup)
-        #print projector_parity_lookup
-        #print projector_stopbits_lookup
-        #print projector_databits_lookup
-        
-        #print printercontrolenabled, arduinocontrolled, pymcucontrolled
-        
+   
         if projectorcontrolenabled==True:
             #try connecting to projector com port
             print "Attempting to connect to projector for RS232 control..."
@@ -372,31 +316,15 @@ class printmodel(QtCore.QThread):
                     print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
                     self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
                     return
-            ##pin definitions... there's probably a better place for this but for now here it is..
-            ZStepPin = 13     
-            ZDirPin = 5
-            XStepPin = 3
-            XDirPin = 6
 
-            """
-            try:
-                print "setting up Arduino pin mapping..."
-                board.pin_mode(ZStepPin, firmata.OUTPUT)
-                board.pin_mode(XStepPin, firmata.OUTPUT)
-                board.pin_mode(ZDirPin, firmata.OUTPUT)
-                board.pin_mode(XDirPin, firmata.OUTPUT)
-                sleep(5)
-            except:
-                print "Failed trying to configure the pins on Arduino. Crap. "
-                return
-            """
+
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
         
         #slideshow starts around here so if it's disabled kill the thread now 
         if slideshowenabled==False:
             return        
-        
+            
         concatenater = "\\"
         seq = (executionpath, "slices") #concatenate this list of strings with "str" as a separator
         slicesdir = concatenater.join(seq) #build slices path relative to working directory, separated by concatenator string
@@ -412,7 +340,6 @@ class printmodel(QtCore.QThread):
         FileList = []
         for file in os.listdir("."): #for every file in slices dir (changed dir above)
             if file.endswith(".png"): #if it's the specified image type
-                #print file
                 imgnum = imgnum + 1
                 stringg = "\\"
                 seq = (executionpath, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
@@ -421,11 +348,7 @@ class printmodel(QtCore.QThread):
                 #**************
         NumberOfImages = imgnum #number of slice images
         layers = imgnum
-        
-        
-        #print list of image files
-        #for image in FileList:
-         #   print image
+
         print "\nNumber of Layers: ", NumberOfImages
         if slideshowenabled==True:
              #open slideshow window
@@ -442,9 +365,7 @@ class printmodel(QtCore.QThread):
              #print size 
              #start slideshow
         print "Printing..." 
-        
-        
-        
+ 
         #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
         eta = 500000
         percentagechunk = (100.0/float(NumberOfImages))
@@ -469,39 +390,29 @@ class printmodel(QtCore.QThread):
                 print "sending custom scripted command sequence..."
                 for command in commands:
                     if command == "Z_UP":
-                        #board.digital_write(ZDirPin, HIGH)                     
-                        #print "send Z_Up"
                         board.digital[ZDirPin].write(1)
                     elif command == "Z_DOWN":
-                        #board.digital_write(ZDirPin, LOW)  
                         board.digital[ZDirPin].write(0)
                     elif command == "X_UP":
-                        #board.digital_write(XDirPin, HIGH)  
                         board.digital[XDirPin].write(1)
                     elif command == "X_DOWN":
-                        #board.digital_write(XDirPin, LOW) 
                         board.digital[XDirPin].write(0)
                     #make sure the next two cases are last to avoid false positives
                     elif command.startsWith("Z"):
                         amount = command[2:command.size()]
                         numsteps = int(amount)
-                        for step in range(numsteps):
-                            #board.digital_write(ZStepPin, HIGH)                             
+                        for step in range(numsteps):                       
                             board.digital[ZStepPin].write(1)
                             sleep(.001)
-                            #board.digital_write(ZStepPin, LOW)
                             board.digital[ZStepPin].write(0)
                     elif command.startsWith("X"):
                         amount = command[2:command.size()]
                         numsteps = int(amount)
                         for step in range(numsteps):
-                            #board.digital_write(XStepPin, HIGH)
                             board.digital[XStepPin].write(1)
                             sleep(.001)
-                            #board.digital_write(XStepPin, LOW)
                             board.digital[XStepPin].write(0)
                     
-            #**
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime
             print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
@@ -514,11 +425,8 @@ class printmodel(QtCore.QThread):
                 pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
                 self.SlideShow.label.setPixmap(pmscaled)
                 QCoreApplication.processEvents()
-  
             
             self.emit(QtCore.SIGNAL('updatePreview')) #emit signal to update preview image
-            #self.ui3=Main.ui
-            #self.ui3.imagepreview.setPixmap(pmscaled)    
             sleep(ExposureTime)
             eta = eta - ExposureTime
             ProgPercentage = ProgPercentage + percentagechunk         
@@ -537,21 +445,11 @@ class printmodel(QtCore.QThread):
 class Main(QtGui.QMainWindow):
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        
-        # This is always the same
         self.ui=Ui_MainWindow()
-        #self.setWindowState(Qt.WindowMaximized)
-        #screen = QtGui.QDesktopWidget().screenGeometry(screen = 0)
-        #print screen
-        #self.showMaximized()
-        #self.showFullScreen()
-        self.ui.setupUi(self)
-       
+        self.ui.setupUi(self)  
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
-        #****
-        #size = QApplication.desktop().size()
-        #print size
+
         screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", screencount
          ####setup screen picker####
@@ -562,8 +460,6 @@ class Main(QtGui.QMainWindow):
         ports = comscan.comscan() #returns a list with each entry being a dict of useful information
         print ports
         length = len(ports) #how many dicts did comscan return?
-        #print length #print how many COM ports are defined on the machine
-        #print ports #print full output from comscan
         numports = 0
         for x in range(length):
             portentry = ports[x] #switch to dict x
@@ -578,53 +474,53 @@ class Main(QtGui.QMainWindow):
         print "Found %d ports, %d available." %(length, numports)
         #*********************************
         #IF YOU'RE EVER GOING TO LOAD PREVIOUS SETTINGS, DO IT HERE. 
+        parser = SafeConfigParser()
+        parser.read('config.ini')
+
         #*********************************
         #After settings are loaded (default or saved), load all the settings into variables for use.
-        global ExposeTime
-        global AdvanceTime
-        global NumberOfStartLayers
-        global StartLayersExposureTime
-        global COM_Port
-        global Printer_Baud
-        global Z_options
-        global plane
-        global LayerThickness
-        global ImageHeight
-        global ImageWidth
         global screennumber
-        global printercontrol
         global ImageFilename
         global Filename
-        global poweroffcommand
-        global projectorcontrolenabled
-        global printercontrolenabled
-        global slideshowenabled
-        global pymcucontrolled
-        global arduinocontrolled
-        COM_Port = self.ui.pickcom.currentText()
-        Printer_Baud = int(self.ui.printerbaud.currentText())
-        ExposeTime = float(self.ui.exposure_time.text())
-        #AdvanceTime = float(self.ui.advance_time.text())
-        Port = self.ui.remote_port.text()
-        NumberOfStartLayers = float(self.ui.starting_layers.text())
-        StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
-        LayerThickness = self.ui.layer_thickness.text()
-       
-        ImageWidth = self.ui.image_width.text()
-        ImageHeight = self.ui.image_height.text()
-        plane= self.ui.slicing_plane.currentText()
-        screennumber = int(self.ui.pickscreen.currentText()) #get the screen number from picker
-        printercontrol = self.ui.enableprintercontrol.isChecked()
-        poweroffcommand = self.ui.layer_thickness.text()
-        if self.ui.projectorcontrol.isChecked():
-            projectorcontrolenabled = True
 
-        if self.ui.radio_pymcu.isChecked():
-            pymcucontrolled = True
-            arduinocontrolled = False
-        if self.ui.radio_arduino.isChecked():
-            arduinocontrolled = True
-            pymcucontrolled = False
+        global ZStepPin, ZDirPin, XStepPin, XDirPin
+        
+        ZStepPin = int(parser.get('pin_mapping', 'zstep'))
+        ZDirPin = int(parser.get('pin_mapping', 'zdir'))
+        XStepPin = int(parser.get('pin_mapping', 'xstep'))
+        ZDirPin = int(parser.get('pin_mapping', 'xdir'))
+        
+        self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
+        self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        self.ui.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
+        self.ui.exposure_time.setText(parser.get('program_defaults', 'ExposeTime'))
+        self.ui.starting_layers.setText(parser.get('program_defaults', 'NumStartLayers'))
+        self.ui.starting_layer_exposure.setText(parser.get('program_defaults', 'StartLayersExposeTime'))
+        self.ui.image_height.setText(parser.get('program_defaults', 'ImageHeight'))
+        self.ui.image_width.setText(parser.get('program_defaults', 'ImageWidth'))
+        self.ui.layer_thickness.setText(parser.get('program_defaults', 'LayerThickness'))
+        self.ui.z_options_start.setText(parser.get('program_defaults', 'z_options_start'))
+        self.ui.z_options_end.setText(parser.get('program_defaults', 'z_options_end'))
+        self.ui.z_options_increment.setText(parser.get('program_defaults', 'z_options_increment'))
+        planedict = {'XZ':0, 'XY':1, 'YZ':2}
+        self.ui.slicing_plane.setCurrentIndex(planedict[parser.get('program_defaults', 'plane')])
+        
+        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO':
+            self.ui.radio_arduino.click()
+        elif parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+            self.ui.radio_pymcu.click()
+        if parser.get('program_defaults', 'arduinotype') == 'UNO':
+            self.ui.radio_uno.click()
+        elif parser.get('program_defaults', 'arduinotype') == 'MEGA':
+            self.ui.radio_mega.click()
+        if parser.get('program_defaults', 'slideshowenabled') == 'True':
+            self.ui.enableslideshow.click()
+        if parser.get('program_defaults', 'printercontrol') == 'True':
+            self.ui.enableprintercontrol.click()
+        if parser.get('program_defaults', 'projectorcontrol') == 'True':
+            self.ui.projectorcontrol.click()
+        
         #*********************************
         if self.ui.radio_pymcu.isChecked(): #if pymcu is selected on startup that means projector comms are handled through it. disable printer com config stuff. 
             self.ui.projector_pickcom.setEnabled(False)
@@ -804,30 +700,10 @@ class Main(QtGui.QMainWindow):
         pymcuboard.serialWrite(13, 3, poweroffcommand)
         pymcuboard.close()
         
-    def updateprogress(self):
-        print "recieved proigress message!!"
-        
     def sliceandprintpressed(self):
-        print "applying printing settings"
-        
-        COM_Port = self.ui.pickcom.currentText()
-        Printer_Baud = int(self.ui.printerbaud.currentText())
-        ExposeTime = float(self.ui.exposure_time.text())
-        #AdvanceTime = float(self.ui.advance_time.text())
-        Port = self.ui.remote_port.text()
-        NumberOfStartLayers = float(self.ui.starting_layers.text())
-        StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
-        print "applying slicing settings"
-        LayerThickness = self.ui.layer_thickness.text()
-        Z_options = self.ui.z_options.text()
-        ImageWidth = self.ui.image_width.text()
-        ImageHeight = self.ui.image_height.text()
-        plane= self.ui.slicing_plane.currentText()        
-        
-        screennumber = int(self.ui.pickscreen.currentText()) #get the screen number from picker
+        #combine slice and print classes here
         self.thread = sliceandprintmodel()#.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)#, args=(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, AdvanceTime, NumberOfStartLayers, StartLayersExposureTime, screennumber))
         self.thread.start()
-
 
     def slicepressed(self):
         print "applying slicing settings"

@@ -5,6 +5,7 @@ For v1.3.0:
 -Added config.ini file to set default program behavior
 -consolidated lots of code
 -got rid of more old code
+-switched to pyinstaller for executable packaging
 
 
 For v1.2.2:

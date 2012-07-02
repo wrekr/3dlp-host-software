@@ -30,6 +30,7 @@ from ConfigParser import *
 import re
 from slice import *
 from time import sleep
+import ctypes
 #**********************************
 
 import os

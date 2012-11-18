@@ -9,7 +9,6 @@ Still to add/known issues:
     -clean exiting of threads, possibly using constant timers? ARGHHH
     -after the printmodel and slicemodel classes are perfected combine them into print&slice
     -fix ETA and advance time
-    -PyMCU functionality is not finished. Perfect Arduino and then port to PyMCU.  
     -projector control functionality is not finished.
     -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
     -Manual printer control dialog for manually jogging each printer axis
@@ -23,7 +22,6 @@ import socket
 import Queue
 import threading
 import comscan
-import pymcu
 import pyfirmata
 import webbrowser
 from ConfigParser import *
@@ -31,6 +29,9 @@ import re
 from slice import *
 from time import sleep
 import ctypes
+import vtk
+from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
 #**********************************
 
 import os
@@ -45,13 +46,23 @@ try:
 except ImportError:
     QString = str
 
+class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
+    def __init__(self,parent=None):
+        self.AddObserver("MiddleButtonPressEvent",self.middleButtonPressEvent)
+        self.AddObserver("MiddleButtonReleaseEvent",self.middleButtonReleaseEvent)
+
+    def middleButtonPressEvent(self,obj,event):
+        self.OnMiddleButtonDown()
+        return
+        
+    def middleButtonReleaseEvent(self,obj,event):
+        self.OnMiddleButtonUp()
+        return
+
 class EmittingStream(QtCore.QObject):
-
     textWritten = QtCore.pyqtSignal(str)
-
     def write(self, text):
         self.textWritten.emit(str(text))
-
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
@@ -67,10 +78,9 @@ class sliceandprintmodel(QtCore.QThread):
         self.running = 0
     def run(self):
         self.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)   
-#**********************************************************************   
+
     def sliceandprint(self, Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber):
         pass
-        
 #**********************************************************************************************************************************
 class slicemodel(QtCore.QThread):
     def __init__(self, parent = None):
@@ -81,10 +91,8 @@ class slicemodel(QtCore.QThread):
         
     def run(self):
         self.slice(plane, LayerThickness, ImageHeight, ImageWidth, Filename)   
-        
-    
+           
     def slice(self, plane, LayerThickness, ImageHeight, ImageWidth, Filename):
-        
         global progressBLAH   
         Z_options = "%s,%s,%s"%(Z_options_start, Z_options_end, Z_options_increment)
         executionpath = os.getcwd() #get current execution (working) directory
@@ -110,7 +118,6 @@ class slicemodel(QtCore.QThread):
         background = "black"
         cavity = "black"
         core = "white"
-        
         ##
         if zlevels:
             # parse into floats
@@ -130,8 +137,7 @@ class slicemodel(QtCore.QThread):
                     zlevels = [lo]
                     while (step > 0 and (zlevels[-1] + step <= hi)) or (step < 0 and (zlevels[-1] + step >= hi)):
                         zlevels.append(zlevels[-1] + step)
-        ##
-        
+
         scale = 1.0
         workplane = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,scale]]
         if plane == "yz":
@@ -146,7 +152,6 @@ class slicemodel(QtCore.QThread):
         sr = getSliceWriter(outfile, None, ImageWidth, ImageHeight, radius, offset, multiple)
         st = SlicerThread(Filename, zlevels, tooltype, radius, offset, 
                           wres, wdiff, LayerThickness, verbose, workplane=workplane, solid = not shell)
-
         if noprogress:
             st.printprogress = False
         else:
@@ -158,11 +163,9 @@ class slicemodel(QtCore.QThread):
             if type(item) == type((0,)) and item[0] == "bbox":
                 bounding_box = item[1]
                 break
-
         units = 0.01 # used for CLI output
         sr = getSliceWriter(outfile, bounding_box, ImageWidth, ImageHeight, radius, offset, multiple)
         sr.WriteHeader(units)
-
         while True:
             item = st.queue.get()
             progressBLAH = st.pr
@@ -177,15 +180,12 @@ class slicemodel(QtCore.QThread):
         ###end of freesteel code
         print "\nslicing complete."
 
-
 class OpenProgressBar(QtGui.QDialog, Ui_Progress):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
         self.ctimer = QtCore.QTimer()
         self.ctimer.start(10)
-        
-
         QtCore.QObject.connect(self.ctimer, QtCore.SIGNAL("timeout()"), self.constantUpdate)
     
     def constantUpdate(self):
@@ -204,41 +204,10 @@ class printmodel(QtCore.QThread):
         self.running = 0
         self.timer = QtCore.QTimer()
         self.timer.start(10)
-
-        
         QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.checkIfClose)
 
     def run(self):
         self.printmodel(ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port)   
-        
-    def stop(self):
-        print "entered stop method!!!!!!!!!"
-        return
-        
-    def getValues(self):
-        return "test"
-    
-    def checkIfClose(self):
-        #print IsStopped
-       
-        return
-        if IsStopped == True:
-            self.SlideShow.close()
-            try:
-                print "closing connection to PyMCU...."
-                pymcuboard.close()
-            except:
-                print "No PyMCU to close!"
-                pass
-            try:
-                print "closing connection to Arduino..."
-                board.exit()
-            except:
-                print "No Arduino to close!"
-                pass
-            #board.exit()
-            #self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-            self.terminate() #no more mr. nice guy... this is the only thing that works!!! ADVICE WELCOMED!!!!
      
     def printmodel(self, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port):
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
@@ -260,8 +229,7 @@ class printmodel(QtCore.QThread):
         commands = []
         for match in re.findall("\[(.*?)\]", zscript):
             #print match
-            commands.append(match)
-        
+            commands.append(match)      
         #*******************************************
         parity = {'None':'N', 'Even':'E', 'Odd':'O', 'Mark':'M', 'Space':'S'}
         stopbits = {'1':1, '1.5':1.5, '2':2}       
@@ -278,18 +246,8 @@ class printmodel(QtCore.QThread):
                 projector = serial.Serial("%s"%projector_com, projector_baud, parity="%s"%projector_parity_lookup, stopbits=projector_stopbits_lookup, bytesize=projector_databits_lookup)
                 print "connected to projector on %s! Engaged communications at %sbps." %(projector_com, projector_baud)
             except:
-                print "FAILED."
-        
-        if printercontrolenabled==True and pymcucontrolled==True:
-            print "Connecting to PyMCU module..."
-            try:
-                pymcuboard = pymcu.mcuModule(port='COM9')
-            except:
-                print"OOPS, could not connect to PyMCU. Try again.."
-                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                return
-            pymcuboard.lcd()
-            pymcuboard.lcd(1, "Initialized.")
+                print "FAILED."        
+    
         executionpath = os.getcwd() #get current execution (working) directory
         global startingexecutionpath
         startingexecutionpath = executionpath
@@ -314,14 +272,11 @@ class printmodel(QtCore.QThread):
                     self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
                     return
 
-
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
-        
         #slideshow starts around here so if it's disabled kill the thread now 
         if slideshowenabled==False:
-            return        
-            
+            return         #kill it now  
         concatenater = "\\"
         seq = (executionpath, "slices") #concatenate this list of strings with "str" as a separator
         slicesdir = concatenater.join(seq) #build slices path relative to working directory, separated by concatenator string
@@ -387,8 +342,7 @@ class printmodel(QtCore.QThread):
                 QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
-            if printercontrolenabled==True and pymcucontrolled==True:
-                    pymcudriveZ(10) #drive Z axis ten steps with pymcu
+            
             if printercontrolenabled==True and arduinocontrolled==True: #custom scripted sequence::
                 print "sending custom scripted command sequence..."
                 for command in commands:
@@ -419,9 +373,6 @@ class printmodel(QtCore.QThread):
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime
             print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
-            if printercontrolenabled==True and pymcucontrolled==True:            
-                pymcuboard.lcd(1, "Printing layer:")
-                pymcuboard.lcd(2, "%d of %d"%(layer, NumberOfImages))
             layer = layer - 0
             pm = QtGui.QPixmap(FileList[layer])
             if slideshowenabled:
@@ -435,24 +386,188 @@ class printmodel(QtCore.QThread):
             ProgPercentage = ProgPercentage + percentagechunk         
 
         print "\nPrint job completed successfully. %d layers were built." %layers
-        if printercontrolenabled==True and pymcucontrolled==True:        
-            pymcuboard.lcd(1, "Print finished")
-            pymcuboard.close()
         if printercontrolenabled==True and arduinocontrolled==True:
             board.exit() #close firmata connection 
         if projectorcontrolenabled:
             print "Sending power off command to projector."
-            sendtoprojectorpymcu(poweroffcommand)
 #**********************************************************************************************************************************
 # Create a class for our main window
 class Main(QtGui.QMainWindow):
+    def resizeEvent(self,Event):
+        print "window has been resized:", Event
+        print Event.size().height()
+        #self.ModelView.setFixedSize(651,501)
+        print self.ui.ModelFrame.frameGeometry()
+    
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
+        #####################
+        self.filename = "testpart.stl"
+    
+        
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))
+         
+        self.polyDataOutput = self.reader.GetOutput()       
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+         
+        #create model actor
+        self.modelActor = vtk.vtkActor()
+        self.modelActor.GetProperty().SetColor(1,1,1)
+        self.modelActor.GetProperty().SetOpacity(0.4)
+        self.modelActor.SetMapper(self.mapper)
+        
+        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
+        self.slicingplane=vtk.vtkPlane()
+        self.slicingplane.SetOrigin(0,0,37)
+        self.slicingplane.SetNormal(0,0,1)
+        
+        #create cutter
+        self.cutter=vtk.vtkCutter()
+        self.cutter.SetCutFunction(self.slicingplane)
+        self.cutter.SetInputConnection(self.reader.GetOutputPort())
+        self.cutter.Update()
+        self.cutterMapper=vtk.vtkPolyDataMapper()
+        self.cutterMapper.SetInputConnection(self.cutter.GetOutputPort())
+        
+        #create plane actor
+        self.slicingplaneActor=vtk.vtkActor()
+        self.slicingplaneActor.GetProperty().SetColor(1.0,0,0)
+        self.slicingplaneActor.GetProperty().SetLineWidth(4)
+        self.slicingplaneActor.SetMapper(self.cutterMapper)
+ 
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #create annotated cube anchor actor
+        self.axesActor = vtk.vtkAnnotatedCubeActor();
+        self.axesActor.SetXPlusFaceText('Right')
+        self.axesActor.SetXMinusFaceText('Left')
+        self.axesActor.SetYMinusFaceText('Front')
+        self.axesActor.SetYPlusFaceText('Back')
+        self.axesActor.SetZMinusFaceText('Bot')
+        self.axesActor.SetZPlusFaceText('Top')
+        self.axesActor.GetTextEdgesProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetTextEdgesProperty().SetLineWidth(2)
+        self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
+        self.axesActor.SetFaceTextScale(0.25)
+        self.axesActor.SetZFaceTextRotation(90)
 
+        self.ren = vtk.vtkRenderer()
+        self.ren.AddActor(self.modelActor)
+        self.ren.AddActor(self.slicingplaneActor)
+        self.ren.AddActor(self.outlineActor)
+        self.ren.SetBackground(0,0,0)
+        
+        # create the modelview widget
+        self.ModelView = QVTKRenderWindowInteractor(self.ui.ModelFrame)
+        self.ModelView.SetInteractorStyle(MyInteractorStyle())
+        self.ModelView.setFixedSize(651,501)
+        self.ModelView.Initialize()
+        
+        self.renWin=self.ModelView.GetRenderWindow()
+        self.renWin.AddRenderer(self.ren)
+
+        #create orientation markers
+        self.axes = vtk.vtkOrientationMarkerWidget()
+        self.axes.SetOrientationMarker(self.axesActor)
+        self.axes.SetInteractor(self.ModelView)
+        self.axes.EnabledOn()
+        self.axes.InteractiveOff()
+        self.ren.ResetCamera()        
+
+        self.ModelView.Start()  
+
+        #####################
+#        # create the sliceview widget
+        self.ModelView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
+        self.ModelView.SetInteractorStyle(MyInteractorStyle())
+        self.ModelView.setFixedSize(271,171)
+        self.ModelView.Initialize()
+        self.ModelView.Start()
+#        
+#        self.filename = "ball.stl"     
+#        self.reader = vtk.vtkSTLReader()
+#        self.reader.SetFileName(self.filename)
+#         
+#        self.polyDataOutput = self.reader.GetOutput()       
+#        
+#        self.mapper = vtk.vtkPolyDataMapper()
+#        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+#         
+#        self.actor = vtk.vtkActor()
+#        self.actor.SetMapper(self.mapper)
+#        
+#        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
+#        self.plane = vtk.vtkPlane()
+#        self.plane.SetOrigin(20, 0, 0)
+#        self.plane.SetNormal(0, 0, 1)
+#
+#        #create cutter
+#        self.cutter = vtk.vtkCutter()
+#        self.cutter.SetCutFunction(self.plane)
+#        self.cutter.SetInputConnection(self.reader.GetOutputPort())
+#        self.cutter.Update()
+#
+#        FeatureEdges = vtk.vtkFeatureEdges()
+#        FeatureEdges.SetInputConnection(self.cutter.GetOutputPort())
+#        FeatureEdges.BoundaryEdgesOn()
+#        FeatureEdges.FeatureEdgesOff()
+#        FeatureEdges.NonManifoldEdgesOff()
+#        FeatureEdges.ManifoldEdgesOff()
+#        FeatureEdges.Update()
+#         
+#        self.cutStrips = vtk.vtkStripper() ; #Forms loops (closed polylines) from cutter
+#        self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
+#        self.cutStrips.Update()
+#        self.cutPoly = vtk.vtkPolyData() ; #This trick defines polygons as polyline loop
+#        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+#        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+#         
+#        self.cutMapper = vtk.vtkPolyDataMapper()
+#        #self.cutMapper.SetInput(FeatureEdges.GetOutput())
+#        if vtk.VTK_MAJOR_VERSION <= 5:
+#            self.cutMapper.SetInput(self.cutPoly)
+#        else:
+#            self.cutMapper.SetInputData(self.cutPoly)
+#         
+#        self.cutActor = vtk.vtkActor()
+#        self.cutActor.GetProperty().SetColor(1, 1, 0)
+#        self.cutActor.GetProperty().SetEdgeColor(0, 1, 0)
+#         
+#        self.cutActor.GetProperty().SetLineWidth(2)
+#        self.cutActor.GetProperty().EdgeVisibilityOn()
+#        ##self.cutActor.GetProperty().SetOpacity(0.7)
+#        self.cutActor.SetMapper(self.cutMapper)
+#
+#        self.ren = vtk.vtkRenderer()
+#        self.ren.SetBackground(0,0,0)
+#        self.ren.AddActor(self.cutActor)
+#        self.renWin=self.ModelView.GetRenderWindow()
+#        self.renWin.AddRenderer(self.ren)
+        #######################        
+        
+        
         screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", screencount
          ####setup screen picker####
@@ -485,7 +600,6 @@ class Main(QtGui.QMainWindow):
         global screennumber
         global ImageFilename
         global Filename
-
         global ZStepPin, ZDirPin, XStepPin, XDirPin, ZEnablePin, XEnablePin
         
         ZStepPin = int(parser.get('pin_mapping', 'zstep'))
@@ -641,8 +755,10 @@ class Main(QtGui.QMainWindow):
         IsStopped = True
  
     def selectfile(self):
-        Filename = QtGui.QFileDialog.getOpenFileName()
-        self.ui.displayfilenamelabel.setText(Filename)
+        self.filename = QtGui.QFileDialog.getOpenFileName()
+        self.ui.displayfilenamelabel.setText(self.filename)
+
+
         
     def loadimage(self):
 
@@ -741,7 +857,6 @@ class Main(QtGui.QMainWindow):
         projector_databits = self.ui.projector_databits.currentText()
         zscriptdoc = self.ui.zscript.document()
         zscript = zscriptdoc.toPlainText()
-        #myBoard = pymcu.mcuModule() #connect to pymcu module
         if self.ui.projectorcontrol.isChecked():
             projectorcontrolenabled = True
         else:
@@ -790,19 +905,6 @@ def GetInHMS(seconds):
     h, m = divmod(m, 60)
     #print "%d:%02d:%02d" % (h, m, s)
     return "%d:%02d:%02d" % (h, m, s)
-    
-def sendtoprojectorpymcu(command):
-    try:
-        myBoard.serialWrite(4, 3, command) #send serial data out pin 4, 19200baud True(mode 3)
-    except:
-        print "something went HORRIBLY wrong with the pymcu while trying to send serial data... you'd better fix it"
-        
-def pymcudriveZ(steps):
-    #some code here to drive the pololu board using pymcu. 
-    pass
-    
-        
-################################################################################
 
 ################################################################################        
 def main():

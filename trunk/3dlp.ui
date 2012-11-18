@@ -25,9 +25,9 @@
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>162</red>
-        <green>162</green>
-        <blue>162</blue>
+        <red>158</red>
+        <green>158</green>
+        <blue>158</blue>
        </color>
       </brush>
      </colorrole>
@@ -45,9 +45,9 @@
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>162</red>
-        <green>162</green>
-        <blue>162</blue>
+        <red>158</red>
+        <green>158</green>
+        <blue>158</blue>
        </color>
       </brush>
      </colorrole>
@@ -56,23 +56,29 @@
      <colorrole role="Base">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>162</red>
-        <green>162</green>
-        <blue>162</blue>
+        <red>158</red>
+        <green>158</green>
+        <blue>158</blue>
        </color>
       </brush>
      </colorrole>
      <colorrole role="Window">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>162</red>
-        <green>162</green>
-        <blue>162</blue>
+        <red>158</red>
+        <green>158</green>
+        <blue>158</blue>
        </color>
       </brush>
      </colorrole>
     </disabled>
    </palette>
+  </property>
+  <property name="font">
+   <font>
+    <family>Calibri</family>
+    <pointsize>10</pointsize>
+   </font>
   </property>
   <property name="windowTitle">
    <string>3dlp</string>
@@ -81,1129 +87,944 @@
    <bool>false</bool>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QTabWidget" name="tabWidget">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>720</x>
+      <x>730</x>
       <y>10</y>
-      <width>281</width>
-      <height>311</height>
+      <width>285</width>
+      <height>711</height>
      </rect>
     </property>
-    <property name="currentIndex">
-     <number>0</number>
-    </property>
-    <widget class="QWidget" name="tab">
-     <attribute name="title">
-      <string>Printing Settings</string>
-     </attribute>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>0</y>
-        <width>261</width>
-        <height>281</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Printing Settings</string>
-      </property>
-      <widget class="Line" name="line">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>120</y>
-         <width>241</width>
-         <height>16</height>
-        </rect>
+    <layout class="QVBoxLayout" name="verticalLayout_24">
+     <item>
+      <widget class="QToolBox" name="toolBox">
+       <property name="minimumSize">
+        <size>
+         <width>80</width>
+         <height>300</height>
+        </size>
        </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+       <property name="currentIndex">
+        <number>0</number>
        </property>
-      </widget>
-      <widget class="QLabel" name="label">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>31</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Port:</string>
-       </property>
-      </widget>
-      <widget class="Line" name="line_2">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>170</y>
-         <width>241</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="remote_port">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="geometry">
-        <rect>
-         <x>120</x>
-         <y>100</y>
-         <width>101</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="exposure_time">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>150</y>
-         <width>81</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_3">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>130</y>
-         <width>81</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Exposure Time</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_5">
-       <property name="geometry">
-        <rect>
-         <x>100</x>
-         <y>150</y>
-         <width>46</width>
-         <height>13</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>s</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="starting_layers">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>200</y>
-         <width>41</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="starting_layer_exposure">
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>200</y>
-         <width>81</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_11">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>180</y>
-         <width>131</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Number of starting layers</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_12">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>180</y>
-         <width>121</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Starting layer exposure </string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_2">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>100</y>
-         <width>91</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Remote Host Port:</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="printerbaud">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>20</y>
-         <width>69</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <item>
-        <property name="text">
-         <string>115200</string>
+       <widget class="QWidget" name="page">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>283</width>
+          <height>295</height>
+         </rect>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>57600</string>
+        <attribute name="label">
+         <string>Page 1</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_20">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_7">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QLabel" name="label_29">
+               <property name="text">
+                <string>Port:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="pickcom"/>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_24">
+               <property name="text">
+                <string>Baud:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="printerbaud">
+               <item>
+                <property name="text">
+                 <string>115200</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>57600</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>38400</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>19200</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>9600</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>4800</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>2400</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QCheckBox" name="enableprintercontrol">
+               <property name="text">
+                <string>Enable Printer Control?</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_4">
+               <item>
+                <widget class="QRadioButton" name="radio_pymcu">
+                 <property name="enabled">
+                  <bool>false</bool>
+                 </property>
+                 <property name="text">
+                  <string>PyMCU</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="radio_arduino">
+                 <property name="text">
+                  <string>Arduino</string>
+                 </property>
+                 <property name="checkable">
+                  <bool>true</bool>
+                 </property>
+                 <property name="checked">
+                  <bool>true</bool>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <item>
+              <widget class="QLabel" name="label_4">
+               <property name="text">
+                <string>Remote Host Port:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="remote_port">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <widget class="QLabel" name="label_6">
+                 <property name="text">
+                  <string>Exposure Time</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_6">
+                 <item>
+                  <widget class="QLineEdit" name="exposure_time">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_28">
+                   <property name="text">
+                    <string>s</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <widget class="QRadioButton" name="radio_uno">
+                 <property name="text">
+                  <string>Arduino Uno</string>
+                 </property>
+                 <property name="checked">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QRadioButton" name="radio_mega">
+                 <property name="text">
+                  <string>Arduino Mega</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <item>
+              <widget class="QLabel" name="label_26">
+               <property name="text">
+                <string>Number of starting layers</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="starting_layers">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <item>
+              <widget class="QLabel" name="label_27">
+               <property name="text">
+                <string>Starting layer exposure </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="starting_layer_exposure">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="enableslideshow">
+             <property name="text">
+              <string>Slideshow enabled?</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <item>
+              <widget class="QLabel" name="label_25">
+               <property name="text">
+                <string>Choose monitor to print on:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="pickscreen"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>283</width>
+          <height>295</height>
+         </rect>
         </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>38400</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>19200</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>9600</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>4800</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>2400</string>
-        </property>
-       </item>
+        <attribute name="label">
+         <string>Page 2</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_21">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_13">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_8">
+               <item>
+                <widget class="QLabel" name="label_7">
+                 <property name="text">
+                  <string>Image Height</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="image_height">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_9">
+               <item>
+                <widget class="QLabel" name="label_8">
+                 <property name="text">
+                  <string>Image Width</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="image_width">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_13">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QLabel" name="label_9">
+                 <property name="text">
+                  <string>Layer Thickness</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QLineEdit" name="layer_thickness">
+                 <property name="text">
+                  <string/>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <item>
+                <widget class="QLabel" name="label_10">
+                 <property name="text">
+                  <string>Slicing Plane</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="slicing_plane">
+                 <item>
+                  <property name="text">
+                   <string>XZ</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>XY</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>YZ</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <item>
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>Starting Depth:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="z_options_start">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_15">
+             <item>
+              <widget class="QLabel" name="label_22">
+               <property name="text">
+                <string>Ending Depth:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="z_options_end">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_16">
+             <item>
+              <widget class="QLabel" name="label_23">
+               <property name="text">
+                <string>Z slicing increment:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="z_options_increment">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_12">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>File to Slice:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <layout class="QHBoxLayout" name="horizontalLayout_17">
+               <item>
+                <widget class="QLineEdit" name="displayfilenamelabel">
+                 <property name="text">
+                  <string/>
+                 </property>
+                 <property name="readOnly">
+                  <bool>false</bool>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QToolButton" name="toolButton">
+                 <property name="text">
+                  <string>...</string>
+                 </property>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="page_3">
+        <attribute name="label">
+         <string>Page</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_22">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_19">
+           <item>
+            <widget class="QCheckBox" name="projectorcontrol">
+             <property name="text">
+              <string>Enable Projector Control?</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_3">
+               <item>
+                <widget class="QLabel" name="label_16">
+                 <property name="text">
+                  <string>COM Port</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="projector_pickcom"/>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_14">
+               <item>
+                <widget class="QLabel" name="label_17">
+                 <property name="text">
+                  <string>Serial Baud rate:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="projector_baud">
+                 <item>
+                  <property name="text">
+                   <string>19200</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>115200</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>57600</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>38400</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>9600</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>4800</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>2400</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_18">
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <item>
+                <widget class="QLabel" name="label_18">
+                 <property name="text">
+                  <string>Parity:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="projector_parity">
+                 <item>
+                  <property name="text">
+                   <string>None</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Even</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Odd</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Mark</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Space</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_16">
+               <item>
+                <widget class="QLabel" name="label_19">
+                 <property name="text">
+                  <string>Data Bits:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="projector_databits">
+                 <item>
+                  <property name="text">
+                   <string>8</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>5</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>6</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>7</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_17">
+               <item>
+                <widget class="QLabel" name="label_20">
+                 <property name="text">
+                  <string>Stop Bits:</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="projector_stopbits">
+                 <item>
+                  <property name="text">
+                   <string>1</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>2</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QVBoxLayout" name="verticalLayout_18">
+             <item>
+              <widget class="QLabel" name="label_21">
+               <property name="text">
+                <string>Power Off Command:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="projector_poweroffcommand">
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QPushButton" name="projector_testpoweroffcommand">
+               <property name="text">
+                <string>Test Power Off</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="projector_applysettings">
+               <property name="text">
+                <string>Apply</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
       </widget>
-      <widget class="QLabel" name="label_15">
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>20</y>
-         <width>31</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Baud:</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="pickcom">
-       <property name="geometry">
-        <rect>
-         <x>40</x>
-         <y>20</y>
-         <width>91</width>
-         <height>22</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="enableprintercontrol">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>60</y>
-         <width>141</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Enable Printer Control?</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radio_pymcu">
-       <property name="geometry">
-        <rect>
-         <x>170</x>
-         <y>50</y>
-         <width>82</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>PyMCU</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-       <attribute name="buttonGroup">
-        <string>buttonGroup_2</string>
-       </attribute>
-      </widget>
-      <widget class="QRadioButton" name="radio_arduino">
-       <property name="geometry">
-        <rect>
-         <x>170</x>
-         <y>70</y>
-         <width>82</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Arduino</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-       <attribute name="buttonGroup">
-        <string>buttonGroup_2</string>
-       </attribute>
-      </widget>
-      <widget class="QLabel" name="label_14">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>250</y>
-         <width>141</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Choose monitor to print on:</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="pickscreen">
-       <property name="geometry">
-        <rect>
-         <x>160</x>
-         <y>250</y>
-         <width>61</width>
-         <height>22</height>
-        </rect>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="enableslideshow">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>230</y>
-         <width>121</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Slideshow enabled?</string>
-       </property>
-       <property name="checked">
-        <bool>false</bool>
-       </property>
-      </widget>
-      <widget class="QRadioButton" name="radio_uno">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>130</y>
-         <width>82</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Arduino Uno</string>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
-       </property>
-       <attribute name="buttonGroup">
-        <string>buttonGroup</string>
-       </attribute>
-      </widget>
-      <widget class="QRadioButton" name="radio_mega">
-       <property name="geometry">
-        <rect>
-         <x>140</x>
-         <y>150</y>
-         <width>91</width>
-         <height>17</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Arduino Mega</string>
-       </property>
-       <attribute name="buttonGroup">
-        <string>buttonGroup</string>
-       </attribute>
-      </widget>
-     </widget>
-    </widget>
-    <widget class="QWidget" name="tab_2">
-     <attribute name="title">
-      <string>Slicing Settings</string>
-     </attribute>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>0</y>
-        <width>261</width>
-        <height>281</height>
-       </rect>
-      </property>
-      <property name="title">
-       <string>Slicing Settings</string>
-      </property>
-      <widget class="QLineEdit" name="image_height">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>40</y>
-         <width>113</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_7">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>20</y>
-         <width>71</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Image Height</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_8">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>20</y>
-         <width>81</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Image Width</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="image_width">
-       <property name="geometry">
-        <rect>
-         <x>130</x>
-         <y>40</y>
-         <width>113</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_9">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>70</y>
-         <width>81</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Layer Thickness</string>
-       </property>
-      </widget>
-      <widget class="QLineEdit" name="layer_thickness">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>90</y>
-         <width>113</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_10">
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>70</y>
-         <width>71</width>
-         <height>16</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Slicing Plane</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="slicing_plane">
-       <property name="geometry">
-        <rect>
-         <x>150</x>
-         <y>90</y>
-         <width>69</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <item>
-        <property name="text">
-         <string>XZ</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>XY</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>YZ</string>
-        </property>
-       </item>
-      </widget>
-      <widget class="QGroupBox" name="groupBox_7">
-       <property name="geometry">
-        <rect>
-         <x>10</x>
-         <y>120</y>
-         <width>241</width>
-         <height>111</height>
-        </rect>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_6">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>100</height>
+        </size>
        </property>
        <property name="title">
-        <string>Z Options</string>
+        <string>Custom Z-axis command</string>
        </property>
-       <widget class="QLineEdit" name="z_options_start">
-        <property name="geometry">
-         <rect>
-          <x>90</x>
-          <y>20</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_13">
+       <widget class="QPlainTextEdit" name="zscript">
         <property name="geometry">
          <rect>
           <x>10</x>
           <y>20</y>
-          <width>81</width>
-          <height>16</height>
+          <width>271</width>
+          <height>61</height>
          </rect>
         </property>
-        <property name="text">
-         <string>Starting Depth:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_22">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>50</y>
-          <width>81</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Ending Depth:</string>
-        </property>
-       </widget>
-       <widget class="QLabel" name="label_23">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>80</y>
-          <width>101</width>
-          <height>16</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Z slicing increment:</string>
-        </property>
-       </widget>
-       <widget class="QLineEdit" name="z_options_end">
-        <property name="geometry">
-         <rect>
-          <x>90</x>
-          <y>50</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="text">
+        <property name="plainText">
          <string/>
         </property>
        </widget>
-       <widget class="QLineEdit" name="z_options_increment">
-        <property name="geometry">
-         <rect>
-          <x>110</x>
-          <y>80</y>
-          <width>113</width>
-          <height>20</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
+       <zorder>zscript</zorder>
+       <zorder>toolBox</zorder>
+       <zorder>toolBox</zorder>
       </widget>
-     </widget>
-    </widget>
+     </item>
+     <item>
+      <layout class="QVBoxLayout" name="verticalLayout_23">
+       <property name="spacing">
+        <number>6</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Slice Preview</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QFrame" name="SliceFrame">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <enum>QFrame::Raised</enum>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
    </widget>
-   <widget class="QGroupBox" name="groupBox_3">
+   <widget class="QWidget" name="">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>590</y>
-      <width>671</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Log</string>
-    </property>
-    <widget class="QScrollArea" name="scrollArea">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>651</width>
-       <height>91</height>
-      </rect>
-     </property>
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>649</width>
-        <height>89</height>
-       </rect>
-      </property>
-      <widget class="QTextEdit" name="consoletext">
-       <property name="geometry">
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>651</width>
-         <height>91</height>
-        </rect>
-       </property>
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-       <property name="textInteractionFlags">
-        <set>Qt::TextSelectableByMouse</set>
-       </property>
-      </widget>
-     </widget>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_4">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
+      <x>10</x>
       <y>10</y>
-      <width>671</width>
-      <height>531</height>
+      <width>711</width>
+      <height>711</height>
      </rect>
     </property>
-    <property name="title">
-     <string>Preview</string>
-    </property>
-    <widget class="QLabel" name="imagepreview">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>651</width>
-       <height>511</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Image Preview</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout_25">
+     <item>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QFrame" name="ModelFrame">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>300</width>
+          <height>550</height>
+         </size>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <zorder>groupBox_8</zorder>
+        <zorder>toolBox</zorder>
+        <zorder>toolBox</zorder>
+        <zorder></zorder>
+       </widget>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QPushButton" name="pushButton_4">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Slice and Print</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_3">
+         <property name="text">
+          <string>Slice only </string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton_5">
+         <property name="text">
+          <string>Print only</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="button_stop_printing">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Stop Printing</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="pushButton">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Start Manual Printer Control</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox_3">
+       <property name="minimumSize">
+        <size>
+         <width>300</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="title">
+        <string>Log</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_19">
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>40</height>
+           </size>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>670</width>
+             <height>89</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_2">
+            <item>
+             <widget class="QTextEdit" name="consoletext">
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="textInteractionFlags">
+               <set>Qt::TextSelectableByMouse</set>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QPushButton" name="pushButton_3">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>560</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Slice only </string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_4">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>560</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Slice and Print</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_5">
-    <property name="geometry">
-     <rect>
-      <x>220</x>
-      <y>560</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Print only</string>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_5">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>330</y>
-      <width>281</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>File to slice:</string>
-    </property>
-    <widget class="QToolButton" name="toolButton">
-     <property name="geometry">
-      <rect>
-       <x>250</x>
-       <y>20</y>
-       <width>25</width>
-       <height>19</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>...</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="displayfilenamelabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>241</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="readOnly">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_6">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>390</y>
-      <width>291</width>
-      <height>91</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Custom Z-axis command</string>
-    </property>
-    <widget class="QPlainTextEdit" name="zscript">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>271</width>
-       <height>61</height>
-      </rect>
-     </property>
-     <property name="plainText">
-      <string/>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QGroupBox" name="projectorsettings">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>510</y>
-      <width>291</width>
-      <height>201</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>Projector Control Settings</string>
-    </property>
-    <widget class="QComboBox" name="projector_pickcom">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>40</y>
-       <width>91</width>
-       <height>22</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_16">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>20</y>
-       <width>46</width>
-       <height>13</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>COM Port</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="projector_baud">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>40</y>
-       <width>69</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>19200</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>115200</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>57600</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>38400</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>9600</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>4800</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>2400</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="label_17">
-     <property name="geometry">
-      <rect>
-       <x>130</x>
-       <y>20</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Serial Baud rate:</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="projector_parity">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>90</y>
-       <width>69</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>None</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Even</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Odd</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Mark</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>Space</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="label_18">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>70</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Parity:</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="projector_databits">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>90</y>
-       <width>69</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>8</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>5</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>6</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>7</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="label_19">
-     <property name="geometry">
-      <rect>
-       <x>100</x>
-       <y>70</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Data Bits:</string>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="projector_stopbits">
-     <property name="geometry">
-      <rect>
-       <x>190</x>
-       <y>90</y>
-       <width>69</width>
-       <height>22</height>
-      </rect>
-     </property>
-     <item>
-      <property name="text">
-       <string>1</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>2</string>
-      </property>
-     </item>
-    </widget>
-    <widget class="QLabel" name="label_20">
-     <property name="geometry">
-      <rect>
-       <x>190</x>
-       <y>70</y>
-       <width>91</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Stop Bits:</string>
-     </property>
-    </widget>
-    <widget class="QLineEdit" name="projector_poweroffcommand">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>140</y>
-       <width>271</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_21">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>120</y>
-       <width>121</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Power Off Command:</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="projector_applysettings">
-     <property name="geometry">
-      <rect>
-       <x>170</x>
-       <y>170</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Apply</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="projector_testpoweroffcommand">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>170</y>
-       <width>91</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Test Power Off</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QCheckBox" name="projectorcontrol">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>490</y>
-      <width>151</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Enable Projector Control?</string>
-    </property>
-    <property name="checked">
-     <bool>false</bool>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="button_stop_printing">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>420</x>
-      <y>560</y>
-      <width>75</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Stop Printing</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton">
-    <property name="enabled">
-     <bool>false</bool>
-    </property>
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>560</y>
-      <width>151</width>
-      <height>23</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Start Manual Printer Control</string>
-    </property>
-   </widget>
+   <zorder>groupBox_3</zorder>
+   <zorder>groupBox_6</zorder>
+   <zorder>horizontalLayoutWidget</zorder>
+   <zorder></zorder>
+   <zorder>label_18</zorder>
+   <zorder>projector_testpoweroffcommand</zorder>
+   <zorder>projector_pickcom</zorder>
+   <zorder>projector_applysettings</zorder>
+   <zorder>projector_parity</zorder>
+   <zorder>projector_poweroffcommand</zorder>
+   <zorder>projector_baud</zorder>
+   <zorder>projector_stopbits</zorder>
+   <zorder>projector_databits</zorder>
+   <zorder>label_21</zorder>
+   <zorder>projectorcontrol</zorder>
+   <zorder>label_20</zorder>
+   <zorder>label_16</zorder>
+   <zorder>label_17</zorder>
+   <zorder>label_19</zorder>
+   <zorder>toolBox</zorder>
+   <zorder>SliceFrame</zorder>
+   <zorder>label_2</zorder>
+   <zorder>label_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -1228,7 +1049,15 @@
     <addaction name="actionAbout"/>
     <addaction name="actionHelp"/>
    </widget>
+   <widget class="QMenu" name="menuTools">
+    <property name="title">
+     <string>Tools</string>
+    </property>
+    <addaction name="actionOpen_manual_printer_control"/>
+    <addaction name="actionSave_current_settings_as_default"/>
+   </widget>
    <addaction name="menuFIle"/>
+   <addaction name="menuTools"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -1257,10 +1086,17 @@
     <string>Help</string>
    </property>
   </action>
+  <action name="actionSave_current_settings_as_default">
+   <property name="text">
+    <string>Save current settings as default</string>
+   </property>
+  </action>
+  <action name="actionOpen_manual_printer_control">
+   <property name="text">
+    <string>Open manual printer control</string>
+   </property>
+  </action>
  </widget>
- <tabstops>
-  <tabstop>remote_port</tabstop>
- </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -1351,27 +1187,11 @@
    <hints>
     <hint type="sourcelabel">
      <x>984</x>
-     <y>379</y>
+     <y>400</y>
     </hint>
     <hint type="destinationlabel">
      <x>982</x>
      <y>417</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>projectorcontrol</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>projectorcontroltoggle()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>837</x>
-     <y>517</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>935</x>
-     <y>552</y>
     </hint>
    </hints>
   </connection>
@@ -1424,54 +1244,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>radio_pymcu</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>printercontroltoggle()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>935</x>
-     <y>115</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>1012</x>
-     <y>164</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>enableprintercontrol</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>enableprintercontroltoggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>823</x>
-     <y>123</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>709</x>
-     <y>156</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>enableslideshow</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>slideshowcontroltoggled()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>793</x>
-     <y>288</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>707</x>
-     <y>321</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>pushButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
@@ -1507,8 +1279,4 @@
   <slot>openhelp()</slot>
   <slot>openmanualcontrol()</slot>
  </slots>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
-  <buttongroup name="buttonGroup_2"/>
- </buttongroups>
 </ui>

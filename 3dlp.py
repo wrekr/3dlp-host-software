@@ -537,6 +537,8 @@ class Main(QtGui.QMainWindow):
         try:
             if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
                 opacity, ok = QtGui.QInputDialog.getText(self, 'Model Opacity', 'Enter the desired opacity (0-100):')
+                if not ok: #the user hit the "cancel" button
+                    return
                 self.modelActor.GetProperty().SetOpacity(float(opacity)/100)
                 self.ren.Render()
                 self.ModelView.Render()

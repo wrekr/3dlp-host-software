@@ -598,13 +598,11 @@ class Main(QtGui.QMainWindow):
         sleep(1)
         progress = OpenProgressBar(self)
         progress.exec_()
-               
+
     def printpressed(self):
         
         self.zscriptdoc = self.ui.zscript.document()
         self.zscript = self.zscriptdoc.toPlainText()
-
-        self.IsStopped = False
         self.COM_Port = self.ui.pickcom.currentText()
         self.Printer_Baud = int(self.ui.printerbaud.currentText())
         self.ExposeTime = float(self.ui.exposure_time.text())
@@ -643,18 +641,10 @@ class Main(QtGui.QMainWindow):
                                                 , self.projector_com, self.projector_databits, self.projector_parity, self.projector_stopbits
                                                 , self.projectorcontrolenabled, self.controller)
         #connect to slideshow signal
-        self.connect(self.printThread
-                     ,QtCore.SIGNAL('updatePreview')
-                     ,self.updatepreview)      
-        self.connect(self.printThread
-                     ,QtCore.SIGNAL('updatePreviewBlank')
-                     ,self.updatepreviewblank)      
-        self.connect(self.printThread
-                     ,QtCore.SIGNAL('disable_stop_button')
-                     ,self.disablestopbutton) 
-        self.connect(self.printThread
-                     ,QtCore.SIGNAL('enable_stop_button')
-                     ,self.enablestopbutton)     
+        self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
+        self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      
+        self.connect(self.printThread, QtCore.SIGNAL('disable_stop_button'), self.disablestopbutton) 
+        self.connect(self.printThread, QtCore.SIGNAL('enable_stop_button'), self.enablestopbutton)     
 
 ################################################################################
 def GetInHMS(seconds):

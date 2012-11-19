@@ -215,76 +215,9 @@ class Main(QtGui.QMainWindow):
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         #####################
-        self.filename = "testpart.stl"
-    
-        
-        self.reader = vtk.vtkSTLReader()
-        self.reader.SetFileName(str(self.filename))
-         
-        self.polyDataOutput = self.reader.GetOutput()       
-        
-        self.mapper = vtk.vtkPolyDataMapper()
-        self.mapper.SetInputConnection(self.reader.GetOutputPort())
-         
-        #create model actor
-        self.modelActor = vtk.vtkActor()
-        self.modelActor.GetProperty().SetColor(1,1,1)
-        self.modelActor.GetProperty().SetOpacity(1)
-        self.modelActor.SetMapper(self.mapper)
-        
-        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
-        self.slicingplane=vtk.vtkPlane()
-        self.slicingplane.SetOrigin(0,0,37)
-        self.slicingplane.SetNormal(0,0,1)
-        
-        #create cutter
-        self.cutter=vtk.vtkCutter()
-        self.cutter.SetCutFunction(self.slicingplane)
-        self.cutter.SetInputConnection(self.reader.GetOutputPort())
-        self.cutter.Update()
-        self.cutterMapper=vtk.vtkPolyDataMapper()
-        self.cutterMapper.SetInputConnection(self.cutter.GetOutputPort())
-        
-        #create plane actor
-        self.slicingplaneActor=vtk.vtkActor()
-        self.slicingplaneActor.GetProperty().SetColor(1.0,0,0)
-        self.slicingplaneActor.GetProperty().SetLineWidth(4)
-        self.slicingplaneActor.SetMapper(self.cutterMapper)
- 
-        #create outline mapper
-        self.outline = vtk.vtkOutlineFilter()
-        self.outline.SetInputConnection(self.reader.GetOutputPort())
-        self.outlineMapper = vtk.vtkPolyDataMapper()
-        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
-        
-        #create outline actor
-        self.outlineActor = vtk.vtkActor()
-        self.outlineActor.SetMapper(self.outlineMapper)
-        
-        #create annotated cube anchor actor
-        self.axesActor = vtk.vtkAnnotatedCubeActor();
-        self.axesActor.SetXPlusFaceText('Right')
-        self.axesActor.SetXMinusFaceText('Left')
-        self.axesActor.SetYMinusFaceText('Front')
-        self.axesActor.SetYPlusFaceText('Back')
-        self.axesActor.SetZMinusFaceText('Bot')
-        self.axesActor.SetZPlusFaceText('Top')
-        self.axesActor.GetTextEdgesProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetZPlusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetZMinusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetXPlusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetXMinusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetYPlusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetYMinusFaceProperty().SetColor(.8,.8,.8)
-        self.axesActor.GetTextEdgesProperty().SetLineWidth(2)
-        self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
-        self.axesActor.SetFaceTextScale(0.25)
-        self.axesActor.SetZFaceTextRotation(90)
+
 
         self.ren = vtk.vtkRenderer()
-        self.ren.AddActor(self.modelActor)
-        self.ren.AddActor(self.slicingplaneActor)
-        self.ren.AddActor(self.outlineActor)
         self.ren.SetBackground(.5,.5,.5)
         
         # create the modelview widget
@@ -297,23 +230,15 @@ class Main(QtGui.QMainWindow):
         self.renWin=self.ModelView.GetRenderWindow()
         self.renWin.AddRenderer(self.ren)
 
-        #create orientation markers
-        self.axes = vtk.vtkOrientationMarkerWidget()
-        self.axes.SetOrientationMarker(self.axesActor)
-        self.axes.SetInteractor(self.ModelView)
-        self.axes.EnabledOn()
-        self.axes.InteractiveOff()
-        self.ren.ResetCamera()        
-
         self.ModelView.Start()  
 
         #####################
 #        # create the sliceview widget
-        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
-        self.SliceView.SetInteractorStyle(MyInteractorStyle())
-        self.SliceView.setFixedSize(271,171)
-        self.SliceView.Initialize()
-        self.SliceView.Start()
+#        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
+#        self.SliceView.SetInteractorStyle(MyInteractorStyle())
+#        self.SliceView.setFixedSize(271,171)
+#        self.SliceView.Initialize()
+#        self.SliceView.Start()
 #        
 #        self.filename = "ball.stl"     
 #        self.reader = vtk.vtkSTLReader()
@@ -514,10 +439,110 @@ class Main(QtGui.QMainWindow):
             self.ui.radio_arduinoMega.setEnabled(False)
             self.printercontrolenabled = False
             
-    def selectfile(self):
+    def OpenModel(self):
         self.filename = QtGui.QFileDialog.getOpenFileName()
         self.ui.displayfilenamelabel.setText(self.filename)
+
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))
+         
+        self.polyDataOutput = self.reader.GetOutput()       
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+         
+        #create model actor
+        self.modelActor = vtk.vtkActor()
+        self.modelActor.GetProperty().SetColor(1,1,1)
+        self.modelActor.GetProperty().SetOpacity(1)
+        self.modelActor.SetMapper(self.mapper)
+        
+        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
+        self.slicingplane=vtk.vtkPlane()
+        self.slicingplane.SetOrigin(0,0,37)
+        self.slicingplane.SetNormal(0,0,1)
+        
+        #create cutter
+        self.cutter=vtk.vtkCutter()
+        self.cutter.SetCutFunction(self.slicingplane)
+        self.cutter.SetInputConnection(self.reader.GetOutputPort())
+        self.cutter.Update()
+        self.cutterMapper=vtk.vtkPolyDataMapper()
+        self.cutterMapper.SetInputConnection(self.cutter.GetOutputPort())
+        
+        #create plane actor
+        self.slicingplaneActor=vtk.vtkActor()
+        self.slicingplaneActor.GetProperty().SetColor(1.0,0,0)
+        self.slicingplaneActor.GetProperty().SetLineWidth(4)
+        self.slicingplaneActor.SetMapper(self.cutterMapper)
+ 
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #create annotated cube anchor actor
+        self.axesActor = vtk.vtkAnnotatedCubeActor();
+        self.axesActor.SetXPlusFaceText('Right')
+        self.axesActor.SetXMinusFaceText('Left')
+        self.axesActor.SetYMinusFaceText('Front')
+        self.axesActor.SetYPlusFaceText('Back')
+        self.axesActor.SetZMinusFaceText('Bot')
+        self.axesActor.SetZPlusFaceText('Top')
+        self.axesActor.GetTextEdgesProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetTextEdgesProperty().SetLineWidth(2)
+        self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
+        self.axesActor.SetFaceTextScale(0.25)
+        self.axesActor.SetZFaceTextRotation(90)
+        
+        self.ren.AddActor(self.modelActor)
+        self.ren.AddActor(self.slicingplaneActor)
+        self.ren.AddActor(self.outlineActor)
+        #create orientation markers
+        self.axes = vtk.vtkOrientationMarkerWidget()
+        self.axes.SetOrientationMarker(self.axesActor)
+        self.axes.SetInteractor(self.ModelView)
+        self.axes.EnabledOn()
+        self.axes.InteractiveOff()
+        
+        self.ren.ResetCamera()  
+        self.ModelView.Render() #update model view
     
+    def IncrementSlicingPlanePositive(self):
+        self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
+        self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal+1)
+        self.cutter.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+        
+    def IncrementSlicingPlaneNegative(self):
+        self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
+        self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal-1)
+        self.cutter.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+        
+    def UpdateModelOpacity(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                opacity, ok = QtGui.QInputDialog.getText(self, 'Model Opacity', 'Enter the desired opacity (0-100):')
+                self.modelActor.GetProperty().SetOpacity(float(opacity)/100)
+                self.ren.Render()
+                self.ModelView.Render()
+        except:
+            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
+            
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
         

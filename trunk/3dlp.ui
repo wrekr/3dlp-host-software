@@ -248,7 +248,7 @@
            </size>
           </property>
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page">
            <property name="geometry">
@@ -2196,7 +2196,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>984</x>
-     <y>395</y>
+     <y>364</y>
     </hint>
     <hint type="destinationlabel">
      <x>982</x>
@@ -2260,7 +2260,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>742</x>
-     <y>331</y>
+     <y>313</y>
     </hint>
     <hint type="destinationlabel">
      <x>703</x>
@@ -2332,6 +2332,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionPreferences</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OpenSettingsDialog()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>507</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>applyprintingsettings()</slot>
@@ -2354,5 +2370,6 @@
   <slot>IncrementSlicingPlanePositive()</slot>
   <slot>IncrementSlicingPlaneNegative()</slot>
   <slot>UpdateModelOpacity()</slot>
+  <slot>OpenSettingsDialog()</slot>
  </slots>
 </ui>

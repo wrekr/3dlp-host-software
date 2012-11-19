@@ -31,6 +31,7 @@ from time import sleep
 import ctypes
 import vtk
 import printmodel
+from settingsdialog import Ui_SettingsDialogBaseClass
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 #**********************************
@@ -64,6 +65,12 @@ class EmittingStream(QtCore.QObject):
     textWritten = QtCore.pyqtSignal(str)
     def write(self, text):
         self.textWritten.emit(str(text))
+        
+class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
+    def __init__(self,parent=None):
+        QtGui.QDialog.__init__(self,parent)
+        self.setupUi(self)
+
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
@@ -544,6 +551,10 @@ class Main(QtGui.QMainWindow):
                 self.ModelView.Render()
         except:
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
+            
+    def OpenSettingsDialog(self):
+        SettingsDialog = StartSettingsDialog(self)
+        SettingsDialog.exec_()
             
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")

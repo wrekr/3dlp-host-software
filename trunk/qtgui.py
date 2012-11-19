@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Nov 18 20:44:16 2012
+# Created: Sun Nov 18 21:55:36 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -935,15 +935,18 @@ class Ui_MainWindow(object):
         self.toolBox.setCurrentIndex(0)
         QtCore.QObject.connect(self.actionQuit, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.close)
         QtCore.QObject.connect(self.pushButton_4, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.sliceandprintpressed)
-        QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.selectfile)
+        QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenModel)
         QtCore.QObject.connect(self.pushButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.slicepressed)
         QtCore.QObject.connect(self.pushButton_5, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.printpressed)
-        QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.selectfile)
+        QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.OpenModel)
         QtCore.QObject.connect(self.actionAbout, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openaboutdialog)
         QtCore.QObject.connect(self.actionHelp, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openhelp)
         QtCore.QObject.connect(self.enableprintercontrol, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.EnablePrinterControlToggled)
         QtCore.QObject.connect(self.enableslideshow, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.SlideshowControlToggled)
         QtCore.QObject.connect(self.projectorcontrol, QtCore.SIGNAL(_fromUtf8("toggled(bool)")), MainWindow.ProjectorControlToggled)
+        QtCore.QObject.connect(self.actionNext_Slice, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.IncrementSlicingPlanePositive)
+        QtCore.QObject.connect(self.actionPrevious_Slice, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.IncrementSlicingPlaneNegative)
+        QtCore.QObject.connect(self.actionSet_Model_Opacity, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.UpdateModelOpacity)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

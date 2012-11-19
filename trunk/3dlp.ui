@@ -2105,7 +2105,7 @@
    <sender>actionOpen</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>selectfile()</slot>
+   <slot>OpenModel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -2153,7 +2153,7 @@
    <sender>toolButton</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>selectfile()</slot>
+   <slot>OpenModel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>984</x>
@@ -2209,7 +2209,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>706</x>
-     <y>59</y>
+     <y>79</y>
     </hint>
    </hints>
   </connection>
@@ -2245,12 +2245,60 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionNext_Slice</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>IncrementSlicingPlanePositive()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>507</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPrevious_Slice</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>IncrementSlicingPlaneNegative()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>507</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSet_Model_Opacity</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>UpdateModelOpacity()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>507</x>
+     <y>383</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>applyprintingsettings()</slot>
   <slot>applyslicingsettings()</slot>
   <slot>sliceandprintpressed()</slot>
-  <slot>selectfile()</slot>
+  <slot>OpenModel()</slot>
   <slot>slicepressed()</slot>
   <slot>printpressed()</slot>
   <slot>loadimage()</slot>
@@ -2264,5 +2312,8 @@
   <slot>SlideshowControlToggled()</slot>
   <slot>openhelp()</slot>
   <slot>openmanualcontrol()</slot>
+  <slot>IncrementSlicingPlanePositive()</slot>
+  <slot>IncrementSlicingPlaneNegative()</slot>
+  <slot>UpdateModelOpacity()</slot>
  </slots>
 </ui>

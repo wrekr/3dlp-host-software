@@ -204,7 +204,7 @@ class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
         #print Event.size().height() #mainwindow size 
         #print self.ui.ModelFrame.geometry().width(), self.ui.ModelFrame.geometry().height()
-        self.ModelView.SetSize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
+        self.ModelView.resize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
         
 
     def __init__(self):
@@ -229,7 +229,7 @@ class Main(QtGui.QMainWindow):
         #create model actor
         self.modelActor = vtk.vtkActor()
         self.modelActor.GetProperty().SetColor(1,1,1)
-        self.modelActor.GetProperty().SetOpacity(0.7)
+        self.modelActor.GetProperty().SetOpacity(1)
         self.modelActor.SetMapper(self.mapper)
         
         #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)

@@ -30,6 +30,7 @@ from slice import *
 from time import sleep
 import ctypes
 import vtk
+import printmodel
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 #**********************************
@@ -196,209 +197,16 @@ class OpenProgressBar(QtGui.QDialog, Ui_Progress):
                 sleep(.5)
                 self.close()
 #**********************************************************************************************************************************
-class printmodel(QtCore.QThread):
-    def __init__(self, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.exiting = False
-        self.alive = 1
-        self.running = 0
-        self.timer = QtCore.QTimer()
-        self.timer.start(10)
-        QtCore.QObject.connect(self.timer, QtCore.SIGNAL("timeout()"), self.checkIfClose)
 
-    def run(self):
-        self.printmodel(ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port)   
-     
-    def printmodel(self, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber, Printer_Baud, COM_Port):
-        self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
-        global pm        
-        #************Start custom z scripting*******
-        """
-        syntax for custom z scripting; 
-        
-        [] - signifies a command block
-        Z_xxx - move Z axis xxx number of steps
-        X_xxx - move X axis xxx number of steps
-        Z_UP - change direction of z axis to move up
-        Z_DOWN - change direction of z axis to move down
-        X_UP - change direction of x axis to move up
-        X_DOWN - change direction of x axis to move down
-        
-        """
-        #print "Custom Scripting:\n"
-        commands = []
-        for match in re.findall("\[(.*?)\]", zscript):
-            #print match
-            commands.append(match)      
-        #*******************************************
-        parity = {'None':'N', 'Even':'E', 'Odd':'O', 'Mark':'M', 'Space':'S'}
-        stopbits = {'1':1, '1.5':1.5, '2':2}       
-        databits = {'5':'5', '6':'6', '7':'7', '8':'8'}
-        projector_parity_lookup = parity['%s'%projector_parity]
-        projector_stopbits_lookup = stopbits['%s'%projector_stopbits]
-        projector_databits_lookup = databits['%s'%projector_databits]
-        projector_databits_lookup = int(projector_databits_lookup)
-   
-        if projectorcontrolenabled==True:
-            #try connecting to projector com port
-            print "Attempting to connect to projector for RS232 control..."
-            try:
-                projector = serial.Serial("%s"%projector_com, projector_baud, parity="%s"%projector_parity_lookup, stopbits=projector_stopbits_lookup, bytesize=projector_databits_lookup)
-                print "connected to projector on %s! Engaged communications at %sbps." %(projector_com, projector_baud)
-            except:
-                print "FAILED."        
-    
-        executionpath = os.getcwd() #get current execution (working) directory
-        global startingexecutionpath
-        startingexecutionpath = executionpath
-        #**********************************************
-        if printercontrolenabled==True and arduinocontrolled==True:
-            print "Connecting to printer firmware..."
-            global board
-            if IsArduinoUno == True:
-                try:
-                    board = pyfirmata.Arduino("%s"%COM_Port)
-                    print "no issues opening serial connection to firmata..."
-                except:
-                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
-                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                    return
-            if IsArduinoMega == True:
-                try:
-                    board = pyfirmata.ArduinoMega("%s"%COM_Port)
-                    print "no issues opening serial connection to firmata..."
-                except:
-                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
-                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                    return
-
-        #******************************************
-        imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
-        #slideshow starts around here so if it's disabled kill the thread now 
-        if slideshowenabled==False:
-            return         #kill it now  
-        concatenater = "\\"
-        seq = (executionpath, "slices") #concatenate this list of strings with "str" as a separator
-        slicesdir = concatenater.join(seq) #build slices path relative to working directory, separated by concatenator string
-        try:
-            os.chdir(slicesdir)#change to slices dir
-        except:
-            print "No images found in the given directory. Folder does not exist."
-            print"waiting for thread to close."
-            self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-            return
-            #**************
-        print"building file list..."    
-        FileList = []
-        for file in os.listdir("."): #for every file in slices dir (changed dir above)
-            if file.endswith(".png"): #if it's the specified image type
-                imgnum = imgnum + 1
-                stringg = "\\"
-                seq = (executionpath, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
-                imagepath = stringg.join(seq) #build image path relative to working directory
-                FileList.append(imagepath)
-                #**************
-        NumberOfImages = imgnum #number of slice images
-        layers = imgnum
-
-        print "\nNumber of Layers: ", NumberOfImages
-        if slideshowenabled==True:
-             #open slideshow window
-             self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
-             self.SlideShow.show() #show slideshow window
-             self.SlideShow.setupUi(self)
-             screennumber = int(screennumber) #convert to integer
-             screen = QtGui.QDesktopWidget().availableGeometry(screen = screennumber) #get available geometry of the screen chosen
-             self.SlideShow.move(screen.left(), screen.top()) #move window to the top-left of the chosen screen
-             self.SlideShow.resize(screen.width(), screen.height()) #resize the window to fit the chosen screen
-             self.SlideShow.showMaximized()
-             self.SlideShow.showFullScreen()
-             #size = self.SlideShow.frameGeometry()
-             #print size 
-             #start slideshow
-        if printercontrolenabled == True and arduinocontrolled == True:
-            print "Enabling Stepper Motor Drivers..."
-            board.digital[ZEnablePin].write(1)
-            board.digital[XEnablePin].write(1)
-            print "..ok."
-            
-        print "Printing..." 
- 
-        #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
-        eta = 0
-        percentagechunk = (100.0/float(NumberOfImages))
-        ProgPercentage = 0.0
-        for layer in range(NumberOfImages):
-            TimeRemaining = GetInHMS(eta)
-            if layer >= NumberOfStartLayers:
-                ExposureTime = ExposeTime
-            else:
-                ExposureTime = StartLayersExposureTime
-            if slideshowenabled:
-                blankpath = "%s\\10x10black.png" %(startingexecutionpath)
-                pm = QtGui.QPixmap(blankpath)
-                pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
-                self.SlideShow.label.setPixmap(pmscaled) #set black pixmap for blank slide     
-                QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
-            self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
-            #**send command to stage
-            
-            if printercontrolenabled==True and arduinocontrolled==True: #custom scripted sequence::
-                print "sending custom scripted command sequence..."
-                for command in commands:
-                    if command == "Z_UP":
-                        board.digital[ZDirPin].write(1)
-                    elif command == "Z_DOWN":
-                        board.digital[ZDirPin].write(0)
-                    elif command == "X_UP":
-                        board.digital[XDirPin].write(1)
-                    elif command == "X_DOWN":
-                        board.digital[XDirPin].write(0)
-                    #make sure the next two cases are last to avoid false positives
-                    elif command.startsWith("Z"):
-                        amount = command[2:command.size()]
-                        numsteps = int(amount)
-                        for step in range(numsteps):                       
-                            board.digital[ZStepPin].write(1)
-                            sleep(.001)
-                            board.digital[ZStepPin].write(0)
-                    elif command.startsWith("X"):
-                        amount = command[2:command.size()]
-                        numsteps = int(amount)
-                        for step in range(numsteps):
-                            board.digital[XStepPin].write(1)
-                            sleep(.001)
-                            board.digital[XStepPin].write(0)
-                    
-            #sleep(AdvanceTime)
-            #eta = eta - AdvanceTime
-            print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
-            layer = layer - 0
-            pm = QtGui.QPixmap(FileList[layer])
-            if slideshowenabled:
-                pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
-                self.SlideShow.label.setPixmap(pmscaled)
-                QCoreApplication.processEvents()
-            
-            self.emit(QtCore.SIGNAL('updatePreview')) #emit signal to update preview image
-            sleep(ExposureTime)
-            eta = eta - ExposureTime
-            ProgPercentage = ProgPercentage + percentagechunk         
-
-        print "\nPrint job completed successfully. %d layers were built." %layers
-        if printercontrolenabled==True and arduinocontrolled==True:
-            board.exit() #close firmata connection 
-        if projectorcontrolenabled:
-            print "Sending power off command to projector."
 #**********************************************************************************************************************************
 # Create a class for our main window
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
-        print "window has been resized:", Event
-        print Event.size().height()
-        #self.ModelView.setFixedSize(651,501)
-        print self.ui.ModelFrame.frameGeometry()
-    
+        #print Event.size().height() #mainwindow size 
+        #print self.ui.ModelFrame.geometry().width(), self.ui.ModelFrame.geometry().height()
+        self.ModelView.SetSize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
+        
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.ui=Ui_MainWindow()
@@ -421,7 +229,7 @@ class Main(QtGui.QMainWindow):
         #create model actor
         self.modelActor = vtk.vtkActor()
         self.modelActor.GetProperty().SetColor(1,1,1)
-        self.modelActor.GetProperty().SetOpacity(0.4)
+        self.modelActor.GetProperty().SetOpacity(0.7)
         self.modelActor.SetMapper(self.mapper)
         
         #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
@@ -477,12 +285,13 @@ class Main(QtGui.QMainWindow):
         self.ren.AddActor(self.modelActor)
         self.ren.AddActor(self.slicingplaneActor)
         self.ren.AddActor(self.outlineActor)
-        self.ren.SetBackground(0,0,0)
+        self.ren.SetBackground(.5,.5,.5)
         
         # create the modelview widget
         self.ModelView = QVTKRenderWindowInteractor(self.ui.ModelFrame)
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
-        self.ModelView.setFixedSize(651,501)
+        #self.ModelView.SetFixedSize(500,500)
+        self.ModelView.resize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
         self.ModelView.Initialize()
         
         self.renWin=self.ModelView.GetRenderWindow()
@@ -500,11 +309,11 @@ class Main(QtGui.QMainWindow):
 
         #####################
 #        # create the sliceview widget
-        self.ModelView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
-        self.ModelView.SetInteractorStyle(MyInteractorStyle())
-        self.ModelView.setFixedSize(271,171)
-        self.ModelView.Initialize()
-        self.ModelView.Start()
+        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
+        self.SliceView.SetInteractorStyle(MyInteractorStyle())
+        self.SliceView.setFixedSize(271,171)
+        self.SliceView.Initialize()
+        self.SliceView.Start()
 #        
 #        self.filename = "ball.stl"     
 #        self.reader = vtk.vtkSTLReader()
@@ -625,29 +434,29 @@ class Main(QtGui.QMainWindow):
         planedict = {'XZ':0, 'XY':1, 'YZ':2}
         self.ui.slicing_plane.setCurrentIndex(planedict[parser.get('program_defaults', 'plane')])
         
-        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO':
-            self.ui.radio_arduino.click()
+        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+            self.ui.radio_arduinoUno.click()
+        elif parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+            self.ui.radio_arduinoMega.click()
         elif parser.get('program_defaults', 'printercontroller') == 'PYMCU':
-            self.ui.radio_pymcu.click()
-        if parser.get('program_defaults', 'arduinotype') == 'UNO':
-            self.ui.radio_uno.click()
-        elif parser.get('program_defaults', 'arduinotype') == 'MEGA':
-            self.ui.radio_mega.click()
+            self.ui.radio_pyMCU.click()
         if parser.get('program_defaults', 'slideshowenabled') == 'True':
             self.ui.enableslideshow.click()
         if parser.get('program_defaults', 'printercontrol') == 'True':
             self.ui.enableprintercontrol.click()
         if parser.get('program_defaults', 'projectorcontrol') == 'True':
             self.ui.projectorcontrol.click()
+            
+        self.ProjectorControlToggled() #enable or disable projector stuff based on current status of projector enable checkbox
         
         #*********************************
-        if self.ui.radio_pymcu.isChecked(): #if pymcu is selected on startup that means projector comms are handled through it. disable printer com config stuff. 
-            self.ui.projector_pickcom.setEnabled(False)
-            self.ui.projector_baud.setEnabled(False)
-            self.ui.projector_parity.setEnabled(False)
-            self.ui.projector_databits.setEnabled(False)
-            self.ui.projector_stopbits.setEnabled(False)
-            self.ui.zscript.setEnabled(False)
+#        if self.ui.radio_pyMCU.isChecked(): #if selected on startup: means projector comms are handled through it. disable printer com config stuff. 
+#            self.ui.projector_pickcom.setEnabled(False)
+#            self.ui.projector_baud.setEnabled(False)
+#            self.ui.projector_parity.setEnabled(False)
+#            self.ui.projector_databits.setEnabled(False)
+#            self.ui.projector_stopbits.setEnabled(False)
+#            self.ui.zscript.setEnabled(False)
         #*********************************
     def __del__(self):
         # Restore sys.stdout
@@ -662,27 +471,8 @@ class Main(QtGui.QMainWindow):
         self.ui.consoletext.setTextCursor(cursor)
         self.ui.consoletext.ensureCursorVisible()
             
-    def applyprintingsettings(self):
-        print "applying printing settings"
-        COM_Port = self.ui.pickcom.currentText()
-        Printer_Baud = int(self.ui.printerbaud.currentText())
-        ExposeTime = float(self.ui.exposure_time.text())
-        #AdvanceTime = float(self.ui.advance_time.text())
-        Port = self.ui.remote_port.text()
-        NumberOfStartLayers = float(self.ui.starting_layers.text())
-        StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
-    
-    def applyslicingsettings(self):
-        print "applying slicing settings"
-        
-        LayerThickness = self.ui.layer_thickness.text()
-        Z_options = self.ui.z_options.text()
-        ImageWidth = self.ui.image_width.text()
-        ImageHeight = self.ui.image_height.text()
-        plane= self.ui.slicing_plane.currentText()
-        
-    def projectorcontroltoggle(self):
-        if self.ui.projectorcontrol.isChecked():
+    def ProjectorControlToggled(self):
+        if self.ui.projectorcontrol.isChecked(): #only if projector control is enabled can you re-enable all the control settings.
             self.ui.projector_pickcom.setEnabled(True)
             self.ui.projector_baud.setEnabled(True)
             self.ui.projector_parity.setEnabled(True)
@@ -690,14 +480,6 @@ class Main(QtGui.QMainWindow):
             self.ui.projector_stopbits.setEnabled(True)
             self.ui.projector_poweroffcommand.setEnabled(True)
             self.ui.projector_testpoweroffcommand.setEnabled(True)
-            self.ui.projector_applysettings.setEnabled(True)
-            if self.ui.radio_pymcu.isChecked(): #whoa there, if pymcu is selected you can't enable the control settings...
-                self.ui.projector_pickcom.setEnabled(False)
-                self.ui.projector_baud.setEnabled(False)
-                self.ui.projector_parity.setEnabled(False)
-                self.ui.projector_databits.setEnabled(False)
-                self.ui.projector_stopbits.setEnabled(False)   
-               
         else:
             self.ui.projector_pickcom.setEnabled(False)
             self.ui.projector_baud.setEnabled(False)
@@ -706,26 +488,8 @@ class Main(QtGui.QMainWindow):
             self.ui.projector_stopbits.setEnabled(False)
             self.ui.projector_poweroffcommand.setEnabled(False)
             self.ui.projector_testpoweroffcommand.setEnabled(False)
-            self.ui.projector_applysettings.setEnabled(False)
-            
-    def printercontroltoggle(self):
-        if self.ui.radio_pymcu.isChecked():
-            self.ui.projector_pickcom.setEnabled(False)
-            #self.ui.projector_baud.setEnabled(False)
-            self.ui.projector_parity.setEnabled(False)
-            self.ui.projector_databits.setEnabled(False)
-            self.ui.projector_stopbits.setEnabled(False)
-            self.ui.zscript.setEnabled(False)
-        else:
-            if self.ui.projectorcontrol.isChecked(): #only if projector control is enabled can you re-enable all the control settings.
-                self.ui.projector_pickcom.setEnabled(True)
-                self.ui.projector_baud.setEnabled(True)
-                self.ui.projector_parity.setEnabled(True)
-                self.ui.projector_databits.setEnabled(True)
-                self.ui.projector_stopbits.setEnabled(True)
-                self.ui.zscript.setEnabled(True)
                 
-    def slideshowcontroltoggled(self):
+    def SlideshowControlToggled(self):
         global slideshowenabled
         if self.ui.enableslideshow.isChecked():
             self.ui.pickscreen.setEnabled(True)
@@ -734,38 +498,25 @@ class Main(QtGui.QMainWindow):
             self.ui.pickscreen.setEnabled(False)
             slideshowenabled = False
 
-    def enableprintercontroltoggled(self):
+    def EnablePrinterControlToggled(self):
         if self.ui.enableprintercontrol.isChecked():
             self.ui.pickcom.setEnabled(True)
             self.ui.printerbaud.setEnabled(True)
-            self.ui.radio_pymcu.setEnabled(True)
-            self.ui.radio_arduino.setEnabled(True)
-            self.ui.projectorcontrol.setChecked(True)
-            printercontrolenabled = True
+            self.ui.radio_pyMCU.setEnabled(True)
+            self.ui.radio_arduinoUno.setEnabled(True)
+            self.ui.radio_arduinoMega.setEnabled(True)
+            self.printercontrolenabled = True
         else:
             self.ui.pickcom.setEnabled(False)
             self.ui.printerbaud.setEnabled(False)
-            self.ui.radio_pymcu.setEnabled(False)
-            self.ui.radio_arduino.setEnabled(False)
-            self.ui.projectorcontrol.setChecked(False)
-            printercontrolenabled = False
-    
-    def stopthread(self):
-        global IsStopped
-        IsStopped = True
- 
+            self.ui.radio_pyMCU.setEnabled(False)
+            self.ui.radio_arduinoUno.setEnabled(False)
+            self.ui.radio_arduinoMega.setEnabled(False)
+            self.printercontrolenabled = False
+            
     def selectfile(self):
         self.filename = QtGui.QFileDialog.getOpenFileName()
         self.ui.displayfilenamelabel.setText(self.filename)
-
-
-        
-    def loadimage(self):
-
-        ImageFilename = QtGui.QFileDialog.getOpenFileName()
-        pm = QtGui.QPixmap(ImageFilename)
-        pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        self.ui.imagepreview.setPixmap(pmscaled)
     
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
@@ -822,82 +573,61 @@ class Main(QtGui.QMainWindow):
         progress.exec_()
                
     def printpressed(self):
-        print "applying printing settings"
-        global ExposeTime
-        global AdvanceTime
-        global NumberOfStartLayers
-        global StartLayersExposureTime
-        global COM_Port
-        global Printer_Baud
-        global screennumber
-        global printercontrol
-        global poweroffcommand
-        global projectorcontrolenabled
-        global printercontrolenabled
-        global pymcucontrolled
-        global arduinocontrolled
-        global slideshowenabled
-        global zscript
-        global projector_com, projector_parity, projector_baud, projector_databits, projector_stopbits
-        global IsStopped
-        global IsArduinoUno
-        global IsArduinoMega
-        IsStopped = False
-        COM_Port = self.ui.pickcom.currentText()
-        Printer_Baud = int(self.ui.printerbaud.currentText())
-        ExposeTime = float(self.ui.exposure_time.text())
+        
+        self.zscriptdoc = self.ui.zscript.document()
+        self.zscript = self.zscriptdoc.toPlainText()
+
+        self.IsStopped = False
+        self.COM_Port = self.ui.pickcom.currentText()
+        self.Printer_Baud = int(self.ui.printerbaud.currentText())
+        self.ExposeTime = float(self.ui.exposure_time.text())
         #AdvanceTime = float(self.ui.advance_time.text())
-        Port = self.ui.remote_port.text()
-        NumberOfStartLayers = float(self.ui.starting_layers.text())
-        StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
-        projector_com = self.ui.projector_pickcom.currentText()
-        projector_baud = self.ui.projector_baud.currentText()
-        projector_parity = self.ui.projector_parity.currentText()
-        projector_stopbits = self.ui.projector_stopbits.currentText()
-        projector_databits = self.ui.projector_databits.currentText()
-        zscriptdoc = self.ui.zscript.document()
-        zscript = zscriptdoc.toPlainText()
+        self.Port = self.ui.remote_port.text()
+        self.NumberOfStartLayers = float(self.ui.starting_layers.text())
+        self.StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
+        self.projector_com = self.ui.projector_pickcom.currentText()
+        self.projector_baud = self.ui.projector_baud.currentText()
+        self.projector_parity = self.ui.projector_parity.currentText()
+        self.projector_stopbits = self.ui.projector_stopbits.currentText()
+        self.projector_databits = self.ui.projector_databits.currentText()
+
         if self.ui.projectorcontrol.isChecked():
-            projectorcontrolenabled = True
+            self.projectorcontrolenabled = True
         else:
-            projectorcontrolenabled = False
+            self.projectorcontrolenabled = False
+            
         if self.ui.enableprintercontrol.isChecked():
-            printercontrolenabled = True
-           
+            self.printercontrolenabled = True  
         else:
-            printercontrolenabled = False
-            print "printercontrolenabled set to false"
+            self.printercontrolenabled = False
+
         if self.ui.enableslideshow.isChecked():
-            slideshowenabled = True
+            self.slideshowenabled = True
         if self.ui.radio_pymcu.isChecked():
-            pymcucontrolled = True
-            arduinocontrolled = False
-        if self.ui.radio_arduino.isChecked():
-            arduinocontrolled = True
-            pymcucontrolled = False
-        screennumber = self.ui.pickscreen.currentText() #get the screen number from picker
+            self.controller = "pymcu"
+        self.screennumber = self.ui.pickscreen.currentText() #get the screen number from picker
         if self.ui.radio_uno.isChecked():
-            IsArduinoUno = True
-            IsArduinoMega = False
+            self.controller = "arduinoUno"
         if self.ui.radio_mega.isChecked():
-            IsArduinoMega = True
-            IsArduinoUno = False
-       
-        self.thread = printmodel()
+            self.controller = "arduinoMega"
+            
+        self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime,self.Port
+                                                , self.NumberOfStartLayers, self.StartLayersExposureTime, self.projector_baud
+                                                , self.projector_com, self.projector_databits, self.projector_parity, self.projector_stopbits
+                                                , self.projectorcontrolenabled, self.controller)
         #connect to slideshow signal
-        self.connect(self.thread
+        self.connect(self.printThread
                      ,QtCore.SIGNAL('updatePreview')
                      ,self.updatepreview)      
-        self.connect(self.thread
+        self.connect(self.printThread
                      ,QtCore.SIGNAL('updatePreviewBlank')
                      ,self.updatepreviewblank)      
-        self.connect(self.thread
+        self.connect(self.printThread
                      ,QtCore.SIGNAL('disable_stop_button')
                      ,self.disablestopbutton) 
-        self.connect(self.thread
+        self.connect(self.printThread
                      ,QtCore.SIGNAL('enable_stop_button')
                      ,self.enablestopbutton)     
-        self.thread.start()
 
 ################################################################################
 def GetInHMS(seconds):

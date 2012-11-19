@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Nov 18 23:05:13 2012
+# Created: Sun Nov 18 23:59:45 2012
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -938,7 +938,7 @@ class Ui_MainWindow(object):
         self.toolBar_2.addAction(self.actionLast_Slice)
 
         self.retranslateUi(MainWindow)
-        self.toolBox.setCurrentIndex(0)
+        self.toolBox.setCurrentIndex(2)
         QtCore.QObject.connect(self.actionQuit, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.close)
         QtCore.QObject.connect(self.pushButton_4, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.sliceandprintpressed)
         QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenModel)
@@ -953,6 +953,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionNext_Slice, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.IncrementSlicingPlanePositive)
         QtCore.QObject.connect(self.actionPrevious_Slice, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.IncrementSlicingPlaneNegative)
         QtCore.QObject.connect(self.actionSet_Model_Opacity, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.UpdateModelOpacity)
+        QtCore.QObject.connect(self.actionPreferences, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenSettingsDialog)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

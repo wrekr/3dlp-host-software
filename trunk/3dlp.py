@@ -70,6 +70,9 @@ class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
+        
+    def quit(self):
+        print "quitting"
 
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
@@ -231,7 +234,7 @@ class Main(QtGui.QMainWindow):
         self.ModelView = QVTKRenderWindowInteractor(self.ui.ModelFrame)
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
         #self.ModelView.SetFixedSize(500,500)
-        self.ModelView.resize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
+        self.ModelView.resize(self.ui.ModelFrame.geometry().width()-100,self.ui.ModelFrame.geometry().height()-100)
         self.ModelView.Initialize()
         
         self.renWin=self.ModelView.GetRenderWindow()
@@ -241,71 +244,18 @@ class Main(QtGui.QMainWindow):
 
         #####################
 #        # create the sliceview widget
-#        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
-#        self.SliceView.SetInteractorStyle(MyInteractorStyle())
-#        self.SliceView.setFixedSize(271,171)
-#        self.SliceView.Initialize()
-#        self.SliceView.Start()
-#        
-#        self.filename = "ball.stl"     
-#        self.reader = vtk.vtkSTLReader()
-#        self.reader.SetFileName(self.filename)
-#         
-#        self.polyDataOutput = self.reader.GetOutput()       
-#        
-#        self.mapper = vtk.vtkPolyDataMapper()
-#        self.mapper.SetInputConnection(self.reader.GetOutputPort())
-#         
-#        self.actor = vtk.vtkActor()
-#        self.actor.SetMapper(self.mapper)
-#        
-#        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
-#        self.plane = vtk.vtkPlane()
-#        self.plane.SetOrigin(20, 0, 0)
-#        self.plane.SetNormal(0, 0, 1)
-#
-#        #create cutter
-#        self.cutter = vtk.vtkCutter()
-#        self.cutter.SetCutFunction(self.plane)
-#        self.cutter.SetInputConnection(self.reader.GetOutputPort())
-#        self.cutter.Update()
-#
-#        FeatureEdges = vtk.vtkFeatureEdges()
-#        FeatureEdges.SetInputConnection(self.cutter.GetOutputPort())
-#        FeatureEdges.BoundaryEdgesOn()
-#        FeatureEdges.FeatureEdgesOff()
-#        FeatureEdges.NonManifoldEdgesOff()
-#        FeatureEdges.ManifoldEdgesOff()
-#        FeatureEdges.Update()
-#         
-#        self.cutStrips = vtk.vtkStripper() ; #Forms loops (closed polylines) from cutter
-#        self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
-#        self.cutStrips.Update()
-#        self.cutPoly = vtk.vtkPolyData() ; #This trick defines polygons as polyline loop
-#        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
-#        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
-#         
-#        self.cutMapper = vtk.vtkPolyDataMapper()
-#        #self.cutMapper.SetInput(FeatureEdges.GetOutput())
-#        if vtk.VTK_MAJOR_VERSION <= 5:
-#            self.cutMapper.SetInput(self.cutPoly)
-#        else:
-#            self.cutMapper.SetInputData(self.cutPoly)
-#         
-#        self.cutActor = vtk.vtkActor()
-#        self.cutActor.GetProperty().SetColor(1, 1, 0)
-#        self.cutActor.GetProperty().SetEdgeColor(0, 1, 0)
-#         
-#        self.cutActor.GetProperty().SetLineWidth(2)
-#        self.cutActor.GetProperty().EdgeVisibilityOn()
-#        ##self.cutActor.GetProperty().SetOpacity(0.7)
-#        self.cutActor.SetMapper(self.cutMapper)
-#
-#        self.ren = vtk.vtkRenderer()
-#        self.ren.SetBackground(0,0,0)
-#        self.ren.AddActor(self.cutActor)
-#        self.renWin=self.ModelView.GetRenderWindow()
-#        self.renWin.AddRenderer(self.ren)
+        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
+        self.SliceView.SetInteractorStyle(MyInteractorStyle())
+        self.SliceView.blockSignals(True)
+        #self.SliceView.setFixedSize(294,200)
+        self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
+        self.SliceView.Initialize()
+
+        self.sliceren = vtk.vtkRenderer()
+        
+        self.sliceWin = self.SliceView.GetRenderWindow()
+        self.sliceWin.AddRenderer(self.sliceren)
+        self.SliceView.Start()
         #######################        
         
         
@@ -466,7 +416,7 @@ class Main(QtGui.QMainWindow):
         
         #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
         self.slicingplane=vtk.vtkPlane()
-        self.slicingplane.SetOrigin(0,0,37)
+        self.slicingplane.SetOrigin(0,0,20)
         self.slicingplane.SetNormal(0,0,1)
         
         #create cutter
@@ -474,14 +424,45 @@ class Main(QtGui.QMainWindow):
         self.cutter.SetCutFunction(self.slicingplane)
         self.cutter.SetInputConnection(self.reader.GetOutputPort())
         self.cutter.Update()
-        self.cutterMapper=vtk.vtkPolyDataMapper()
-        self.cutterMapper.SetInputConnection(self.cutter.GetOutputPort())
+
         
+        self.cutStrips = vtk.vtkStripper() #Forms loops (closed polylines) from cutter
+        self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
+        self.cutStrips.Update()
+        self.cutPoly = vtk.vtkPolyData() #This trick defines polygons as polyline loop
+        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+        self.cutPoly.Update()
+        #print cutStrips.GetOutput()
+        
+        # Triangle filter
+        self.cutTriangles = vtk.vtkTriangleFilter()
+        self.cutTriangles.SetInput(self.cutPoly)
+        self.cutTriangles.Update()
+        
+        #cutter mapper
+        self.cutterMapper=vtk.vtkPolyDataMapper()
+        self.cutterMapper.SetInput(self.cutPoly)
+        self.cutterMapper.SetInputConnection(self.cutTriangles.GetOutputPort())      
+
+        self.cutterOutlineMapper=vtk.vtkPolyDataMapper()
+        self.cutterOutlineMapper.SetInputConnection(self.cutter.GetOutputPort())          
+             
         #create plane actor
         self.slicingplaneActor=vtk.vtkActor()
         self.slicingplaneActor.GetProperty().SetColor(1.0,0,0)
         self.slicingplaneActor.GetProperty().SetLineWidth(4)
         self.slicingplaneActor.SetMapper(self.cutterMapper)
+        
+        #create plane actor
+        self.slicingplaneoutlineActor=vtk.vtkActor()
+        self.slicingplaneoutlineActor.GetProperty().SetColor(1.0,0,0)
+        self.slicingplaneoutlineActor.GetProperty().SetLineWidth(4)
+        self.slicingplaneoutlineActor.SetMapper(self.cutterOutlineMapper)
+        
+        self.sliceActor = vtk.vtkActor()
+        self.sliceActor.GetProperty().SetColor(1,1,1)
+        self.sliceActor.SetMapper(self.cutterMapper)
  
         #create outline mapper
         self.outline = vtk.vtkOutlineFilter()
@@ -515,7 +496,12 @@ class Main(QtGui.QMainWindow):
         
         self.ren.AddActor(self.modelActor)
         self.ren.AddActor(self.slicingplaneActor)
+        self.ren.AddActor(self.slicingplaneoutlineActor)
         self.ren.AddActor(self.outlineActor)
+        self.sliceren.AddActor(self.sliceActor)
+        self.sliceren.ResetCamera()
+        self.SliceView.Render()
+        #self.SliceView.Disable()
         #create orientation markers
         self.axes = vtk.vtkOrientationMarkerWidget()
         self.axes.SetOrientationMarker(self.axesActor)
@@ -530,15 +516,29 @@ class Main(QtGui.QMainWindow):
         self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
         self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal+1)
         self.cutter.Update()
+        self.cutStrips.Update()
+        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+        self.cutPoly.Update()
+        self.cutTriangles.Update()
         self.ren.Render()
+        self.sliceren.Render()
         self.ModelView.Render()
+        self.SliceView.Render()
         
     def IncrementSlicingPlaneNegative(self):
         self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
         self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal-1)
         self.cutter.Update()
+        self.cutStrips.Update()
+        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+        self.cutPoly.Update()
+        self.cutTriangles.Update()
         self.ren.Render()
+        self.sliceren.Render()
         self.ModelView.Render()
+        self.SliceView.Render()
         
     def UpdateModelOpacity(self):
         try:

@@ -26,7 +26,6 @@ import pyfirmata
 import webbrowser
 from ConfigParser import *
 import re
-from slice import *
 from time import sleep
 import ctypes
 import vtk
@@ -108,88 +107,11 @@ class slicemodel(QtCore.QThread):
         Z_options = "%s,%s,%s"%(Z_options_start, Z_options_end, Z_options_increment)
         executionpath = os.getcwd() #get current execution (working) directory
         shutil.rmtree('slices', ignore_errors = True)#clear any previous slices by removing the "slices" directory. This is re-built when freesteel slices new layers.
-        print "\nslicing images..."
+        print "slicing images..."
         
         #begin freesteel code
-        options = None
-        args = None
-        cmdparser = None
-        infile = None
-        zlevels = Z_options
-        outfile = "slices\layer.png"
-        offset = -1.0
-        radius = 1.0
-        multiple = True
-        tooltype = "disk"
-        wres = -1.0
-        wdiff = 0.0
-        shell = ""
-        verbose = ""
-        noprogress = ""
-        background = "black"
-        cavity = "black"
-        core = "white"
-        ##
-        if zlevels:
-            # parse into floats
-            zlist = zlevels.split(",")
-            try:
-                zlevels = [float(z) for z in zlist]
-            except:
-                print "Could not parse z levels: ", options.z
-                cmdparser.print_version()
-                cmdparser.print_help()
-                sys.exit(0)
 
-            if len(zlevels) == 3:
-                # try to interpret as "lo, hi, step", allowing for a negative step
-                lo, hi, step = zlevels[0], zlevels[1], zlevels[2]
-                if ((lo < hi) == (step > 0)) and ((hi - lo) > step) and ((lo + step) > lo):
-                    zlevels = [lo]
-                    while (step > 0 and (zlevels[-1] + step <= hi)) or (step < 0 and (zlevels[-1] + step >= hi)):
-                        zlevels.append(zlevels[-1] + step)
-
-        scale = 1.0
-        workplane = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,scale]]
-        if plane == "yz":
-            workplane = [[0,1,0,0],[0,0,-1,0],[-1,0,0,0],[0,0,0,scale]]
-        elif plane == "xz":
-            workplane = [[1,0,0,0],[0,0,-1,0],[0,1,0,0],[0,0,0,scale]]
-#        if options.offset == "-radius":
-#            options.offset = -options.radius
-#        else:
-#            options.offset = float(options.offset)
-
-        sr = getSliceWriter(outfile, None, ImageWidth, ImageHeight, radius, offset, multiple)
-        st = SlicerThread(Filename, zlevels, tooltype, radius, offset, 
-                          wres, wdiff, LayerThickness, verbose, workplane=workplane, solid = not shell)
-        if noprogress:
-            st.printprogress = False
-        else:
-            st.printprogress = (outfile != "") and not sr.writestostdout
-        st.start()
-
-        while True:
-            item = st.queue.get()
-            if type(item) == type((0,)) and item[0] == "bbox":
-                bounding_box = item[1]
-                break
-        units = 0.01 # used for CLI output
-        sr = getSliceWriter(outfile, bounding_box, ImageWidth, ImageHeight, radius, offset, multiple)
-        sr.WriteHeader(units)
-        while True:
-            item = st.queue.get()
-            progressBLAH = st.pr
-            
-            if item == "end":
-                break
-            if item != "start":
-                f, z, allpoints = item
-                style="fill:%s; fill-opacity:%.1f; stroke:blue; stroke-width:1; stroke-opacity:%.1f;"
-                sr.WriteLayer(units, z, allpoints, (background, cavity, core), style="")
-        sr.WriteFooter()
-        ###end of freesteel code
-        print "\nslicing complete."
+        print "slicing complete."
 
 class OpenProgressBar(QtGui.QDialog, Ui_Progress):
     def __init__(self,parent=None):

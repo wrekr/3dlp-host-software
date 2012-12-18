@@ -136,7 +136,7 @@ class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
         #print Event.size().height() #mainwindow size 
         #print self.ui.ModelFrame.geometry().width(), self.ui.ModelFrame.geometry().height()
-        self.ModelView.resize(self.ui.ModelFrame.geometry().width(),self.ui.ModelFrame.geometry().height())
+        self.ModelView.resize(self.ui.ModelFrame.geometry().width()-15,self.ui.ModelFrame.geometry().height()-39)
         
 
     def __init__(self):
@@ -148,7 +148,6 @@ class Main(QtGui.QMainWindow):
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         #####################
 
-
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.5,.5,.5)
         
@@ -156,7 +155,9 @@ class Main(QtGui.QMainWindow):
         self.ModelView = QVTKRenderWindowInteractor(self.ui.ModelFrame)
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
         #self.ModelView.SetFixedSize(500,500)
-        self.ModelView.resize(self.ui.ModelFrame.geometry().width()-100,self.ui.ModelFrame.geometry().height()-100)
+        #self.ModelView.setBaseSize(200,200)
+        #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-500,self.ui.ModelFrame.geometry().height()-500)
+        #self.ModelView.resize(690-100,550-100)
         self.ModelView.Initialize()
         
         self.renWin=self.ModelView.GetRenderWindow()
@@ -174,6 +175,7 @@ class Main(QtGui.QMainWindow):
         self.SliceView.Initialize()
 
         self.sliceren = vtk.vtkRenderer()
+        self.sliceren.InteractiveOff() #why doesnt this work?!
         
         self.sliceWin = self.SliceView.GetRenderWindow()
         self.sliceWin.AddRenderer(self.sliceren)
@@ -420,8 +422,9 @@ class Main(QtGui.QMainWindow):
         self.ren.AddActor(self.slicingplaneActor)
         self.ren.AddActor(self.slicingplaneoutlineActor)
         self.ren.AddActor(self.outlineActor)
-        self.sliceren.AddActor(self.sliceActor)
+        self.sliceren.AddActor(self.slicingplaneActor)
         self.sliceren.ResetCamera()
+        self.sliceren.InteractiveOff() #why doesnt this work?!
         self.SliceView.Render()
         #self.SliceView.Disable()
         #create orientation markers
@@ -471,7 +474,7 @@ class Main(QtGui.QMainWindow):
                 self.modelActor.GetProperty().SetOpacity(float(opacity)/100)
                 self.ren.Render()
                 self.ModelView.Render()
-        except:
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
             
     def OpenSettingsDialog(self):
@@ -532,8 +535,7 @@ class Main(QtGui.QMainWindow):
         progress = OpenProgressBar(self)
         progress.exec_()
 
-    def printpressed(self):
-        
+    def printpressed(self):    
         self.zscriptdoc = self.ui.zscript.document()
         self.zscript = self.zscriptdoc.toPlainText()
         self.COM_Port = self.ui.pickcom.currentText()
@@ -568,7 +570,7 @@ class Main(QtGui.QMainWindow):
             self.controller = "arduinoUno"
         if self.ui.radio_mega.isChecked():
             self.controller = "arduinoMega"
-            
+          
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime,self.Port
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime, self.projector_baud
                                                 , self.projector_com, self.projector_databits, self.projector_parity, self.projector_stopbits

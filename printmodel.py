@@ -64,7 +64,7 @@ class printmodel(QtCore.QThread):
         projector_stopbits_lookup = stopbits['%s'%self.projector_stopbits]
         projector_databits_lookup = databits['%s'%self.projector_databits]
         projector_databits_lookup = int(projector_databits_lookup)
-   
+
         if self.projectorcontrolenabled==True:
             #try connecting to projector com port
             print "Attempting to connect to projector for RS232 control..."

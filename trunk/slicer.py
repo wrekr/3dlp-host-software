@@ -119,8 +119,8 @@ class slicer():
         self.writer.Write()
         
       
-slicer = slicer()
-Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
-filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
-slicer.OpenModel(filename)
-slicer.slice()
+#slicer = slicer()
+#Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
+#filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
+#slicer.OpenModel(filename)
+#slicer.slice()

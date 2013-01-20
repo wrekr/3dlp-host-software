@@ -197,33 +197,25 @@ class Main(QtGui.QMainWindow):
         self.ZEnablePin = int(self.parser.get('pin_mapping', 'zenable'))
         self.XEnablePin = int(self.parser.get('pin_mapping', 'xenable'))
         
-#        self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
-#        self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
-#        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-#        self.ui.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
-#        self.ui.exposure_time.setText(parser.get('program_defaults', 'ExposeTime'))
-#        self.ui.starting_layers.setText(parser.get('program_defaults', 'NumStartLayers'))
-#        self.ui.starting_layer_exposure.setText(parser.get('program_defaults', 'StartLayersExposeTime'))
-#        self.ui.image_height.setText(parser.get('program_defaults', 'ImageHeight'))
-#        self.ui.image_width.setText(parser.get('program_defaults', 'ImageWidth'))
-#        self.ui.layer_thickness.setText(parser.get('program_defaults', 'LayerThickness'))
-#        self.ui.z_options_start.setText(parser.get('program_defaults', 'z_options_start'))
-#        self.ui.z_options_end.setText(parser.get('program_defaults', 'z_options_end'))
-#        self.ui.z_options_increment.setText(parser.get('program_defaults', 'z_options_increment'))
-#        planedict = {'XZ':0, 'XY':1, 'YZ':2}
-#        self.ui.slicing_plane.setCurrentIndex(planedict[parser.get('program_defaults', 'plane')])
-#        
-#        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+        self.zscript = self.parser.get('scripting', 'sequence')
+        self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        self.printerbaud = self.parser.get('program_defaults', 'Printer_Baud')
+        self.exposure_time = self.parser.get('program_defaults', 'ExposeTime')
+        self.starting_layers = self.parser.get('program_defaults', 'NumStartLayers')
+        self.starting_layer_exposure = self.parser.get('program_defaults', 'StartLayersExposeTime')
+        
+#        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
 #            self.ui.radio_arduinoUno.click()
-#        elif parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+#        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
 #            self.ui.radio_arduinoMega.click()
-#        elif parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+#        elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
 #            self.ui.radio_pyMCU.click()
-#        if parser.get('program_defaults', 'slideshowenabled') == 'True':
+#        if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
 #            self.ui.enableslideshow.click()
-#        if parser.get('program_defaults', 'printercontrol') == 'True':
+#        if self.parser.get('program_defaults', 'printercontrol') == 'True':
 #            self.ui.enableprintercontrol.click()
-#        if parser.get('program_defaults', 'projectorcontrol') == 'True':
+#        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
 #            self.ui.projectorcontrol.click()
             
 #        self.ProjectorControlToggled() #enable or disable projector stuff based on current status of projector enable checkbox
@@ -470,6 +462,9 @@ class Main(QtGui.QMainWindow):
             self.SettingsDialog.pickscreen.addItem("")
             self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
  
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
+ 
         #insert all other values from current namespace
         self.SettingsDialog.zscript.setPlainText(self.parser.get('scripting', 'sequence'))
         self.SettingsDialog.projector_poweroffcommand.setText(self.parser.get('program_defaults', 'PowerOffCommand'))
@@ -491,8 +486,6 @@ class Main(QtGui.QMainWindow):
             self.SettingsDialog.enableprintercontrol.click()
         if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
             self.SettingsDialog.projectorcontrol.click()
- 
- 
  
         print self.SettingsDialog.getValues()
         

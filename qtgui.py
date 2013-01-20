@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Jan 20 13:41:37 2013
+# Created: Sun Jan 20 14:35:07 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -679,6 +679,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionSet_Model_Opacity, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.UpdateModelOpacity)
         QtCore.QObject.connect(self.actionPreferences, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenSettingsDialog)
         QtCore.QObject.connect(self.actionGo_To_Layer, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.GoToLayer)
+        QtCore.QObject.connect(self.actionOpen_manual_printer_control, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openmanualcontrol)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

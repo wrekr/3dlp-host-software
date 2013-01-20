@@ -31,6 +31,7 @@ import ctypes
 import printmodel
 import vtk
 from settingsdialog import Ui_SettingsDialogBaseClass
+from manual_control_gui import Ui_Manual_Control
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 #**********************************
@@ -67,6 +68,14 @@ class EmittingStream(QtCore.QObject):
 class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
+        self.setupUi(self)
+        
+    def quit(self):
+        print "quitting"
+
+class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
+    def __init__(self, parent=None):
+        QtGui.QDialog.__init__(self, parent)
         self.setupUi(self)
         
     def quit(self):
@@ -470,7 +479,8 @@ class Main(QtGui.QMainWindow):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
         
     def openmanualcontrol(self):
-        pass
+        ManualControl = StartManualControl(self)
+        ManualControl.exec_()
         
     def updatepreview(self):
         #print"updating picture"        

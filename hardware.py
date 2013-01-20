@@ -12,11 +12,17 @@ class arduino_uno(self):
     def connect(self):
         pass
     
+    def send(self):
+        pass
+    
 class arduino_mega(self):
     def __init__(self):
         print "initialized"
     
     def connect(self):
+        pass
+    
+    def send(self):
         pass
     
 class ramps(self):
@@ -26,9 +32,15 @@ class ramps(self):
     def connect(self):
         pass
     
+    def send(self):
+        pass
+    
 class pymcu(self):
     def __init__(self):
         print "initialized"
     
     def connect(self):
+        pass
+        
+    def send(self):
         pass

@@ -28,8 +28,8 @@ from ConfigParser import *
 import re
 from time import sleep
 import ctypes
-import vtk
 import printmodel
+import vtk
 from settingsdialog import Ui_SettingsDialogBaseClass
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
@@ -39,7 +39,6 @@ import os
 from qtgui import Ui_MainWindow #import generated class from ui file from designer 
 from slideshowgui import SlideShowWindow
 from aboutdialoggui import Ui_Dialog
-from progressbargui import Ui_Progress
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
 try:
@@ -113,30 +112,31 @@ class slicemodel(QtCore.QThread):
 
         print "slicing complete."
 
-class OpenProgressBar(QtGui.QDialog, Ui_Progress):
-    def __init__(self,parent=None):
-        QtGui.QDialog.__init__(self,parent)
-        self.setupUi(self)
-        self.ctimer = QtCore.QTimer()
-        self.ctimer.start(10)
-        QtCore.QObject.connect(self.ctimer, QtCore.SIGNAL("timeout()"), self.constantUpdate)
-    
-    def constantUpdate(self):
-        if progressBLAH:
-            self.progressbar.setValue(progressBLAH*100)
-            previousval = progressBLAH
-            if progressBLAH == 1:
-                sleep(.5)
-                self.close()
+#class OpenProgressBar(QtGui.QDialog, Ui_Progress):
+#    def __init__(self,parent=None):
+#        QtGui.QDialog.__init__(self,parent)
+#        self.setupUi(self)
+#        self.ctimer = QtCore.QTimer()
+#        self.ctimer.start(10)
+#        QtCore.QObject.connect(self.ctimer, QtCore.SIGNAL("timeout()"), self.constantUpdate)
+#    
+#    def constantUpdate(self):
+#        if progressBLAH:
+#            self.progressbar.setValue(progressBLAH*100)
+#            previousval = progressBLAH
+#            if progressBLAH == 1:
+#                sleep(.5)
+#                self.close()
 #**********************************************************************************************************************************
 
 #**********************************************************************************************************************************
 # Create a class for our main window
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
+        pass
         #print Event.size().height() #mainwindow size 
         #print self.ui.ModelFrame.geometry().width(), self.ui.ModelFrame.geometry().height()
-        self.ModelView.resize(self.ui.ModelFrame.geometry().width()-15,self.ui.ModelFrame.geometry().height()-39)
+        ###self.ModelView.resize(self.ui.ModelFrame.geometry().width()-15,self.ui.ModelFrame.geometry().height()-39)
         
 
     def __init__(self):
@@ -144,34 +144,42 @@ class Main(QtGui.QMainWindow):
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
+        
+        #add toolbar labels
+        label = QtGui.QLabel(" Current Layer:")
+        self.ui.toolBar_3.addWidget(label)
+        label2 = QtGui.QLabel(" 0 of 0")
+        self.ui.toolBar_3.addWidget(label2)
+        
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         #####################
 
         self.ren = vtk.vtkRenderer()
-        self.ren.SetBackground(.5,.5,.5)
+        self.ren.SetBackground(.4,.4,.4)
         
         # create the modelview widget
-        self.ModelView = QVTKRenderWindowInteractor(self.ui.ModelFrame)
+        self.ModelView = QVTKRenderWindowInteractor(self.ui.splitter)
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
+        self.ModelView.Initialize()
+        self.ModelView.Start()
+        #self.ModelView.setGeometry(200,200,600,600)
+        self.renWin=self.ModelView.GetRenderWindow()
+        self.renWin.AddRenderer(self.ren)
+        self.ModelView.show()
         #self.ModelView.SetFixedSize(500,500)
         #self.ModelView.setBaseSize(200,200)
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-500,self.ui.ModelFrame.geometry().height()-500)
         #self.ModelView.resize(690-100,550-100)
-        self.ModelView.Initialize()
-        
-        self.renWin=self.ModelView.GetRenderWindow()
-        self.renWin.AddRenderer(self.ren)
 
-        self.ModelView.Start()  
 
         #####################
-#        # create the sliceview widget
-        self.SliceView = QVTKRenderWindowInteractor(self.ui.SliceFrame)
+        # create the sliceview widget
+        self.SliceView = QVTKRenderWindowInteractor(self.ui.splitter)
         self.SliceView.SetInteractorStyle(MyInteractorStyle())
         self.SliceView.blockSignals(True)
         #self.SliceView.setFixedSize(294,200)
-        self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
+        #self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
         self.SliceView.Initialize()
 
         self.sliceren = vtk.vtkRenderer()
@@ -181,14 +189,13 @@ class Main(QtGui.QMainWindow):
         self.sliceWin.AddRenderer(self.sliceren)
         self.SliceView.Start()
         #######################        
-        
-        
+        print self.ui.splitter.sizes()
         screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", screencount
          ####setup screen picker####
-        for x in range(screencount):
-            self.ui.pickscreen.addItem("")
-            self.ui.pickscreen.setItemText(x, QtGui.QApplication.translate("MainWindow", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
+#        for x in range(screencount):
+#            self.ui.pickscreen.addItem("")
+#            self.ui.pickscreen.setItemText(x, QtGui.QApplication.translate("MainWindow", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
         #autodetect COM ports:  
         ports = comscan.comscan() #returns a list with each entry being a dict of useful information
         print ports
@@ -200,10 +207,10 @@ class Main(QtGui.QMainWindow):
                 portname = portentry['name'] #find the name of the port
                 #print portname 
                 numports = numports + 1
-                self.ui.pickcom.addItem(portname)
-                self.ui.pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
-                self.ui.projector_pickcom.addItem(portname)
-                self.ui.projector_pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
+#                self.ui.pickcom.addItem(portname)
+#                self.ui.pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
+#                self.ui.projector_pickcom.addItem(portname)
+#                self.ui.projector_pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
         print "Found %d ports, %d available." %(length, numports)
         #*********************************
         #IF YOU'RE EVER GOING TO LOAD PREVIOUS SETTINGS, DO IT HERE. 
@@ -224,36 +231,36 @@ class Main(QtGui.QMainWindow):
         ZEnablePin = int(parser.get('pin_mapping', 'zenable'))
         XEnablePin = int(parser.get('pin_mapping', 'xenable'))
         
-        self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
-        self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
-        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.ui.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
-        self.ui.exposure_time.setText(parser.get('program_defaults', 'ExposeTime'))
-        self.ui.starting_layers.setText(parser.get('program_defaults', 'NumStartLayers'))
-        self.ui.starting_layer_exposure.setText(parser.get('program_defaults', 'StartLayersExposeTime'))
-        self.ui.image_height.setText(parser.get('program_defaults', 'ImageHeight'))
-        self.ui.image_width.setText(parser.get('program_defaults', 'ImageWidth'))
-        self.ui.layer_thickness.setText(parser.get('program_defaults', 'LayerThickness'))
-        self.ui.z_options_start.setText(parser.get('program_defaults', 'z_options_start'))
-        self.ui.z_options_end.setText(parser.get('program_defaults', 'z_options_end'))
-        self.ui.z_options_increment.setText(parser.get('program_defaults', 'z_options_increment'))
-        planedict = {'XZ':0, 'XY':1, 'YZ':2}
-        self.ui.slicing_plane.setCurrentIndex(planedict[parser.get('program_defaults', 'plane')])
-        
-        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
-            self.ui.radio_arduinoUno.click()
-        elif parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
-            self.ui.radio_arduinoMega.click()
-        elif parser.get('program_defaults', 'printercontroller') == 'PYMCU':
-            self.ui.radio_pyMCU.click()
-        if parser.get('program_defaults', 'slideshowenabled') == 'True':
-            self.ui.enableslideshow.click()
-        if parser.get('program_defaults', 'printercontrol') == 'True':
-            self.ui.enableprintercontrol.click()
-        if parser.get('program_defaults', 'projectorcontrol') == 'True':
-            self.ui.projectorcontrol.click()
+#        self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
+#        self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
+#        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+#        self.ui.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
+#        self.ui.exposure_time.setText(parser.get('program_defaults', 'ExposeTime'))
+#        self.ui.starting_layers.setText(parser.get('program_defaults', 'NumStartLayers'))
+#        self.ui.starting_layer_exposure.setText(parser.get('program_defaults', 'StartLayersExposeTime'))
+#        self.ui.image_height.setText(parser.get('program_defaults', 'ImageHeight'))
+#        self.ui.image_width.setText(parser.get('program_defaults', 'ImageWidth'))
+#        self.ui.layer_thickness.setText(parser.get('program_defaults', 'LayerThickness'))
+#        self.ui.z_options_start.setText(parser.get('program_defaults', 'z_options_start'))
+#        self.ui.z_options_end.setText(parser.get('program_defaults', 'z_options_end'))
+#        self.ui.z_options_increment.setText(parser.get('program_defaults', 'z_options_increment'))
+#        planedict = {'XZ':0, 'XY':1, 'YZ':2}
+#        self.ui.slicing_plane.setCurrentIndex(planedict[parser.get('program_defaults', 'plane')])
+#        
+#        if parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+#            self.ui.radio_arduinoUno.click()
+#        elif parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+#            self.ui.radio_arduinoMega.click()
+#        elif parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+#            self.ui.radio_pyMCU.click()
+#        if parser.get('program_defaults', 'slideshowenabled') == 'True':
+#            self.ui.enableslideshow.click()
+#        if parser.get('program_defaults', 'printercontrol') == 'True':
+#            self.ui.enableprintercontrol.click()
+#        if parser.get('program_defaults', 'projectorcontrol') == 'True':
+#            self.ui.projectorcontrol.click()
             
-        self.ProjectorControlToggled() #enable or disable projector stuff based on current status of projector enable checkbox
+#        self.ProjectorControlToggled() #enable or disable projector stuff based on current status of projector enable checkbox
         
         #*********************************
 #        if self.ui.radio_pyMCU.isChecked(): #if selected on startup: means projector comms are handled through it. disable printer com config stuff. 
@@ -277,23 +284,23 @@ class Main(QtGui.QMainWindow):
         self.ui.consoletext.setTextCursor(cursor)
         self.ui.consoletext.ensureCursorVisible()
             
-    def ProjectorControlToggled(self):
-        if self.ui.projectorcontrol.isChecked(): #only if projector control is enabled can you re-enable all the control settings.
-            self.ui.projector_pickcom.setEnabled(True)
-            self.ui.projector_baud.setEnabled(True)
-            self.ui.projector_parity.setEnabled(True)
-            self.ui.projector_databits.setEnabled(True)
-            self.ui.projector_stopbits.setEnabled(True)
-            self.ui.projector_poweroffcommand.setEnabled(True)
-            self.ui.projector_testpoweroffcommand.setEnabled(True)
-        else:
-            self.ui.projector_pickcom.setEnabled(False)
-            self.ui.projector_baud.setEnabled(False)
-            self.ui.projector_parity.setEnabled(False)
-            self.ui.projector_databits.setEnabled(False)
-            self.ui.projector_stopbits.setEnabled(False)
-            self.ui.projector_poweroffcommand.setEnabled(False)
-            self.ui.projector_testpoweroffcommand.setEnabled(False)
+#    def ProjectorControlToggled(self):
+#        if self.ui.projectorcontrol.isChecked(): #only if projector control is enabled can you re-enable all the control settings.
+#            self.ui.projector_pickcom.setEnabled(True)
+#            self.ui.projector_baud.setEnabled(True)
+#            self.ui.projector_parity.setEnabled(True)
+#            self.ui.projector_databits.setEnabled(True)
+#            self.ui.projector_stopbits.setEnabled(True)
+#            self.ui.projector_poweroffcommand.setEnabled(True)
+#            self.ui.projector_testpoweroffcommand.setEnabled(True)
+#        else:
+#            self.ui.projector_pickcom.setEnabled(False)
+#            self.ui.projector_baud.setEnabled(False)
+#            self.ui.projector_parity.setEnabled(False)
+#            self.ui.projector_databits.setEnabled(False)
+#            self.ui.projector_stopbits.setEnabled(False)
+#            self.ui.projector_poweroffcommand.setEnabled(False)
+#            self.ui.projector_testpoweroffcommand.setEnabled(False)
                 
     def SlideshowControlToggled(self):
         global slideshowenabled
@@ -321,8 +328,12 @@ class Main(QtGui.QMainWindow):
             self.printercontrolenabled = False
             
     def OpenModel(self):
+        
+        
+        
+        
         self.filename = QtGui.QFileDialog.getOpenFileName()
-        self.ui.displayfilenamelabel.setText(self.filename)
+#        self.ui.displayfilenamelabel.setText(self.filename)
 
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))
@@ -349,7 +360,6 @@ class Main(QtGui.QMainWindow):
         self.cutter.SetInputConnection(self.reader.GetOutputPort())
         self.cutter.Update()
 
-        
         self.cutStrips = vtk.vtkStripper() #Forms loops (closed polylines) from cutter
         self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
         self.cutStrips.Update()
@@ -367,27 +377,27 @@ class Main(QtGui.QMainWindow):
         #cutter mapper
         self.cutterMapper=vtk.vtkPolyDataMapper()
         self.cutterMapper.SetInput(self.cutPoly)
-        self.cutterMapper.SetInputConnection(self.cutTriangles.GetOutputPort())      
+        self.cutterMapper.SetInputConnection(self.cutTriangles.GetOutputPort())
 
         self.cutterOutlineMapper=vtk.vtkPolyDataMapper()
         self.cutterOutlineMapper.SetInputConnection(self.cutter.GetOutputPort())          
              
-        #create plane actor
+#        #create plane actor
         self.slicingplaneActor=vtk.vtkActor()
-        self.slicingplaneActor.GetProperty().SetColor(1.0,0,0)
+        self.slicingplaneActor.GetProperty().SetColor(1.0,1.0,1.0)
         self.slicingplaneActor.GetProperty().SetLineWidth(4)
         self.slicingplaneActor.SetMapper(self.cutterMapper)
-        
+#        
         #create plane actor
         self.slicingplaneoutlineActor=vtk.vtkActor()
         self.slicingplaneoutlineActor.GetProperty().SetColor(1.0,0,0)
         self.slicingplaneoutlineActor.GetProperty().SetLineWidth(4)
         self.slicingplaneoutlineActor.SetMapper(self.cutterOutlineMapper)
-        
-        self.sliceActor = vtk.vtkActor()
-        self.sliceActor.GetProperty().SetColor(1,1,1)
-        self.sliceActor.SetMapper(self.cutterMapper)
- 
+#        
+#        self.sliceActor = vtk.vtkActor()
+#        self.sliceActor.GetProperty().SetColor(1,1,1)
+#        self.sliceActor.SetMapper(self.cutterMapper)
+# 
         #create outline mapper
         self.outline = vtk.vtkOutlineFilter()
         self.outline.SetInputConnection(self.reader.GetOutputPort())
@@ -417,13 +427,13 @@ class Main(QtGui.QMainWindow):
         self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
         self.axesActor.SetFaceTextScale(0.25)
         self.axesActor.SetZFaceTextRotation(90)
-        
         self.ren.AddActor(self.modelActor)
         self.ren.AddActor(self.slicingplaneActor)
         self.ren.AddActor(self.slicingplaneoutlineActor)
         self.ren.AddActor(self.outlineActor)
         self.sliceren.AddActor(self.slicingplaneActor)
         self.sliceren.ResetCamera()
+        self.sliceren.ResetCameraClippingRange(-100.0,100.0,-100.0,100.0,-100.0,100.0)
         self.sliceren.InteractiveOff() #why doesnt this work?!
         self.SliceView.Render()
         #self.SliceView.Disable()
@@ -436,6 +446,7 @@ class Main(QtGui.QMainWindow):
         
         self.ren.ResetCamera()  
         self.ModelView.Render() #update model view
+        print self.ui.splitter.sizes()
     
     def IncrementSlicingPlanePositive(self):
         self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
@@ -464,6 +475,9 @@ class Main(QtGui.QMainWindow):
         self.sliceren.Render()
         self.ModelView.Render()
         self.SliceView.Render()
+        
+    def GoToLayer(self):
+        pass
         
     def UpdateModelOpacity(self):
         try:

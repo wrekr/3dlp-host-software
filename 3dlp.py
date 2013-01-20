@@ -69,7 +69,10 @@ class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
-        
+
+    def getValues(self):
+        return self.pickcom.currentText()
+
     def quit(self):
         print "quitting"
 
@@ -170,46 +173,29 @@ class Main(QtGui.QMainWindow):
         self.SliceView.Start()
         #######################        
         print self.ui.splitter.sizes()
-        screencount = QtGui.QDesktopWidget().numScreens()
-        print "number of monitors: ", screencount
-         ####setup screen picker####
-#        for x in range(screencount):
-#            self.ui.pickscreen.addItem("")
-#            self.ui.pickscreen.setItemText(x, QtGui.QApplication.translate("MainWindow", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
+        self.screencount = QtGui.QDesktopWidget().numScreens()
+        print "number of monitors: ", self.screencount
+
         #autodetect COM ports:  
-        ports = comscan.comscan() #returns a list with each entry being a dict of useful information
-        print ports
-        length = len(ports) #how many dicts did comscan return?
-        numports = 0
-        for x in range(length):
-            portentry = ports[x] #switch to dict x
-            if portentry['available'] == True: #if it is currently available
-                portname = portentry['name'] #find the name of the port
-                #print portname 
-                numports = numports + 1
-#                self.ui.pickcom.addItem(portname)
-#                self.ui.pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
-#                self.ui.projector_pickcom.addItem(portname)
-#                self.ui.projector_pickcom.setItemText(x, QtGui.QApplication.translate("MainWindow", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
-        print "Found %d ports, %d available." %(length, numports)
+        self.ports = comscan.comscan() #returns a list with each entry being a dict of useful information
+        print self.ports
+        self.numports = len(self.ports) #how many dicts did comscan return?
+        
+        #print "Found %d ports, %d available." %(length, numports)
         #*********************************
         #IF YOU'RE EVER GOING TO LOAD PREVIOUS SETTINGS, DO IT HERE. 
-        parser = SafeConfigParser()
-        parser.read('config.ini')
+        self.parser = SafeConfigParser()
+        self.parser.read('config.ini')
 
         #*********************************
         #After settings are loaded (default or saved), load all the settings into variables for use.
-        global screennumber
-        global ImageFilename
-        global Filename
-        global ZStepPin, ZDirPin, XStepPin, XDirPin, ZEnablePin, XEnablePin
         
-        ZStepPin = int(parser.get('pin_mapping', 'zstep'))
-        ZDirPin = int(parser.get('pin_mapping', 'zdir'))
-        XStepPin = int(parser.get('pin_mapping', 'xstep'))
-        XDirPin = int(parser.get('pin_mapping', 'xdir'))
-        ZEnablePin = int(parser.get('pin_mapping', 'zenable'))
-        XEnablePin = int(parser.get('pin_mapping', 'xenable'))
+        self.ZStepPin = int(self.parser.get('pin_mapping', 'zstep'))
+        self.ZDirPin = int(self.parser.get('pin_mapping', 'zdir'))
+        self.XStepPin = int(self.parser.get('pin_mapping', 'xstep'))
+        self.XDirPin = int(self.parser.get('pin_mapping', 'xdir'))
+        self.ZEnablePin = int(self.parser.get('pin_mapping', 'zenable'))
+        self.XEnablePin = int(self.parser.get('pin_mapping', 'xenable'))
         
 #        self.ui.zscript.setPlainText(parser.get('scripting', 'sequence'))
 #        self.ui.projector_poweroffcommand.setText(parser.get('program_defaults', 'PowerOffCommand'))
@@ -308,10 +294,6 @@ class Main(QtGui.QMainWindow):
             self.printercontrolenabled = False
             
     def OpenModel(self):
-        
-        
-        
-        
         self.filename = QtGui.QFileDialog.getOpenFileName()
 #        self.ui.displayfilenamelabel.setText(self.filename)
 
@@ -472,9 +454,85 @@ class Main(QtGui.QMainWindow):
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
             
     def OpenSettingsDialog(self):
-        SettingsDialog = StartSettingsDialog(self)
-        SettingsDialog.exec_()
+        self.SettingsDialog = StartSettingsDialog(self)
+        
+        for x in range(self.numports):
+            portentry = self.ports[x] #switch to dict x
+            if portentry['available'] == True: #if it is currently available
+                portname = portentry['name'] #find the name of the port
+                #print portname 
+                self.SettingsDialog.pickcom.addItem(portname)
+                self.SettingsDialog.pickcom.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
+                self.SettingsDialog.projector_pickcom.addItem(portname)
+                self.SettingsDialog.projector_pickcom.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
+        ####setup screen picker####
+        for x in range(self.screencount):
+            self.SettingsDialog.pickscreen.addItem("")
+            self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
+ 
+        #insert all other values from current namespace
+        self.SettingsDialog.zscript.setPlainText(self.parser.get('scripting', 'sequence'))
+        self.SettingsDialog.projector_poweroffcommand.setText(self.parser.get('program_defaults', 'PowerOffCommand'))
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.parser.get('program_defaults', 'Printer_Baud')])
+        self.SettingsDialog.exposure_time.setText(self.parser.get('program_defaults', 'ExposeTime'))
+        self.SettingsDialog.starting_layers.setText(self.parser.get('program_defaults', 'NumStartLayers'))
+        self.SettingsDialog.starting_layer_exposure.setText(self.parser.get('program_defaults', 'StartLayersExposeTime'))
+        
+        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+            self.SettingsDialog.radio_arduinoUno.click()
+        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+            self.SettingsDialog.radio_arduinoMega.click()
+        elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+            self.SettingsDialog.radio_pyMCU.click()
+        if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
+            self.SettingsDialog.enableslideshow.click()
+        if self.parser.get('program_defaults', 'printercontrol') == 'True':
+            self.SettingsDialog.enableprintercontrol.click()
+        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
+            self.SettingsDialog.projectorcontrol.click()
+ 
+ 
+ 
+        print self.SettingsDialog.getValues()
+        
+        self.getSettingsDialogValues()
+        print self.projector_baud
+
+        self.SettingsDialog.exec_()
+        
+    def getSettingsDialogValues(self):
+        self.zscript = self.SettingsDialog.zscript.document().toPlainText()
+        self.COM_Port = self.SettingsDialog.pickcom.currentText()
+        self.Printer_Baud = int(self.SettingsDialog.printerbaud.currentText())
+        self.ExposeTime = float(self.SettingsDialog.exposure_time.text())
+        #AdvanceTime = float(self.ui.advance_time.text())
+        self.Port = self.SettingsDialog.remote_port.text()
+        self.NumberOfStartLayers = float(self.SettingsDialog.starting_layers.text())
+        self.StartLayersExposureTime = float(self.SettingsDialog.starting_layer_exposure.text())
+        self.projector_com = self.SettingsDialog.projector_pickcom.currentText()
+        self.projector_baud = self.SettingsDialog.projector_baud.currentText()
+
+        if self.SettingsDialog.projectorcontrol.isChecked():
+            self.projectorcontrolenabled = True
+        else:
+            self.projectorcontrolenabled = False
             
+        if self.SettingsDialog.enableprintercontrol.isChecked():
+            self.printercontrolenabled = True  
+        else:
+            self.printercontrolenabled = False
+
+        if self.SettingsDialog.enableslideshow.isChecked():
+            self.slideshowenabled = True
+        if self.SettingsDialog.radio_pyMCU.isChecked():
+            self.controller = "pymcu"
+        self.screennumber = self.SettingsDialog.pickscreen.currentText() #get the screen number from picker
+        if self.SettingsDialog.radio_arduinoUno.isChecked():
+            self.controller = "arduinoUno"
+        if self.SettingsDialog.radio_arduinoMega.isChecked():
+            self.controller = "arduinoMega"
+         
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
         

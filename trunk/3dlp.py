@@ -79,38 +79,7 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
         self.setupUi(self)
     
 #*******************************************************************************
-class sliceandprintmodel(QtCore.QThread):
-    def __init__(self, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.exiting = False
-        self.alive = 1
-        self.running = 0
-    def run(self):
-        self.sliceandprint(Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber)   
 
-    def sliceandprint(self, Z_options, plane, LayerThickness, ImageHeight, ImageWidth, Filename, ExposeTime, NumberOfStartLayers, StartLayersExposureTime, screennumber):
-        pass
-#**********************************************************************************************************************************
-class slicemodel(QtCore.QThread):
-    def __init__(self, parent = None):
-        QtCore.QThread.__init__(self, parent)
-        self.exiting = False
-        self.alive = 1
-        self.running = 0       
-        
-    def run(self):
-        self.slice(plane, LayerThickness, ImageHeight, ImageWidth, Filename)   
-           
-    def slice(self, plane, LayerThickness, ImageHeight, ImageWidth, Filename):
-        global progressBLAH   
-        Z_options = "%s,%s,%s"%(Z_options_start, Z_options_end, Z_options_increment)
-        executionpath = os.getcwd() #get current execution (working) directory
-        shutil.rmtree('slices', ignore_errors = True)#clear any previous slices by removing the "slices" directory. This is re-built when freesteel slices new layers.
-        print "slicing images..."
-        
-        #begin freesteel code
-
-        print "slicing complete."
 
 #class OpenProgressBar(QtGui.QDialog, Ui_Progress):
 #    def __init__(self,parent=None):
@@ -163,10 +132,12 @@ class Main(QtGui.QMainWindow):
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
         self.ModelView.Initialize()
         self.ModelView.Start()
-        #self.ModelView.setGeometry(200,200,600,600)
+
+        #self.ModelView.setGeometry(200,200,200,200)
         self.renWin=self.ModelView.GetRenderWindow()
         self.renWin.AddRenderer(self.ren)
         self.ModelView.show()
+
         #self.ModelView.SetFixedSize(500,500)
         #self.ModelView.setBaseSize(200,200)
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-500,self.ui.ModelFrame.geometry().height()-500)
@@ -523,32 +494,6 @@ class Main(QtGui.QMainWindow):
         dialog = OpenAbout(self)
         dialog.exec_()
         
-    def sliceandprintpressed(self):
-        #combine slice and print classes here
-        pass
-
-    def slicepressed(self):
-        print "applying slicing settings"
-        global Z_options_start, Z_options_end, Z_options_increment
-        global plane
-        global LayerThickness
-        global ImageHeight
-        global ImageWidth
-        global Filename
-        Filename = self.ui.displayfilenamelabel.text()
-        LayerThickness = float(self.ui.layer_thickness.text())
-        Z_options_start = self.ui.z_options_start.text()
-        Z_options_end = self.ui.z_options_end.text()
-        Z_options_increment = self.ui.z_options_increment.text()
-        ImageWidth = float(self.ui.image_width.text())
-        ImageHeight = float(self.ui.image_height.text())
-        plane= self.ui.slicing_plane.currentText()
-        self.thread = slicemodel()
-        self.thread.start()
-        sleep(1)
-        progress = OpenProgressBar(self)
-        progress.exec_()
-
     def printpressed(self):    
         self.zscriptdoc = self.ui.zscript.document()
         self.zscript = self.zscriptdoc.toPlainText()

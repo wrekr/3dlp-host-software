@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file '3dlp_v2.ui'
+# Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Jan 20 12:57:22 2013
+# Created: Sun Jan 20 13:41:37 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -61,7 +61,7 @@ class Ui_MainWindow(object):
         self.splitter.setAutoFillBackground(False)
         self.splitter.setFrameShape(QtGui.QFrame.Box)
         self.splitter.setFrameShadow(QtGui.QFrame.Plain)
-        self.splitter.setLineWidth(2)
+        self.splitter.setLineWidth(1)
         self.splitter.setMidLineWidth(2)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.splitter.setOpaqueResize(False)

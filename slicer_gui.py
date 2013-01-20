@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp_slicer.ui'
 #
-# Created: Sun Jan 20 17:57:13 2013
+# Created: Sun Jan 20 18:12:01 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(812, 636)
+        MainWindow.resize(1024, 768)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -158,12 +158,14 @@ class Ui_MainWindow(object):
         MainWindow.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Slicer", None, QtGui.QApplication.UnicodeUTF8))
         self.centralwidget = QtGui.QWidget(MainWindow)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
-        self.frame = QtGui.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(0, 0, 811, 601))
-        self.frame.setFrameShape(QtGui.QFrame.Box)
-        self.frame.setFrameShadow(QtGui.QFrame.Plain)
-        self.frame.setLineWidth(1)
-        self.frame.setObjectName(_fromUtf8("frame"))
+        self.horizontalLayout = QtGui.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.ModelFrame = QtGui.QFrame(self.centralwidget)
+        self.ModelFrame.setFrameShape(QtGui.QFrame.Box)
+        self.ModelFrame.setFrameShadow(QtGui.QFrame.Plain)
+        self.ModelFrame.setLineWidth(1)
+        self.ModelFrame.setObjectName(_fromUtf8("ModelFrame"))
+        self.horizontalLayout.addWidget(self.ModelFrame)
         MainWindow.setCentralWidget(self.centralwidget)
         self.toolBar = QtGui.QToolBar(MainWindow)
         palette = QtGui.QPalette()
@@ -348,6 +350,11 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionQuit)
 
         self.retranslateUi(MainWindow)
+        QtCore.QObject.connect(self.actionQuit, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.close)
+        QtCore.QObject.connect(self.actionOpen_Model, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenModel)
+        QtCore.QObject.connect(self.actionSlice_Model, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.SliceModel)
+        QtCore.QObject.connect(self.actionSet_Model_Opacity, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.UpdateModelOpacity)
+        QtCore.QObject.connect(self.actionPreferences, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenSettingsDialog)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

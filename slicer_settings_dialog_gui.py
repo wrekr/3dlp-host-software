@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'slicer_settings_dialog.ui'
 #
-# Created: Sun Jan 20 17:57:43 2013
+# Created: Sun Jan 20 19:06:02 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,7 +18,7 @@ class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName(_fromUtf8("Dialog"))
         Dialog.resize(219, 258)
-        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Dialog", None, QtGui.QApplication.UnicodeUTF8))
+        Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "3DLP Slicer Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.horizontalLayout_2 = QtGui.QHBoxLayout(Dialog)
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -134,6 +134,8 @@ class Ui_Dialog(object):
         self.horizontalLayout_2.addLayout(self.verticalLayout)
 
         self.retranslateUi(Dialog)
+        QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), Dialog.reject)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), Dialog.accept)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):

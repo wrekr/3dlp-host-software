@@ -21,15 +21,13 @@ class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the
         self.OnMiddleButtonUp()
         return
 
-class EmittingStream(QtCore.QObject):
-    textWritten = QtCore.pyqtSignal(str)
-    def write(self, text):
-        self.textWritten.emit(str(text))
-
-class StartSettingsDialog(QtGui.QDialog, Ui_Dialog):
+class StartSettingsDialog(QtGui.QDialog, Ui_Dialog, Ui_MainWindow):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
+        
+    def accept(self):
+        ui.getvalues()
 
     def quit(self):
         print "quitting"
@@ -45,10 +43,6 @@ class Main(QtGui.QMainWindow):
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
-
-        # Install the custom output stream
-        sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
-        #####################
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -66,21 +60,6 @@ class Main(QtGui.QMainWindow):
         self.ModelView.resize(1006-17,716-39)
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-1,self.ui.ModelFrame.geometry().height()-1)
 
-    def __del__(self):
-        # Restore sys.stdout
-        sys.stdout = sys.__stdout__           
-        
-    def normalOutputWritten(self, text):
-        """Append text to the QTextEdit."""
-        # Maybe QTextEdit.append() works as well, but this is how I do it:
-        cursor = self.ui.consoletext.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
-        cursor.insertText(text)
-        self.ui.consoletext.setTextCursor(cursor)
-        self.ui.consoletext.ensureCursorVisible()
-            
-
-            
     def OpenModel(self):
         self.filename = QtGui.QFileDialog.getOpenFileName()
 #        self.ui.displayfilenamelabel.setText(self.filename)
@@ -98,56 +77,7 @@ class Main(QtGui.QMainWindow):
         self.modelActor.GetProperty().SetColor(1,1,1)
         self.modelActor.GetProperty().SetOpacity(1)
         self.modelActor.SetMapper(self.mapper)
-        
-        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
-        self.slicingplane=vtk.vtkPlane()
-        self.slicingplane.SetOrigin(0,0,20)
-        self.slicingplane.SetNormal(0,0,1)
-        
-        #create cutter
-        self.cutter=vtk.vtkCutter()
-        self.cutter.SetCutFunction(self.slicingplane)
-        self.cutter.SetInputConnection(self.reader.GetOutputPort())
-        self.cutter.Update()
 
-        self.cutStrips = vtk.vtkStripper() #Forms loops (closed polylines) from cutter
-        self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
-        self.cutStrips.Update()
-        self.cutPoly = vtk.vtkPolyData() #This trick defines polygons as polyline loop
-        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
-        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
-        self.cutPoly.Update()
-        #print cutStrips.GetOutput()
-        
-        # Triangle filter
-        self.cutTriangles = vtk.vtkTriangleFilter()
-        self.cutTriangles.SetInput(self.cutPoly)
-        self.cutTriangles.Update()
-        
-        #cutter mapper
-        self.cutterMapper=vtk.vtkPolyDataMapper()
-        self.cutterMapper.SetInput(self.cutPoly)
-        self.cutterMapper.SetInputConnection(self.cutTriangles.GetOutputPort())
-
-        self.cutterOutlineMapper=vtk.vtkPolyDataMapper()
-        self.cutterOutlineMapper.SetInputConnection(self.cutter.GetOutputPort())          
-             
-#        #create plane actor
-        self.slicingplaneActor=vtk.vtkActor()
-        self.slicingplaneActor.GetProperty().SetColor(1.0,1.0,1.0)
-        self.slicingplaneActor.GetProperty().SetLineWidth(4)
-        self.slicingplaneActor.SetMapper(self.cutterMapper)
-#        
-        #create plane actor
-        self.slicingplaneoutlineActor=vtk.vtkActor()
-        self.slicingplaneoutlineActor.GetProperty().SetColor(1.0,0,0)
-        self.slicingplaneoutlineActor.GetProperty().SetLineWidth(4)
-        self.slicingplaneoutlineActor.SetMapper(self.cutterOutlineMapper)
-#        
-#        self.sliceActor = vtk.vtkActor()
-#        self.sliceActor.GetProperty().SetColor(1,1,1)
-#        self.sliceActor.SetMapper(self.cutterMapper)
-# 
         #create outline mapper
         self.outline = vtk.vtkOutlineFilter()
         self.outline.SetInputConnection(self.reader.GetOutputPort())
@@ -178,8 +108,6 @@ class Main(QtGui.QMainWindow):
         self.axesActor.SetFaceTextScale(0.25)
         self.axesActor.SetZFaceTextRotation(90)
         self.ren.AddActor(self.modelActor)
-        self.ren.AddActor(self.slicingplaneActor)
-        self.ren.AddActor(self.slicingplaneoutlineActor)
         self.ren.AddActor(self.outlineActor)
        
         #create orientation markers
@@ -193,7 +121,13 @@ class Main(QtGui.QMainWindow):
         self.ModelView.Render() #update model view
     
     def SliceModel(self):
-        self.slicer = slicer.slicer()       
+        self.slicer = slicer.slicer()
+        self.slicer.imageheight = 800
+        self.slicer.imagewidth = 600
+        # check to see if starting depth is less than ending depth!! this assumption is crucial
+        self.slicer.startingdepth = 0.0
+        self.slicer.endingdepth = 50.0
+        self.slicer.layerincrement = 0.5       
         self.slicer.OpenModel("wfu_cbi_skull_cleaned.stl")
         self.slicer.slice()
         
@@ -209,9 +143,11 @@ class Main(QtGui.QMainWindow):
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
             
+    def getvalues(self):
+        print "got here"
+            
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
-        
         self.SettingsDialog.exec_()
         
     def getSettingsDialogValues(self):
@@ -220,27 +156,16 @@ class Main(QtGui.QMainWindow):
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
  
-        
     def openaboutdialog(self):
         dialog = OpenAbout(self)
         dialog.exec_()
-        
-################################################################################
-def GetInHMS(seconds):
-    m, s = divmod(seconds, 60)
-    h, m = divmod(m, 60)
-    #print "%d:%02d:%02d" % (h, m, s)
-    return "%d:%02d:%02d" % (h, m, s)
-
-################################################################################        
+           
 def main():
-    ################pyQt stuff
     app = QtGui.QApplication(sys.argv)
     window=Main()
     window.show()
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
-    ###############
     
 if __name__ == "__main__":
     main()

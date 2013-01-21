@@ -26,8 +26,7 @@ class slicer():
         self.clean = vtk.vtkCleanPolyData()
         self.clean.SetInputConnection(self.reader.GetOutputPort())
         self.clean.PointMergingOn()
-        
-        
+         
     def slice(self):
         #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
         self.slicingplane=vtk.vtkPlane()
@@ -69,20 +68,12 @@ class slicer():
         #Add renderer to renderwindow and render
         self.renWin = vtk.vtkRenderWindow()
         self.renWin.AddRenderer(self.sliceren)
-        self.renWin.SetSize(800, 600)
-        self.renWin.SetWindowName("3DLP Standalone STL SLicer")      
+        self.renWin.SetSize(self.imageheight, self.imagewidth)
+        self.renWin.SetWindowName("3DLP STL SLicer")      
         self.renWin.Render()
-       
-        # check to see if starting depth is less than ending depth!! this assumption is crucial
-        
-        self.startingdepth = 0.0
-        self.endingdepth = 50.0
-        self.layerincrement = 0.5
-        self.imageheight = 800
-        self.imagewidth = 600
         
         os.chdir(os.getcwd()+"\\slices") #change to slices directory       
-        x = 0.0
+        x = self.startingdepth
         layercount = 0
         starttime = time.time()
         while x < self.endingdepth:
@@ -117,8 +108,7 @@ class slicer():
         self.writer.SetFileName(filename)
         #writer.WriteToMemoryOn()
         self.writer.Write()
-        
-      
+              
 #slicer = slicer()
 #Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 #filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file

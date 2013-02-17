@@ -38,6 +38,27 @@ class ramps():
     def send(self):
         pass
     
+    def EnableZ(self):
+        print "Z Enabled."
+        
+    def Z_Up(self):
+        print "set Z to UP"
+    
+    def Z_Down(self):
+        print "Set Z to DOWN"
+        
+    def X_Up(self):
+        print "Set X to UP"
+        
+    def X_Down(self):
+        print "set X to DOWN"
+        
+    def IncrementZ(self):
+        pass
+    
+    def IncrementX(self):
+        pass
+    
 class pymcu():
     def __init__(self):
         print "initialized"

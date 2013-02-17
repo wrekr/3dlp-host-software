@@ -7,22 +7,20 @@ Created on Sun Nov 18 17:06:39 2012
 
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
-import re, os
+import re, os, hardware
 
 class printmodel(QtCore.QThread):
-    def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, Port, NumberOfStartLayers, StartLayersExposureTime, projector_baud
-                , projector_com, projectorcontrolenabled, controller):
+    def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, NumberOfStartLayers, StartLayersExposureTime
+                , projectorcontrolenabled, controller, slideshowenabled):
         print "HEY"
         self.zscript = zscript
         self.COM_Port = COM_Port
         self.Printer_Baud = Printer_Baud
         self.ExposeTime = ExposeTime
-        self.Port = Port
         self.NumberOfStartLayers = NumberOfStartLayers
         self.StartLayersExposureTime = StartLayersExposureTime
-        self.projector_baud = projector_baud
-        self.projector_com = projector_com
         self.projectorcontrolenabled = projectorcontrolenabled
+        self.slideshowenabled = slideshowenabled
         self.controller = controller
         QtCore.QThread.__init__(self, parent = None)
         self.printmodel() #start the printmodel method below
@@ -63,6 +61,10 @@ class printmodel(QtCore.QThread):
         global startingexecutionpath
         startingexecutionpath = executionpath
         #**********************************************
+        if self.controller=="ramps":
+            print "Connecting to RAMPS board..."
+            self.printer = hardware.ramps(self.COM_Port)
+            
         if self.controller=="arduinoUNO":
             print "Connecting to printer firmware..."
             try:
@@ -85,7 +87,7 @@ class printmodel(QtCore.QThread):
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
         #slideshow starts around here so if it's disabled kill the thread now 
-        if slideshowenabled==False:
+        if self.slideshowenabled==False:
             return         #kill it now  
         concatenater = "\\"
         seq = (executionpath, "slices") #concatenate this list of strings with "str" as a separator
@@ -112,7 +114,7 @@ class printmodel(QtCore.QThread):
         layers = imgnum
 
         print "\nNumber of Layers: ", NumberOfImages
-        if slideshowenabled==True:
+        if self.slideshowenabled==True:
              #open slideshow window
              self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
              self.SlideShow.show() #show slideshow window

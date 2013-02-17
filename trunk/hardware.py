@@ -4,8 +4,9 @@ Created on Mon Dec 17 21:01:39 2012
 
 @author: Chris
 """
+import serial
 
-class arduino_uno(self):
+class arduino_uno():
     def __init__(self):
         print "initialized"
     
@@ -15,7 +16,7 @@ class arduino_uno(self):
     def send(self):
         pass
     
-class arduino_mega(self):
+class arduino_mega():
     def __init__(self):
         print "initialized"
     
@@ -25,17 +26,19 @@ class arduino_mega(self):
     def send(self):
         pass
     
-class ramps(self):
-    def __init__(self):
-        print "initialized"
-    
-    def connect(self):
-        pass
+class ramps():
+    def __init__(self, port):
+        try:
+            self.board = serial.Serial("%s"%port, 115200)
+            print "initialized connection successfully"
+            print self.board.readline()
+        except:
+            print "Could not connect to RAMPS board."
     
     def send(self):
         pass
     
-class pymcu(self):
+class pymcu():
     def __init__(self):
         print "initialized"
     

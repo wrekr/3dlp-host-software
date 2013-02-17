@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'settingsdialog.ui'
 #
-# Created: Sun Jan 20 16:24:35 2013
+# Created: Sun Feb 17 13:32:18 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -53,10 +53,10 @@ class Ui_SettingsDialogBaseClass(object):
         self.radio_pyMCU.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "PyMCU", None, QtGui.QApplication.UnicodeUTF8))
         self.radio_pyMCU.setObjectName(_fromUtf8("radio_pyMCU"))
         self.horizontalLayout_4.addWidget(self.radio_pyMCU)
-        self.radioButton = QtGui.QRadioButton(self.groupBox_2)
-        self.radioButton.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "RAMPS", None, QtGui.QApplication.UnicodeUTF8))
-        self.radioButton.setObjectName(_fromUtf8("radioButton"))
-        self.horizontalLayout_4.addWidget(self.radioButton)
+        self.radio_ramps = QtGui.QRadioButton(self.groupBox_2)
+        self.radio_ramps.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "RAMPS", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_ramps.setObjectName(_fromUtf8("radio_ramps"))
+        self.horizontalLayout_4.addWidget(self.radio_ramps)
         self.verticalLayout.addLayout(self.horizontalLayout_4)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
@@ -264,6 +264,7 @@ class Ui_SettingsDialogBaseClass(object):
 
         self.retranslateUi(SettingsDialogBaseClass)
         QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), SettingsDialogBaseClass.reject)
+        QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), SettingsDialogBaseClass.ApplySettings)
         QtCore.QMetaObject.connectSlotsByName(SettingsDialogBaseClass)
 
     def retranslateUi(self, SettingsDialogBaseClass):

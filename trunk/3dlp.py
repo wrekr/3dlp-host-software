@@ -69,12 +69,11 @@ class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
-
-    def getValues(self):
-        return self.pickcom.currentText()
-
-    def quit(self):
-        print "quitting"
+        
+    def ApplySettings(self):
+        print "Applying Settings"
+        self.emit(QtCore.SIGNAL('ApplySettings()'))
+        self.reject()
 
 class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
     def __init__(self, parent=None):
@@ -90,9 +89,7 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
     
-#*******************************************************************************
-
-
+#*****************************
 #class OpenProgressBar(QtGui.QDialog, Ui_Progress):
 #    def __init__(self,parent=None):
 #        QtGui.QDialog.__init__(self,parent)
@@ -186,6 +183,7 @@ class Main(QtGui.QMainWindow):
         #IF YOU'RE EVER GOING TO LOAD PREVIOUS SETTINGS, DO IT HERE. 
         self.parser = SafeConfigParser()
         self.parser.read('config.ini')
+        self.LoadSettingsFromConfigFile()
 
         #*********************************
         #After settings are loaded (default or saved), load all the settings into variables for use.
@@ -443,7 +441,43 @@ class Main(QtGui.QMainWindow):
                 self.ren.Render()
                 self.ModelView.Render()
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
-            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
+            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)       
+            
+    def LoadSettingsFromConfigFile(self):
+        print "Loading printing settings from config.ini"
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        self.printerbaud = bauddict[self.parser.get('program_defaults', 'Printer_Baud')]
+ 
+        self.zscript = self.parser.get('scripting', 'sequence')
+        self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
+
+        self.ExposeTime = self.parser.get('program_defaults', 'ExposeTime')
+        self.NumberOfStartLayers = self.parser.get('program_defaults', 'NumStartLayers')
+        self.StartLayersExposureTime = self.parser.get('program_defaults', 'StartLayersExposeTime')
+        
+        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+            self.controller = "arduinoUNO"
+        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+            self.controller = "arduinoMEGA"
+        elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+            self.controller = "pymcu"
+        elif self.parser.get('program_defaults', 'printercontroller') == 'RAMPS':
+            self.controller = "ramps"
+        if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
+            self.slideshowenabled = True
+        else:
+            self.slideshowenabled = False
+        if self.parser.get('program_defaults', 'printercontrol') == 'True':
+            self.enableprintercontrol = True
+        else:
+            self.enableprintercontrol = False
+        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
+            self.projectorcontrolenabled = True
+        else:
+            self.projectorcontrolenabled = False
+            
+        self.COM_Port = self.parser.get('program_defaults', 'printerCOM')
+        self.Printer_Baud = self.parser.get('program_defaults', 'printerBAUD')
             
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
@@ -461,40 +495,39 @@ class Main(QtGui.QMainWindow):
         for x in range(self.screencount):
             self.SettingsDialog.pickscreen.addItem("")
             self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
- 
+
         bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.parser.get('program_defaults', 'Printer_Baud')])
+        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.printerbaud])
  
         #insert all other values from current namespace
-        self.SettingsDialog.zscript.setPlainText(self.parser.get('scripting', 'sequence'))
-        self.SettingsDialog.projector_poweroffcommand.setText(self.parser.get('program_defaults', 'PowerOffCommand'))
-        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.parser.get('program_defaults', 'Printer_Baud')])
-        self.SettingsDialog.exposure_time.setText(self.parser.get('program_defaults', 'ExposeTime'))
-        self.SettingsDialog.starting_layers.setText(self.parser.get('program_defaults', 'NumStartLayers'))
-        self.SettingsDialog.starting_layer_exposure.setText(self.parser.get('program_defaults', 'StartLayersExposeTime'))
+        self.SettingsDialog.zscript.setPlainText(self.zscript)
+        self.SettingsDialog.projector_poweroffcommand.setText(self.projector_poweroffcommand)
+
+        self.SettingsDialog.exposure_time.setText(self.exposure_time)
+        self.SettingsDialog.starting_layers.setText(self.starting_layers)
+        self.SettingsDialog.starting_layer_exposure.setText(self.starting_layer_exposure)
         
-        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+        if self.controller == 'arduinoUNO':
             self.SettingsDialog.radio_arduinoUno.click()
-        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+        elif self.controller == 'arduinoMEGA':
             self.SettingsDialog.radio_arduinoMega.click()
-        elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
+        elif self.controller == 'pymcu':
             self.SettingsDialog.radio_pyMCU.click()
+        elif self.controller == 'ramps':
+            self.SettingsDialog.radio_ramps.click()
         if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
             self.SettingsDialog.enableslideshow.click()
         if self.parser.get('program_defaults', 'printercontrol') == 'True':
             self.SettingsDialog.enableprintercontrol.click()
         if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
             self.SettingsDialog.projectorcontrol.click()
- 
-        print self.SettingsDialog.getValues()
         
-        self.getSettingsDialogValues()
-        print self.projector_baud
-
+        #self.getSettingsDialogValues()
+        self.connect(self.SettingsDialog, QtCore.SIGNAL('ApplySettings()'), self.getSettingsDialogValues)
         self.SettingsDialog.exec_()
         
     def getSettingsDialogValues(self):
+        print "got here"
         self.zscript = self.SettingsDialog.zscript.document().toPlainText()
         self.COM_Port = self.SettingsDialog.pickcom.currentText()
         self.Printer_Baud = int(self.SettingsDialog.printerbaud.currentText())
@@ -525,6 +558,8 @@ class Main(QtGui.QMainWindow):
             self.controller = "arduinoUNO"
         if self.SettingsDialog.radio_arduinoMega.isChecked():
             self.controller = "arduinoMEGA"
+        if self.SettingsDialog.radio_ramps.isChecked():
+            self.controller = "ramps"
          
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
@@ -556,12 +591,11 @@ class Main(QtGui.QMainWindow):
         dialog.exec_()
         
     def printpressed(self):    
-        self.getSettingsDialogValues()
+        #self.getSettingsDialogValues()
           
-        self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime,self.Port
-                                                , self.NumberOfStartLayers, self.StartLayersExposureTime, self.projector_baud
-                                                , self.projector_com
-                                                , self.projectorcontrolenabled, self.controller)
+        self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
+                                                , self.NumberOfStartLayers, self.StartLayersExposureTime
+                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
         self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      

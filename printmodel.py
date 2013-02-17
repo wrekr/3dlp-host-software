@@ -8,15 +8,18 @@ Created on Sun Nov 18 17:06:39 2012
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
 import re, os, hardware
+from slideshowgui import SlideShowWindow
+from time import sleep
 
 class printmodel(QtCore.QThread):
     def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, NumberOfStartLayers, StartLayersExposureTime
-                , projectorcontrolenabled, controller, slideshowenabled):
+                , projectorcontrolenabled, controller, slideshowenabled, screennumber):
         print "HEY"
         self.zscript = zscript
         self.COM_Port = COM_Port
         self.Printer_Baud = Printer_Baud
-        self.ExposeTime = ExposeTime
+        self.ExposeTime = float(ExposeTime)
+        self.screennumber = screennumber
         self.NumberOfStartLayers = NumberOfStartLayers
         self.StartLayersExposureTime = StartLayersExposureTime
         self.projectorcontrolenabled = projectorcontrolenabled
@@ -42,10 +45,10 @@ class printmodel(QtCore.QThread):
         X_DOWN - change direction of x axis to move down
         
         """
-        commands = []
+        self.commands = []
         for match in re.findall("\[(.*?)\]", self.zscript):
             print match
-            commands.append(match)      
+            self.commands.append(match)      
         #*******************************************
 
         if self.projectorcontrolenabled==True:
@@ -119,8 +122,7 @@ class printmodel(QtCore.QThread):
              self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
              self.SlideShow.show() #show slideshow window
              self.SlideShow.setupUi(self)
-             screennumber = int(screennumber) #convert to integer
-             screen = QtGui.QDesktopWidget().availableGeometry(screen = screennumber) #get available geometry of the screen chosen
+             screen = QtGui.QDesktopWidget().availableGeometry(screen = int(self.screennumber)) #get available geometry of the screen chosen
              self.SlideShow.move(screen.left(), screen.top()) #move window to the top-left of the chosen screen
              self.SlideShow.resize(screen.width(), screen.height()) #resize the window to fit the chosen screen
              self.SlideShow.showMaximized()
@@ -128,11 +130,10 @@ class printmodel(QtCore.QThread):
              #size = self.SlideShow.frameGeometry()
              #print size 
              #start slideshow
-        if printercontrolenabled == True and arduinocontrolled == True:
-            print "Enabling Stepper Motor Drivers..."
-            board.digital[ZEnablePin].write(1)
-            board.digital[XEnablePin].write(1)
-            print "..ok."
+        print "Enabling Stepper Motor Drivers..."
+        self.printer.EnableZ()
+        #self.printer.EnableX()
+        print "..ok."
             
         print "Printing..." 
  
@@ -142,11 +143,11 @@ class printmodel(QtCore.QThread):
         ProgPercentage = 0.0
         for layer in range(NumberOfImages):
             TimeRemaining = GetInHMS(eta)
-            if layer >= NumberOfStartLayers:
-                ExposureTime = ExposeTime
+            if layer >= self.NumberOfStartLayers:
+                ExposureTime = float(self.ExposeTime)
             else:
-                ExposureTime = StartLayersExposureTime
-            if slideshowenabled:
+                ExposureTime = self.StartLayersExposureTime
+            if self.slideshowenabled:
                 blankpath = "%s\\10x10black.png" %(startingexecutionpath)
                 self.pm = QtGui.QPixmap(blankpath)
                 pmscaled = self.pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
@@ -155,46 +156,53 @@ class printmodel(QtCore.QThread):
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
             
-            if printercontrolenabled==True and arduinocontrolled==True: #custom scripted sequence::
-                print "sending custom scripted command sequence..."
-                for command in commands:
-                    if command == "Z_UP":
-                        board.digital[ZDirPin].write(1)
-                    elif command == "Z_DOWN":
-                        board.digital[ZDirPin].write(0)
-                    elif command == "X_UP":
-                        board.digital[XDirPin].write(1)
-                    elif command == "X_DOWN":
-                        board.digital[XDirPin].write(0)
-                    #make sure the next two cases are last to avoid false positives
-                    elif command.startsWith("Z"):
-                        amount = command[2:command.size()]
-                        numsteps = int(amount)
-                        for step in range(numsteps):                       
-                            board.digital[ZStepPin].write(1)
-                            sleep(.001)
-                            board.digital[ZStepPin].write(0)
-                    elif command.startsWith("X"):
-                        amount = command[2:command.size()]
-                        numsteps = int(amount)
-                        for step in range(numsteps):
-                            board.digital[XStepPin].write(1)
-                            sleep(.001)
-                            board.digital[XStepPin].write(0)
+            print "sending custom scripted command sequence..."
+            for command in self.commands:
+                if command == "Z_UP":
+                    #board.digital[ZDirPin].write(1)
+                    printer.Z_Up()
+                elif command == "Z_DOWN":
+                    #board.digital[ZDirPin].write(0)
+                    printer.Z_Down()
+                elif command == "X_UP":
+                    #board.digital[XDirPin].write(1)
+                    printer.Z_Up()
+                elif command == "X_DOWN":
+                    #board.digital[XDirPin].write(0)
+                    printer.X_Down()
+                #make sure the next two cases are last to avoid false positives
+                elif command.startswith("Z"):
+                    amount = command[2:command.__len__()]
+                    numsteps = int(amount)
+                    print "Incrementing Z axis %d steps" %numsteps
+                    for step in range(numsteps):                       
+                        #board.digital[ZStepPin].write(1)
+                        self.printer.IncrementZ()
+                        #sleep(.001)
+                        #board.digital[ZStepPin].write(0)
+                elif command.startswith("X"):
+                    amount = command[2:command.__len__()]
+                    numsteps = int(amount)
+                    print "Incrementing X axis %d steps"%numsteps
+                    for step in range(numsteps):
+                        #board.digital[XStepPin].write(1)
+                        self.printer.IncrementX()
+                        #sleep(.001)
+                        #board.digital[XStepPin].write(0)
                     
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime
             print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
             layer = layer - 0
             pm = QtGui.QPixmap(FileList[layer])
-            if slideshowenabled:
+            if self.slideshowenabled:
                 pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
                 self.SlideShow.label.setPixmap(pmscaled)
                 QCoreApplication.processEvents()
             
             self.emit(QtCore.SIGNAL('updatePreview')) #emit signal to update preview image
-            sleep(ExposureTime)
-            eta = eta - ExposureTime
+            sleep(float(ExposureTime))
+            eta = eta - float(ExposureTime)
             ProgPercentage = ProgPercentage + percentagechunk         
 
         print "\nPrint job completed successfully. %d layers were built." %layers
@@ -202,3 +210,9 @@ class printmodel(QtCore.QThread):
             board.exit() #close firmata connection 
         if projectorcontrolenabled:
             print "Sending power off command to projector."
+            
+def GetInHMS(seconds):
+    m, s = divmod(seconds, 60)
+    h, m = divmod(m, 60)
+    #print "%d:%02d:%02d" % (h, m, s)
+    return "%d:%02d:%02d" % (h, m, s)

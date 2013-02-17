@@ -38,7 +38,7 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 import os
 from qtgui import Ui_MainWindow #import generated class from ui file from designer 
-from slideshowgui import SlideShowWindow
+
 from aboutdialoggui import Ui_Dialog
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
@@ -478,6 +478,7 @@ class Main(QtGui.QMainWindow):
             
         self.COM_Port = self.parser.get('program_defaults', 'printerCOM')
         self.Printer_Baud = self.parser.get('program_defaults', 'printerBAUD')
+        self.screennumber = self.parser.get('program_defaults', 'screennumber')
             
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
@@ -595,7 +596,7 @@ class Main(QtGui.QMainWindow):
           
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime
-                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled)
+                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled, self.screennumber)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
         self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      

@@ -7,11 +7,11 @@ Created on Sun Nov 18 17:06:39 2012
 
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
-import re
+import re, os
 
 class printmodel(QtCore.QThread):
     def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, Port, NumberOfStartLayers, StartLayersExposureTime, projector_baud
-                , projector_com, projector_databits, projector_parity, projector_stopbits, projectorcontrolenabled, controller):
+                , projector_com, projectorcontrolenabled, controller):
         print "HEY"
         self.zscript = zscript
         self.COM_Port = COM_Port
@@ -22,22 +22,15 @@ class printmodel(QtCore.QThread):
         self.StartLayersExposureTime = StartLayersExposureTime
         self.projector_baud = projector_baud
         self.projector_com = projector_com
-        self.projector_databits = projector_databits
-        self.projector_parity = projector_parity
-        self.projector_stopbits = projector_stopbits
         self.projectorcontrolenabled = projectorcontrolenabled
         self.controller = controller
-        parent = None
-        QtCore.QThread.__init__(self, parent)
-        self.exiting = False
-        self.alive = 1
-        self.running = 0
+        QtCore.QThread.__init__(self, parent = None)
         self.printmodel() #start the printmodel method below
      
     def printmodel(self):
         print "RUNNING"
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
-        global pm        
+    
         #************Start custom z scripting*******
         """
         syntax for custom z scripting; 
@@ -51,19 +44,11 @@ class printmodel(QtCore.QThread):
         X_DOWN - change direction of x axis to move down
         
         """
-        #print "Custom Scripting:\n"
         commands = []
         for match in re.findall("\[(.*?)\]", self.zscript):
-            #print match
+            print match
             commands.append(match)      
         #*******************************************
-        parity = {'None':'N', 'Even':'E', 'Odd':'O', 'Mark':'M', 'Space':'S'}
-        stopbits = {'1':1, '1.5':1.5, '2':2}       
-        databits = {'5':'5', '6':'6', '7':'7', '8':'8'}
-        projector_parity_lookup = parity['%s'%self.projector_parity]
-        projector_stopbits_lookup = stopbits['%s'%self.projector_stopbits]
-        projector_databits_lookup = databits['%s'%self.projector_databits]
-        projector_databits_lookup = int(projector_databits_lookup)
 
         if self.projectorcontrolenabled==True:
             #try connecting to projector com port
@@ -78,25 +63,24 @@ class printmodel(QtCore.QThread):
         global startingexecutionpath
         startingexecutionpath = executionpath
         #**********************************************
-        if printercontrolenabled==True and arduinocontrolled==True:
+        if self.controller=="arduinoUNO":
             print "Connecting to printer firmware..."
-            global board
-            if IsArduinoUno == True:
-                try:
-                    board = pyfirmata.Arduino("%s"%COM_Port)
-                    print "no issues opening serial connection to firmata..."
-                except:
-                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
-                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                    return
-            if IsArduinoMega == True:
-                try:
-                    board = pyfirmata.ArduinoMega("%s"%COM_Port)
-                    print "no issues opening serial connection to firmata..."
-                except:
-                    print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %COM_Port
-                    self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                    return
+            try:
+                self.board = pyfirmata.Arduino("%s"%self.COM_Port)
+                print "no issues opening serial connection to firmata..."
+            except:
+                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
+                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+                return
+                
+        if self.controller=="arduinoMEGA":
+            try:
+                self.board = pyfirmata.ArduinoMega("%s"%self.COM_Port)
+                print "no issues opening serial connection to firmata..."
+            except:
+                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
+                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+                return
 
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
@@ -162,8 +146,8 @@ class printmodel(QtCore.QThread):
                 ExposureTime = StartLayersExposureTime
             if slideshowenabled:
                 blankpath = "%s\\10x10black.png" %(startingexecutionpath)
-                pm = QtGui.QPixmap(blankpath)
-                pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
+                self.pm = QtGui.QPixmap(blankpath)
+                pmscaled = self.pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
                 self.SlideShow.label.setPixmap(pmscaled) #set black pixmap for blank slide     
                 QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image

@@ -463,7 +463,7 @@ class Main(QtGui.QMainWindow):
             self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
  
         bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[parser.get('program_defaults', 'Printer_Baud')])
+        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.parser.get('program_defaults', 'Printer_Baud')])
  
         #insert all other values from current namespace
         self.SettingsDialog.zscript.setPlainText(self.parser.get('scripting', 'sequence'))
@@ -522,9 +522,9 @@ class Main(QtGui.QMainWindow):
             self.controller = "pymcu"
         self.screennumber = self.SettingsDialog.pickscreen.currentText() #get the screen number from picker
         if self.SettingsDialog.radio_arduinoUno.isChecked():
-            self.controller = "arduinoUno"
+            self.controller = "arduinoUNO"
         if self.SettingsDialog.radio_arduinoMega.isChecked():
-            self.controller = "arduinoMega"
+            self.controller = "arduinoMEGA"
          
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
@@ -556,44 +556,11 @@ class Main(QtGui.QMainWindow):
         dialog.exec_()
         
     def printpressed(self):    
-        self.zscriptdoc = self.ui.zscript.document()
-        self.zscript = self.zscriptdoc.toPlainText()
-        self.COM_Port = self.ui.pickcom.currentText()
-        self.Printer_Baud = int(self.ui.printerbaud.currentText())
-        self.ExposeTime = float(self.ui.exposure_time.text())
-        #AdvanceTime = float(self.ui.advance_time.text())
-        self.Port = self.ui.remote_port.text()
-        self.NumberOfStartLayers = float(self.ui.starting_layers.text())
-        self.StartLayersExposureTime = float(self.ui.starting_layer_exposure.text())
-        self.projector_com = self.ui.projector_pickcom.currentText()
-        self.projector_baud = self.ui.projector_baud.currentText()
-        self.projector_parity = self.ui.projector_parity.currentText()
-        self.projector_stopbits = self.ui.projector_stopbits.currentText()
-        self.projector_databits = self.ui.projector_databits.currentText()
-
-        if self.ui.projectorcontrol.isChecked():
-            self.projectorcontrolenabled = True
-        else:
-            self.projectorcontrolenabled = False
-            
-        if self.ui.enableprintercontrol.isChecked():
-            self.printercontrolenabled = True  
-        else:
-            self.printercontrolenabled = False
-
-        if self.ui.enableslideshow.isChecked():
-            self.slideshowenabled = True
-        if self.ui.radio_pymcu.isChecked():
-            self.controller = "pymcu"
-        self.screennumber = self.ui.pickscreen.currentText() #get the screen number from picker
-        if self.ui.radio_uno.isChecked():
-            self.controller = "arduinoUno"
-        if self.ui.radio_mega.isChecked():
-            self.controller = "arduinoMega"
+        self.getSettingsDialogValues()
           
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime,self.Port
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime, self.projector_baud
-                                                , self.projector_com, self.projector_databits, self.projector_parity, self.projector_stopbits
+                                                , self.projector_com
                                                 , self.projectorcontrolenabled, self.controller)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      

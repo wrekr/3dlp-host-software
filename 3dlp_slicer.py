@@ -27,7 +27,7 @@ class StartSettingsDialog(QtGui.QDialog, Ui_Dialog, Ui_MainWindow):
         self.setupUi(self)
         
     def accept(self):
-        ui.getvalues()
+        Main.getvalues()
 
     def quit(self):
         print "quitting"
@@ -42,7 +42,7 @@ class Main(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
-        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Slicer", None, QtGui.QApplication.UnicodeUTF8))
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)

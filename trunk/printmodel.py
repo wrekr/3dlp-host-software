@@ -172,23 +172,14 @@ class printmodel(QtCore.QThread):
                     printer.X_Down()
                 #make sure the next two cases are last to avoid false positives
                 elif command.startswith("Z"):
-                    amount = command[2:command.__len__()]
-                    numsteps = int(amount)
+                    numsteps = int(command[2:command.__len__()])
                     print "Incrementing Z axis %d steps" %numsteps
-                    for step in range(numsteps):                       
-                        #board.digital[ZStepPin].write(1)
-                        self.printer.IncrementZ()
-                        #sleep(.001)
-                        #board.digital[ZStepPin].write(0)
+                    self.printer.IncrementZ(numsteps)
+
                 elif command.startswith("X"):
-                    amount = command[2:command.__len__()]
-                    numsteps = int(amount)
+                    numsteps = int(command[2:command.__len__()])
                     print "Incrementing X axis %d steps"%numsteps
-                    for step in range(numsteps):
-                        #board.digital[XStepPin].write(1)
-                        self.printer.IncrementX()
-                        #sleep(.001)
-                        #board.digital[XStepPin].write(0)
+                    self.printer.IncrementX(numsteps)
                     
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime

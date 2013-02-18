@@ -10,22 +10,10 @@ class arduino_uno():
     def __init__(self):
         print "initialized"
     
-    def connect(self):
-        pass
-    
-    def send(self):
-        pass
-    
 class arduino_mega():
     def __init__(self):
-        print "initialized"
-    
-    def connect(self):
-        pass
-    
-    def send(self):
-        pass
-    
+        print "initialized"  
+
 class ramps():
     def __init__(self, port):
         try:
@@ -34,9 +22,6 @@ class ramps():
             print self.board.readline()
         except:
             print "Could not connect to RAMPS board."
-    
-    def send(self):
-        pass
     
     def EnableZ(self):
         print "Z Enabled."
@@ -53,18 +38,24 @@ class ramps():
     def X_Down(self):
         print "set X to DOWN"
         
-    def IncrementZ(self):
+    def IncrementZ(self, steps):
+        print "sending G%d" %steps
+        self.board.write('G%d'%steps)
+        if self.board.readline() == "OK":
+            print "success"
+        else:
+            print "FAILED"
+    
+    def IncrementX(self, steps):
         pass
     
-    def IncrementX(self):
+    def HomeZ(self):
+        pass
+    
+    def HomeX(self):
         pass
     
 class pymcu():
     def __init__(self):
         print "initialized"
     
-    def connect(self):
-        pass
-        
-    def send(self):
-        pass

@@ -7,12 +7,13 @@ www.chrismarion.net
 
 Still to add/known issues:
     -clean exiting of threads, possibly using constant timers? ARGHHH
-    -after the printmodel and slicemodel classes are perfected combine them into print&slice
     -fix ETA and advance time
     -projector control functionality is not finished.
     -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
     -Manual printer control dialog for manually jogging each printer axis
     -still looking for a good method of calibrating for X and Y (image size)
+    -raise the bed to a final position after build is complete
+    -PID control of Z position
 """
 from subprocess import Popen, PIPE
 import sys
@@ -33,6 +34,8 @@ import vtk
 from settingsdialog import Ui_SettingsDialogBaseClass
 from manual_control_gui import Ui_Manual_Control
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+import hardware
 
 #**********************************
 
@@ -76,9 +79,36 @@ class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
         self.reject()
 
 class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
-    def __init__(self, parent=None):
-        QtGui.QDialog.__init__(self, parent)
+    def __init__(self, parent):
+        QtGui.QDialog.__init__(self, None)
+        print "Connecting to RAMPS board..."
+        self.printer = hardware.ramps(parent.COM_Port)
         self.setupUi(self)
+        
+    def Z_up(self):
+        if self.Z_001.isChecked(): #Z 0.01mm is checked
+            self.printer.IncrementZ((1/parent.pitch)*parent.steps_per_rev*.01)
+        elif self.Z_01.isChecked(): #Z 0.1mm is checked
+            print "yay"
+        elif self.Z_1.isChecked(): #Z 1mm is checked
+            print "yay"
+        elif self.Z_10.isChecked(): #Z 10mm is checked
+            print "yay"
+            
+    def Z_down(self):
+        pass
+    
+    def X_up(self):
+        pass
+    
+    def X_down(self):
+        pass
+    
+    def Zero_Z(self):
+        pass
+    
+    def Zero_X(self):
+        pass
         
     def quit(self):
         print "quitting"
@@ -479,6 +509,9 @@ class Main(QtGui.QMainWindow):
         self.COM_Port = self.parser.get('program_defaults', 'printerCOM')
         self.Printer_Baud = self.parser.get('program_defaults', 'printerBAUD')
         self.screennumber = self.parser.get('program_defaults', 'screennumber')
+        
+        self.pitch = int(self.parser.get('printer_hardware', 'Leadscrew_pitch'))
+        self.steps_per_rev = int(self.parser.get('printer_hardware', 'Steps_per_rev'))
             
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)

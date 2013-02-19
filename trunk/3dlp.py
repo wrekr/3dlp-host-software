@@ -87,94 +87,94 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         self.mm_per_step = float(parent.pitch)/float(parent.steps_per_rev)
         self.Zpos = 0.0
         self.Xpos = 0.0
-        
+
     def Z_up(self):
         if self.Z_001.isChecked(): #Z 0.01mm is checked
             self.Zpos = self.Zpos+.01
             self.DRO_Z.display(float(self.DRO_Z.value())+.01)
             self.printer.IncrementZ(.01/self.mm_per_step)
-            print "incrementing %r steps"%(.01/self.mm_per_step)
+            #print "incrementing %r steps"%(.01/self.mm_per_step)
         elif self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos+.1
             self.DRO_Z.display(float(self.DRO_Z.value())+.1)
             self.printer.IncrementZ(.1/self.mm_per_step)
-            print "incrementing %r steps"%(.1/self.mm_per_step)
+            #print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
             self.Zpos = self.Zpos+1
             self.DRO_Z.display(float(self.DRO_Z.value())+1)
             self.printer.IncrementZ(1/self.mm_per_step)
-            print "incrementing %r steps"%(1/self.mm_per_step)
+            #print "incrementing %r steps"%(1/self.mm_per_step)
         elif self.Z_10.isChecked(): #Z 10mm is checked
             self.Zpos = self.Zpos+10
             self.DRO_Z.display(float(self.DRO_Z.value())+10)
             self.printer.IncrementZ(10/self.mm_per_step)
-            print "incrementing %r steps"%(10/self.mm_per_step)
+            #print "incrementing %r steps"%(10/self.mm_per_step)
 
     def Z_down(self):
         if self.Z_001.isChecked(): #Z 0.01mm is checked
             self.Zpos = self.Zpos-.01
             self.DRO_Z.display(float(self.DRO_Z.value())-.01)
             self.printer.IncrementZ(.01/self.mm_per_step)
-            print "incrementing %r steps"%(-.01/self.mm_per_step)
+            #print "incrementing %r steps"%(-.01/self.mm_per_step)
         elif self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos-.1
             self.DRO_Z.display(float(self.DRO_Z.value())-.1)
             self.printer.IncrementZ(.1/self.mm_per_step)
-            print "incrementing %r steps"%(-.1/self.mm_per_step)
+            #print "incrementing %r steps"%(-.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
             self.Zpos = self.Zpos-1
             self.DRO_Z.display(float(self.DRO_Z.value())-1)
             self.printer.IncrementZ(1/self.mm_per_step)
-            print "incrementing %r steps"%(-1/self.mm_per_step)
+            #print "incrementing %r steps"%(-1/self.mm_per_step)
         elif self.Z_10.isChecked(): #Z 10mm is checked
             self.Zpos = self.Zpos-10
             self.DRO_Z.display(float(self.DRO_Z.value())-10)
             self.printer.IncrementZ(-10/self.mm_per_step)
-            print "incrementing %r steps"%(10/self.mm_per_step)
+            #print "incrementing %r steps"%(10/self.mm_per_step)
     
     def X_up(self):
         if self.X_001.isChecked(): #X 0.01mm is checked
             self.Xpos = self.Xpos+.01
             self.DRO_X.display(float(self.DRO_X.value())+.01)
             self.printer.IncrementX(.01/self.mm_per_step)
-            print "incrementing %r steps"%(.01/self.mm_per_step)
+            #print "incrementing %r steps"%(.01/self.mm_per_step)
         elif self.X_01.isChecked(): #X 0.1mm is checked
             self.Xpos = self.Xpos+.1
             self.DRO_X.display(float(self.DRO_X.value())+.1)
             self.printer.IncrementX(.1/self.mm_per_step)
-            print "incrementing %r steps"%(.1/self.mm_per_step)
+            #print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.X_1.isChecked(): #X 1mm is checked
             self.Xpos = self.Xpos+1
             self.DRO_X.display(float(self.DRO_X.value())+1)
             self.printer.IncrementX(1/self.mm_per_step)
-            print "incrementing %r steps"%(1/self.mm_per_step)
+            #print "incrementing %r steps"%(1/self.mm_per_step)
         elif self.X_10.isChecked(): #X 10mm is checked
             self.Xpos = self.Xpos+10
             self.DRO_X.display(float(self.DRO_X.value())+10)
             self.printer.IncrementX(10/self.mm_per_step)
-            print "incrementing %r steps"%(10/self.mm_per_step)
+            #print "incrementing %r steps"%(10/self.mm_per_step)
     
     def X_down(self):
         if self.X_001.isChecked(): #X 0.01mm is checked
             self.Xpos = self.Xpos-.01
             self.DRO_X.display(float(self.DRO_X.value())-.01)
             self.printer.IncrementX(-.01/self.mm_per_step)
-            print "incrementing %r steps"%(.01/self.mm_per_step)
+            #print "incrementing %r steps"%(.01/self.mm_per_step)
         elif self.X_01.isChecked(): #X 0.1mm is checked
             self.Xpos = self.Xpos-.1
             self.DRO_X.display(float(self.DRO_X.value())-.1)
             self.printer.IncrementX(-.1/self.mm_per_step)
-            print "incrementing %r steps"%(.1/self.mm_per_step)
+            #print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.X_1.isChecked(): #X 1mm is checked
             self.Xpos = self.Xpos-1
             self.DRO_X.display(float(self.DRO_X.value())-1)
             self.printer.IncrementX(-1/self.mm_per_step)
-            print "incrementing %r steps"%(1/self.mm_per_step)
+            #print "incrementing %r steps"%(1/self.mm_per_step)
         elif self.X_10.isChecked(): #X 10mm is checked
             self.Xpos = self.Xpos-10
             self.DRO_X.display(float(self.DRO_X.value())-10)
             self.printer.IncrementX(-10/self.mm_per_step)
-            print "incrementing %r steps"%(10/self.mm_per_step)
+            #print "incrementing %r steps"%(10/self.mm_per_step)
     
     def Zero_Z(self):
         self.Zpos = 0
@@ -298,7 +298,7 @@ class Main(QtGui.QMainWindow):
         
         self.zscript = self.parser.get('scripting', 'sequence')
         self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
-        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        #bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
         self.printerbaud = self.parser.get('program_defaults', 'Printer_Baud')
         self.exposure_time = self.parser.get('program_defaults', 'ExposeTime')
         self.starting_layers = self.parser.get('program_defaults', 'NumStartLayers')

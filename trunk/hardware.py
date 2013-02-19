@@ -39,8 +39,21 @@ class ramps():
         print "set X to DOWN"
         
     def IncrementZ(self, steps):
+        #check to make sure the step value is a whole number
+        if steps % 1 == 0:
+            pass
+        else:
+            print "ERROR! Steps value must be an integer!"
+            return
+        #check if it's negative and take appropriate action
+        if steps < 0:
+            self.Z_Down()
+        elif steps > 0:
+            self.Z_Up()
+        #send command
         print "sending G%d" %steps
         self.board.write('G%d'%steps)
+        #look for response
         if self.board.readline() == "OK":
             print "success"
         else:

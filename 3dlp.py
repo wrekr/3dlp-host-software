@@ -84,34 +84,105 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         print "Connecting to RAMPS board..."
         self.printer = hardware.ramps(parent.COM_Port)
         self.setupUi(self)
+        self.mm_per_step = float(parent.pitch)/float(parent.steps_per_rev)
+        self.Zpos = 0.0
+        self.Xpos = 0.0
         
     def Z_up(self):
         if self.Z_001.isChecked(): #Z 0.01mm is checked
-            self.printer.IncrementZ((1/parent.pitch)*parent.steps_per_rev*.01)
+            self.Zpos = self.Zpos+.01
+            self.DRO_Z.display(float(self.DRO_Z.value())+.01)
+            self.printer.IncrementZ(.01/self.mm_per_step)
+            print "incrementing %r steps"%(.01/self.mm_per_step)
         elif self.Z_01.isChecked(): #Z 0.1mm is checked
-            print "yay"
+            self.Zpos = self.Zpos+.1
+            self.DRO_Z.display(float(self.DRO_Z.value())+.1)
+            self.printer.IncrementZ(.1/self.mm_per_step)
+            print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
-            print "yay"
+            self.Zpos = self.Zpos+1
+            self.DRO_Z.display(float(self.DRO_Z.value())+1)
+            self.printer.IncrementZ(1/self.mm_per_step)
+            print "incrementing %r steps"%(1/self.mm_per_step)
         elif self.Z_10.isChecked(): #Z 10mm is checked
-            print "yay"
-            
+            self.Zpos = self.Zpos+10
+            self.DRO_Z.display(float(self.DRO_Z.value())+10)
+            self.printer.IncrementZ(10/self.mm_per_step)
+            print "incrementing %r steps"%(10/self.mm_per_step)
+
     def Z_down(self):
-        pass
+        if self.Z_001.isChecked(): #Z 0.01mm is checked
+            self.Zpos = self.Zpos-.01
+            self.DRO_Z.display(float(self.DRO_Z.value())-.01)
+            self.printer.IncrementZ(.01/self.mm_per_step)
+            print "incrementing %r steps"%(-.01/self.mm_per_step)
+        elif self.Z_01.isChecked(): #Z 0.1mm is checked
+            self.Zpos = self.Zpos-.1
+            self.DRO_Z.display(float(self.DRO_Z.value())-.1)
+            self.printer.IncrementZ(.1/self.mm_per_step)
+            print "incrementing %r steps"%(-.1/self.mm_per_step)
+        elif self.Z_1.isChecked(): #Z 1mm is checked
+            self.Zpos = self.Zpos-1
+            self.DRO_Z.display(float(self.DRO_Z.value())-1)
+            self.printer.IncrementZ(1/self.mm_per_step)
+            print "incrementing %r steps"%(-1/self.mm_per_step)
+        elif self.Z_10.isChecked(): #Z 10mm is checked
+            self.Zpos = self.Zpos-10
+            self.DRO_Z.display(float(self.DRO_Z.value())-10)
+            self.printer.IncrementZ(-10/self.mm_per_step)
+            print "incrementing %r steps"%(10/self.mm_per_step)
     
     def X_up(self):
-        pass
+        if self.X_001.isChecked(): #X 0.01mm is checked
+            self.Xpos = self.Xpos+.01
+            self.DRO_X.display(float(self.DRO_X.value())+.01)
+            self.printer.IncrementX(.01/self.mm_per_step)
+            print "incrementing %r steps"%(.01/self.mm_per_step)
+        elif self.X_01.isChecked(): #X 0.1mm is checked
+            self.Xpos = self.Xpos+.1
+            self.DRO_X.display(float(self.DRO_X.value())+.1)
+            self.printer.IncrementX(.1/self.mm_per_step)
+            print "incrementing %r steps"%(.1/self.mm_per_step)
+        elif self.X_1.isChecked(): #X 1mm is checked
+            self.Xpos = self.Xpos+1
+            self.DRO_X.display(float(self.DRO_X.value())+1)
+            self.printer.IncrementX(1/self.mm_per_step)
+            print "incrementing %r steps"%(1/self.mm_per_step)
+        elif self.X_10.isChecked(): #X 10mm is checked
+            self.Xpos = self.Xpos+10
+            self.DRO_X.display(float(self.DRO_X.value())+10)
+            self.printer.IncrementX(10/self.mm_per_step)
+            print "incrementing %r steps"%(10/self.mm_per_step)
     
     def X_down(self):
-        pass
+        if self.X_001.isChecked(): #X 0.01mm is checked
+            self.Xpos = self.Xpos-.01
+            self.DRO_X.display(float(self.DRO_X.value())-.01)
+            self.printer.IncrementX(-.01/self.mm_per_step)
+            print "incrementing %r steps"%(.01/self.mm_per_step)
+        elif self.X_01.isChecked(): #X 0.1mm is checked
+            self.Xpos = self.Xpos-.1
+            self.DRO_X.display(float(self.DRO_X.value())-.1)
+            self.printer.IncrementX(-.1/self.mm_per_step)
+            print "incrementing %r steps"%(.1/self.mm_per_step)
+        elif self.X_1.isChecked(): #X 1mm is checked
+            self.Xpos = self.Xpos-1
+            self.DRO_X.display(float(self.DRO_X.value())-1)
+            self.printer.IncrementX(-1/self.mm_per_step)
+            print "incrementing %r steps"%(1/self.mm_per_step)
+        elif self.X_10.isChecked(): #X 10mm is checked
+            self.Xpos = self.Xpos-10
+            self.DRO_X.display(float(self.DRO_X.value())-10)
+            self.printer.IncrementX(-10/self.mm_per_step)
+            print "incrementing %r steps"%(10/self.mm_per_step)
     
     def Zero_Z(self):
-        pass
+        self.Zpos = 0
+        self.DRO_Z.display(0)
     
     def Zero_X(self):
-        pass
-        
-    def quit(self):
-        print "quitting"
+        self.Xpos = 0
+        self.DRO_X.display(0)
 
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):

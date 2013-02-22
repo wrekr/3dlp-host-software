@@ -38,8 +38,8 @@ CORE = 'arduino'
 
 
 COMPILERS = {
-    '.c': 'avr-gcc',
-    '.cpp': 'avr-g++',
+    '.c': 'gcc',
+    '.cpp': 'g++',
 }
 
 
@@ -82,7 +82,7 @@ def compile_source(source, avr_path='', target_dir=None, arch=ARCH, clock=CPU_CL
         env['verbose'] = '-v'
     else:
         env['verbose'] = ''
-    cmdline = '"%(avr_path)s%(compiler)s" -c %(verbose)s -g -Os -w -ffunction-sections -fdata-sections -mmcu=%(arch)s -DF_CPU=%(clock)dL -DARDUINO=%(env_version)d %(include_dirs)s %(source)s -o%(target)s' % env
+    cmdline = '""%(avr_path)s%(compiler)s"" -c %(verbose)s -g -Os -w -ffunction-sections -fdata-sections -mmcu=%(arch)s -DF_CPU=%(clock)dL -DARDUINO=%(env_version)d %(include_dirs)s "%(source)s" -o"%(target)s"' % env
     _exec(cmdline, simulate=simulate)
     return target
 

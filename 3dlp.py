@@ -398,7 +398,7 @@ class Main(QtGui.QMainWindow):
          
         #create model actor
         self.modelActor = vtk.vtkActor()
-        self.modelActor.GetProperty().SetColor(1,1,1)
+        self.modelActor.GetProperty().SetColor(0,.8,0)
         self.modelActor.GetProperty().SetOpacity(1)
         self.modelActor.SetMapper(self.mapper)
         
@@ -412,6 +412,14 @@ class Main(QtGui.QMainWindow):
         self.cutter.SetCutFunction(self.slicingplane)
         self.cutter.SetInputConnection(self.reader.GetOutputPort())
         self.cutter.Update()
+        
+        self.FeatureEdges = vtk.vtkFeatureEdges()
+        self.FeatureEdges.SetInputConnection(self.cutter.GetOutputPort())
+        self.FeatureEdges.BoundaryEdgesOn()
+        self.FeatureEdges.FeatureEdgesOff()
+        self.FeatureEdges.NonManifoldEdgesOff()
+        self.FeatureEdges.ManifoldEdgesOff()
+        self.FeatureEdges.Update()
 
         self.cutStrips = vtk.vtkStripper() #Forms loops (closed polylines) from cutter
         self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())

@@ -110,6 +110,11 @@ class slicer():
         self.writer.Write()
               
 #slicer = slicer()
+#slicer.imagewidth = 640
+#slicer.imageheight = 480
+#slicer.startingdepth = -2
+#slicer.endingdepth = 4
+#slicer.layerincrement = .1
 #Tk().withdraw() # we don't want a full GUI, so keep the root window from appearing
 #filename = askopenfilename() # show an "Open" dialog box and return the path to the selected file
 #slicer.OpenModel(filename)

@@ -19,9 +19,11 @@ class ramps():
         try:
             self.board = serial.Serial("%s"%port, 115200)
             print "initialized connection successfully"
+            self.status = 0
             print self.board.readline()
         except:
             print "Could not connect to RAMPS board."
+            self.status = 1
     
     def EnableZ(self):
         print "Z Enabled."
@@ -51,13 +53,13 @@ class ramps():
         elif steps > 0:
             self.Z_Up()
         #send command
-        print "sending G%d" %steps
-        self.board.write('G%d'%steps)
+        print "sending ZMOVE_%d" %steps
+        self.board.write('ZMOVE_%d'%steps)
         #look for response
-        if self.board.readline() == "OK":
-            print "success"
-        else:
-            print "FAILED"
+        #if self.board.readline() == "OK":
+         #   print "success"
+        #else:
+         #   print "FAILED"
     
     def IncrementX(self, steps):
         pass

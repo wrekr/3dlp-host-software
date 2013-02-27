@@ -13,7 +13,11 @@ Still to add/known issues:
     -Manual printer control dialog for manually jogging each printer axis
     -still looking for a good method of calibrating for X and Y (image size)
     -raise the bed to a final position after build is complete
-    -PID control of Z position
+    -Trapezoidal motion profiling of Z movement
+    -custom firmware configurator and uploader
+    -scripting commands for motor speed, GPIO (solenoids, etc), PWM control of gearmotors with encoder feedback, and pause
+    -custom scripting for different sections of layers
+    -save hardware profiles for different printers
 """
 from subprocess import Popen, PIPE
 import sys
@@ -83,6 +87,8 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         QtGui.QDialog.__init__(self, None)
         print "Connecting to RAMPS board..."
         self.printer = hardware.ramps(parent.COM_Port)
+        if self.printer.status == 1:
+            return
         self.setupUi(self)
         self.mm_per_step = float(parent.pitch)/float(parent.steps_per_rev)
         self.Zpos = 0.0

@@ -1,4 +1,3 @@
-
 import slicer
 import vtk
 import sys
@@ -67,11 +66,11 @@ class Main(QtGui.QMainWindow):
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))
          
-        self.polyDataOutput = self.reader.GetOutput()       
+        #self.polyDataOutput = self.reader.GetOutput()       
         
         self.mapper = vtk.vtkPolyDataMapper()
         self.mapper.SetInputConnection(self.reader.GetOutputPort())
-         
+        
         #create model actor
         self.modelActor = vtk.vtkActor()
         self.modelActor.GetProperty().SetColor(1,1,1)
@@ -119,6 +118,17 @@ class Main(QtGui.QMainWindow):
         
         self.ren.ResetCamera()  
         self.ModelView.Render() #update model view
+        self.transform = vtk.vtkTransform()
+        self.CurrentXPosition = 0.0
+        self.CurrentYPosition = 0.0
+        self.CurrentZPosition = 0.0
+        self.CurrentXRotation = 0.0
+        self.CurrentYRotation = 0.0
+        self.CurrentZRotation = 0.0
+        self.CurrentXScale = 0.0
+        self.CurrentYScale = 0.0
+        self.CurrentZScale = 0.0
+        self.ui.Transform_groupbox.setEnabled(True)
     
     def SliceModel(self):
         self.slicer = slicer.slicer()
@@ -142,6 +152,87 @@ class Main(QtGui.QMainWindow):
                 self.ModelView.Render()
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
+            
+    def Update_Position_X(self, position):
+        self.transform.Translate((float(position)-self.CurrentXPosition), 0.0, 0.0)
+        self.CurrentXPosition = self.CurrentXPosition + (float(position)-self.CurrentXPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Position_Y(self, position):
+        self.transform.Translate(0.0, (float(position)-self.CurrentYPosition), 0.0)
+        self.CurrentYPosition = self.CurrentYPosition + (float(position)-self.CurrentYPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Position_Z(self, position):
+        self.transform.Translate(0.0, 0.0, (float(position)-self.CurrentZPosition))
+        self.CurrentZPosition = self.CurrentZPosition + (float(position)-self.CurrentZPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Rotation_X(self, rotation):
+        self.transform.RotateX((float(rotation)-self.CurrentXRotation))
+        self.CurrentXRotation = self.CurrentXRotation + (float(rotation)-self.CurrentXRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Rotation_Y(self, rotation):
+        self.transform.RotateY((float(rotation)-self.CurrentYRotation))
+        self.CurrentYRotation = self.CurrentYRotation + (float(rotation)-self.CurrentYRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Rotation_Z(self, rotation):
+        self.transform.RotateZ((float(rotation)-self.CurrentZRotation))
+        self.CurrentZRotation = self.CurrentZRotation + (float(rotation)-self.CurrentZRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def Update_Scale_X(self, scale):
+        pass
+    
+    def Update_Scale_Y(self, scale):
+        pass
+    
+    def Update_Scale_Z(self, scale):
+        pass
             
     def getvalues(self):
         print "got here"

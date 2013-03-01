@@ -17,7 +17,7 @@ Still to add/known issues:
     -custom firmware configurator and uploader
     -scripting commands for motor speed, GPIO (solenoids, etc), PWM control of gearmotors with encoder feedback, and pause
     -custom scripting for different sections of layers
-    -save hardware profiles for different printers
+    -ability to save custom hardware profiles for different printers
 """
 from subprocess import Popen, PIPE
 import sys

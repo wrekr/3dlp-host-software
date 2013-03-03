@@ -5,12 +5,13 @@ Created on Mon Dec 17 21:01:39 2012
 @author: Chris
 """
 import serial
+import math
 
-class arduino_uno():
+class arduinoUno():
     def __init__(self):
         print "initialized"
     
-class arduino_mega():
+class arduinoMega():
     def __init__(self):
         print "initialized"  
 
@@ -28,10 +29,15 @@ class ramps():
     def EnableZ(self):
         print "Z Enabled."
         
+    def HomePrinter(self):
+        pass
+        
     def Z_Up(self):
+        self.board.write("Z_UP\n")
         print "set Z to UP"
     
     def Z_Down(self):
+        self.board.write("Z_DOWN\n")
         print "Set Z to DOWN"
         
     def X_Up(self):
@@ -48,19 +54,22 @@ class ramps():
             print "ERROR! Steps value must be an integer!"
             return
         #check if it's negative and take appropriate action
+        print steps
         if steps < 0:
             self.Z_Down()
         elif steps > 0:
             self.Z_Up()
         #send command
-        print "sending ZMOVE_%d" %steps
-        self.board.write('ZMOVE_%d'%steps)
+        print "sending ZMOVE_%d" %math.fabs(steps)
+        self.board.write('ZMOVE_%d\n'%math.fabs(steps))
+        print self.board.readline()
         #look for response
-        #if self.board.readline() == "OK":
-         #   print "success"
-        #else:
-         #   print "FAILED"
-    
+        #print ".", self.board.readline(), "."
+#        if self.board.readline() == "OK\n":
+#            print "success"
+#        else:
+#            print "FAILED"
+
     def IncrementX(self, steps):
         pass
     

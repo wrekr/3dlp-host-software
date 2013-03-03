@@ -13,7 +13,7 @@ from time import sleep
 
 class printmodel(QtCore.QThread):
     def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, NumberOfStartLayers, StartLayersExposureTime
-                , projectorcontrolenabled, controller, slideshowenabled, screennumber):
+                , projectorcontrolenabled, controller, slideshowenabled, screennumber, parent):
         print "HEY"
         self.zscript = zscript
         self.COM_Port = COM_Port
@@ -25,10 +25,11 @@ class printmodel(QtCore.QThread):
         self.projectorcontrolenabled = projectorcontrolenabled
         self.slideshowenabled = slideshowenabled
         self.controller = controller
-        QtCore.QThread.__init__(self, parent = None)
-        self.printmodel() #start the printmodel method below
+        super(printmodel, self).__init__(parent)
+        #QtCore.QThread.__init__(self, parent = None)
+        #self.printmodel() #start the printmodel method below
      
-    def printmodel(self):
+    def run(self):
         print "RUNNING"
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
     
@@ -50,19 +51,9 @@ class printmodel(QtCore.QThread):
             print match
             self.commands.append(match)      
         #*******************************************
-
-        if self.projectorcontrolenabled==True:
-            #try connecting to projector com port
-            print "Attempting to connect to projector for RS232 control..."
-            try:
-                projector = serial.Serial("%s"%projector_com, projector_baud, parity="%s"%projector_parity_lookup, stopbits=projector_stopbits_lookup, bytesize=projector_databits_lookup)
-                print "connected to projector on %s! Engaged communications at %sbps." %(projector_com, projector_baud)
-            except:
-                print "FAILED."        
     
-        executionpath = os.getcwd() #get current execution (working) directory
-        global startingexecutionpath
-        startingexecutionpath = executionpath
+        self.executionpath = os.getcwd() #get current execution (working) directory
+        self.startingexecutionpath = self.executionpath
         #**********************************************
         if self.controller=="ramps":
             print "Connecting to RAMPS board..."
@@ -71,7 +62,7 @@ class printmodel(QtCore.QThread):
         if self.controller=="arduinoUNO":
             print "Connecting to printer firmware..."
             try:
-                self.board = pyfirmata.Arduino("%s"%self.COM_Port)
+                self.board = hardware.arduinoUno(self.COM_Port)
                 print "no issues opening serial connection to firmata..."
             except:
                 print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
@@ -80,7 +71,7 @@ class printmodel(QtCore.QThread):
                 
         if self.controller=="arduinoMEGA":
             try:
-                self.board = pyfirmata.ArduinoMega("%s"%self.COM_Port)
+                self.board = hardware.arduinoMega(self.COM_Port)
                 print "no issues opening serial connection to firmata..."
             except:
                 print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
@@ -93,12 +84,12 @@ class printmodel(QtCore.QThread):
         if self.slideshowenabled==False:
             return         #kill it now  
         concatenater = "\\"
-        seq = (executionpath, "slices") #concatenate this list of strings with "str" as a separator
+        seq = (self.executionpath, "slices") #concatenate this list of strings with "str" as a separator
         slicesdir = concatenater.join(seq) #build slices path relative to working directory, separated by concatenator string
         try:
             os.chdir(slicesdir)#change to slices dir
         except:
-            print "No images found in the given directory. Folder does not exist."
+            print "Slices folder does not exist."
             print"waiting for thread to close."
             self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
             return
@@ -109,7 +100,7 @@ class printmodel(QtCore.QThread):
             if file.endswith(".png"): #if it's the specified image type
                 imgnum = imgnum + 1
                 stringg = "\\"
-                seq = (executionpath, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
+                seq = (self.executionpath, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
                 imagepath = stringg.join(seq) #build image path relative to working directory
                 FileList.append(imagepath)
                 #**************
@@ -117,29 +108,30 @@ class printmodel(QtCore.QThread):
         layers = imgnum
 
         print "\nNumber of Layers: ", NumberOfImages
-        if self.slideshowenabled==True:
-             #open slideshow window
-             self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
-             self.SlideShow.show() #show slideshow window
-             self.SlideShow.setupUi(self)
-             screen = QtGui.QDesktopWidget().availableGeometry(screen = int(self.screennumber)) #get available geometry of the screen chosen
-             self.SlideShow.move(screen.left(), screen.top()) #move window to the top-left of the chosen screen
-             self.SlideShow.resize(screen.width(), screen.height()) #resize the window to fit the chosen screen
-             self.SlideShow.showMaximized()
-             self.SlideShow.showFullScreen()
-             #size = self.SlideShow.frameGeometry()
-             #print size 
-             #start slideshow
-        print "Enabling Stepper Motor Drivers..."
-        self.printer.EnableZ()
+
+        #open slideshow window
+        self.SlideShow = SlideShowWindow() #create instance of OtherWindow class
+        self.SlideShow.show() #show slideshow window
+        self.SlideShow.setupUi(self)
+        screen = QtGui.QDesktopWidget().availableGeometry(screen = int(self.screennumber)) #get available geometry of the screen chosen
+        self.SlideShow.move(screen.left(), screen.top()) #move window to the top-left of the chosen screen
+        self.SlideShow.resize(screen.width(), screen.height()) #resize the window to fit the chosen screen
+        self.SlideShow.showMaximized()
+        self.SlideShow.showFullScreen()
+        #size = self.SlideShow.frameGeometry()
+        #print size 
+        #start slideshow
+
+        #print "Enabling Stepper Motor Drivers..."
+        #self.printer.EnableZ()
         #self.printer.EnableX()
-        print "..ok."
+        #print "..ok."
             
         print "Printing..." 
  
-        #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime)
+        #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime) + custom commands!!!!
         eta = 0
-        percentagechunk = (100.0/float(NumberOfImages))
+        percentagechunk = 100.0/float(NumberOfImages)
         ProgPercentage = 0.0
         for layer in range(NumberOfImages):
             TimeRemaining = GetInHMS(eta)
@@ -147,12 +139,14 @@ class printmodel(QtCore.QThread):
                 ExposureTime = float(self.ExposeTime)
             else:
                 ExposureTime = self.StartLayersExposureTime
-            if self.slideshowenabled:
-                blankpath = "%s\\10x10black.png" %(startingexecutionpath)
-                self.pm = QtGui.QPixmap(blankpath)
-                pmscaled = self.pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
-                self.SlideShow.label.setPixmap(pmscaled) #set black pixmap for blank slide     
-                QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
+
+            blankpath = "%s\\10x10black.png" %(self.startingexecutionpath)
+            self.pm = QtGui.QPixmap(blankpath)
+            #insert code to move printer to starting point
+            ###
+            pmscaled = self.pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
+            self.SlideShow.label.setPixmap(pmscaled) #set black pixmap for blank slide     
+            QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
             
@@ -160,16 +154,16 @@ class printmodel(QtCore.QThread):
             for command in self.commands:
                 if command == "Z_UP":
                     #board.digital[ZDirPin].write(1)
-                    printer.Z_Up()
+                    self.printer.Z_Up()
                 elif command == "Z_DOWN":
                     #board.digital[ZDirPin].write(0)
-                    printer.Z_Down()
+                    self.printer.Z_Down()
                 elif command == "X_UP":
                     #board.digital[XDirPin].write(1)
-                    printer.Z_Up()
+                    self.printer.Z_Up()
                 elif command == "X_DOWN":
                     #board.digital[XDirPin].write(0)
-                    printer.X_Down()
+                    self.printer.X_Down()
                 #make sure the next two cases are last to avoid false positives
                 elif command.startswith("Z"):
                     numsteps = int(command[2:command.__len__()])
@@ -183,13 +177,13 @@ class printmodel(QtCore.QThread):
                     
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime
-            print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
+            #print "Now printing layer %d out of %d. Progress: %r%% Time Remaining: %s" %(layer+1, layers, ProgPercentage, TimeRemaining)
             layer = layer - 0
             pm = QtGui.QPixmap(FileList[layer])
-            if self.slideshowenabled:
-                pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
-                self.SlideShow.label.setPixmap(pmscaled)
-                QCoreApplication.processEvents()
+
+            pmscaled = pm.scaled(screen.width(), screen.height(), QtCore.Qt.KeepAspectRatio)
+            self.SlideShow.label.setPixmap(pmscaled)
+            QCoreApplication.processEvents()
             
             self.emit(QtCore.SIGNAL('updatePreview')) #emit signal to update preview image
             sleep(float(ExposureTime))
@@ -197,10 +191,9 @@ class printmodel(QtCore.QThread):
             ProgPercentage = ProgPercentage + percentagechunk         
 
         print "\nPrint job completed successfully. %d layers were built." %layers
-        if printercontrolenabled==True and arduinocontrolled==True:
-            board.exit() #close firmata connection 
-        if projectorcontrolenabled:
-            print "Sending power off command to projector."
+        #if printercontrolenabled==True and arduinocontrolled==True:
+        #   board.exit() #close firmata connection 
+
             
 def GetInHMS(seconds):
     m, s = divmod(seconds, 60)

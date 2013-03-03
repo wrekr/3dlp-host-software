@@ -120,17 +120,17 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         if self.Z_001.isChecked(): #Z 0.01mm is checked
             self.Zpos = self.Zpos-.01
             self.DRO_Z.display(float(self.DRO_Z.value())-.01)
-            self.printer.IncrementZ(.01/self.mm_per_step)
+            self.printer.IncrementZ(-.01/self.mm_per_step)
             #print "incrementing %r steps"%(-.01/self.mm_per_step)
         elif self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos-.1
             self.DRO_Z.display(float(self.DRO_Z.value())-.1)
-            self.printer.IncrementZ(.1/self.mm_per_step)
+            self.printer.IncrementZ(-.1/self.mm_per_step)
             #print "incrementing %r steps"%(-.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
             self.Zpos = self.Zpos-1
             self.DRO_Z.display(float(self.DRO_Z.value())-1)
-            self.printer.IncrementZ(1/self.mm_per_step)
+            self.printer.IncrementZ(-1/self.mm_per_step)
             #print "incrementing %r steps"%(-1/self.mm_per_step)
         elif self.Z_10.isChecked(): #Z 10mm is checked
             self.Zpos = self.Zpos-10
@@ -688,16 +688,18 @@ class Main(QtGui.QMainWindow):
         ManualControl.exec_()
         
     def updatepreview(self):
-        #print"updating picture"        
-        pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        self.ui.imagepreview.setPixmap(pmscaled)
+        #print"updating picture"
+        pass        
+        #pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+        #self.ui.imagepreview.setPixmap(pmscaled)
         
     def updatepreviewblank(self):
+        pass
         #print"updating pictire to blank slide"    
-        blankpath = "%s\\10x10black.png" %(startingexecutionpath)
-        pm = QtGui.QPixmap(blankpath)
-        pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        self.ui.imagepreview.setPixmap(pmscaled)#set black pixmap for blank slide
+        #blankpath = "%s\\10x10black.png" %(startingexecutionpath)
+        #pm = QtGui.QPixmap(blankpath)
+        #pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
+        #self.ui.imagepreview.setPixmap(pmscaled)#set black pixmap for blank slide
     
     def disablestopbutton(self):
         self.ui.button_stop_printing.setEnabled(False)
@@ -714,12 +716,13 @@ class Main(QtGui.QMainWindow):
           
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime
-                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled, self.screennumber)
+                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled, self.screennumber, self)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
         self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      
         self.connect(self.printThread, QtCore.SIGNAL('disable_stop_button'), self.disablestopbutton) 
         self.connect(self.printThread, QtCore.SIGNAL('enable_stop_button'), self.enablestopbutton)     
+        self.printThread.start()
 
 ################################################################################
 def GetInHMS(seconds):

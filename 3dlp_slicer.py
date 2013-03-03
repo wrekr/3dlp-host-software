@@ -65,11 +65,27 @@ class Main(QtGui.QMainWindow):
 
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))
+        
+        self.plane=vtk.vtkPlane()
+        self.plane.SetOrigin(0,0,20)
+        self.plane.SetNormal(0,0,1)
+        
+        self.extrude = vtk.vtkLinearExtrusionFilter()
+        self.extrude.SetExtrusionType(2)
+        self.extrude.SetScaleFactor(20.0)
          
         #self.polyDataOutput = self.reader.GetOutput()       
         
         self.mapper = vtk.vtkPolyDataMapper()
         self.mapper.SetInputConnection(self.reader.GetOutputPort())
+        
+        self.mapper_plane = vtk.vtkPolyDataMapper()
+        #self.mapper_plane.SetInput(self.extrude.GetOutputPort())
+        
+        self.planeActor = vtk.vtkActor()
+        self.planeActor.GetProperty().SetColor(1,0,0)
+        self.planeActor.GetProperty().SetOpacity(1)
+        self.planeActor.SetMapper(self.mapper_plane)
         
         #create model actor
         self.modelActor = vtk.vtkActor()
@@ -107,6 +123,7 @@ class Main(QtGui.QMainWindow):
         self.axesActor.SetFaceTextScale(0.25)
         self.axesActor.SetZFaceTextRotation(90)
         self.ren.AddActor(self.modelActor)
+        self.ren.AddActor(self.planeActor)
         self.ren.AddActor(self.outlineActor)
        
         #create orientation markers
@@ -226,7 +243,16 @@ class Main(QtGui.QMainWindow):
         self.ModelView.Render()
     
     def Update_Scale_X(self, scale):
-        pass
+        self.transform.Scale((float(scale)-self.CurrentXScale)/100, 0.0, 0.0)
+        self.CurrentXScale = self.CurrentXScale + (float(scale)-self.CurrentXScale)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(self.transform)
+        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.Update()
+        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        self.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
     
     def Update_Scale_Y(self, scale):
         pass

@@ -11,6 +11,7 @@ import re, os, hardware
 from slideshowgui import SlideShowWindow
 from time import sleep
 
+
 class printmodel(QtCore.QThread):
     def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, NumberOfStartLayers, StartLayersExposureTime
                 , projectorcontrolenabled, controller, screennumber, cwd, parent):
@@ -43,6 +44,7 @@ class printmodel(QtCore.QThread):
         Z_DOWN - change direction of z axis to move down
         X_UP - change direction of x axis to move up
         X_DOWN - change direction of x axis to move down
+        PAUSE_xxxx - pause xxxx number of milliseconds in scripting sequence
         
         """
         self.commands = []
@@ -176,6 +178,11 @@ class printmodel(QtCore.QThread):
                     numsteps = int(command[2:command.__len__()])
                     print "Incrementing X axis %d steps"%numsteps
                     self.printer.IncrementX(numsteps)
+                    
+                elif command.startswith("PAUSE"):
+                    delayval = int(command[6:command.__len__()])
+                    print "Pausing %d milliseconds"%delayval
+                    sleep(float(delayval)/1000.00)
                     
             #sleep(AdvanceTime)
             #eta = eta - AdvanceTime

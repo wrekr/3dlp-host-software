@@ -6,7 +6,6 @@ Created on Thu Apr 05 22:20:39 2012
 www.chrismarion.net
 
 Still to add/known issues:
-    -clean exiting of threads, possibly using constant timers? ARGHHH
     -fix ETA and advance time
     -projector control functionality is not finished.
     -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
@@ -19,20 +18,11 @@ Still to add/known issues:
     -custom scripting for different sections of layers
     -ability to save custom hardware profiles for different printers
 """
-from subprocess import Popen, PIPE
 import sys
-import shutil
-import serial
-import socket
-import Queue
-import threading
+
 import comscan
-import pyfirmata
 import webbrowser
 from ConfigParser import *
-import re
-from time import sleep
-import ctypes
 import printmodel
 import vtk
 from settingsdialog import Ui_SettingsDialogBaseClass
@@ -236,14 +226,11 @@ class Main(QtGui.QMainWindow):
         label2 = QtGui.QLabel(" 0 of 0")
         self.ui.toolBar_3.addWidget(label2)
         
-        
         self.cwd = os.getcwd() #get current execution (working) directory
         
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         #####################
-
-
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -263,7 +250,6 @@ class Main(QtGui.QMainWindow):
         #self.ModelView.setBaseSize(200,200)
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-500,self.ui.ModelFrame.geometry().height()-500)
         #self.ModelView.resize(690-100,550-100)
-
 
         #####################
         # create the sliceview widget
@@ -369,32 +355,7 @@ class Main(QtGui.QMainWindow):
 #            self.ui.projector_stopbits.setEnabled(False)
 #            self.ui.projector_poweroffcommand.setEnabled(False)
 #            self.ui.projector_testpoweroffcommand.setEnabled(False)
-                
-    def SlideshowControlToggled(self):
-        global slideshowenabled
-        if self.ui.enableslideshow.isChecked():
-            self.ui.pickscreen.setEnabled(True)
-            slideshowenabled = True
-        else:
-            self.ui.pickscreen.setEnabled(False)
-            slideshowenabled = False
 
-    def EnablePrinterControlToggled(self):
-        if self.ui.enableprintercontrol.isChecked():
-            self.ui.pickcom.setEnabled(True)
-            self.ui.printerbaud.setEnabled(True)
-            self.ui.radio_pyMCU.setEnabled(True)
-            self.ui.radio_arduinoUno.setEnabled(True)
-            self.ui.radio_arduinoMega.setEnabled(True)
-            self.printercontrolenabled = True
-        else:
-            self.ui.pickcom.setEnabled(False)
-            self.ui.printerbaud.setEnabled(False)
-            self.ui.radio_pyMCU.setEnabled(False)
-            self.ui.radio_arduinoUno.setEnabled(False)
-            self.ui.radio_arduinoMega.setEnabled(False)
-            self.printercontrolenabled = False
-            
     def OpenModel(self):
         self.filename = QtGui.QFileDialog.getOpenFileName()
 #        self.ui.displayfilenamelabel.setText(self.filename)

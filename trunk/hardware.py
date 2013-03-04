@@ -79,6 +79,9 @@ class ramps():
     def HomeX(self):
         pass
     
+    def close(self):
+        self.board.close()
+    
 class pymcu():
     def __init__(self):
         print "initialized"

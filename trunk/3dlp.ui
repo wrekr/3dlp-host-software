@@ -189,7 +189,7 @@
             <item>
              <widget class="QPushButton" name="button_stop_printing">
               <property name="enabled">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
               <property name="minimumSize">
                <size>
@@ -1821,7 +1821,7 @@
    <slot>printpressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>162</x>
+     <x>318</x>
      <y>655</y>
     </hint>
     <hint type="destinationlabel">
@@ -1958,6 +1958,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>button_stop_printing</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>StopPrinting()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>432</x>
+     <y>645</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>482</x>
+     <y>660</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>applyprintingsettings()</slot>
@@ -1982,5 +1998,6 @@
   <slot>UpdateModelOpacity()</slot>
   <slot>OpenSettingsDialog()</slot>
   <slot>GoToLayer()</slot>
+  <slot>StopPrinting()</slot>
  </slots>
 </ui>

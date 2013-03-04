@@ -236,9 +236,14 @@ class Main(QtGui.QMainWindow):
         label2 = QtGui.QLabel(" 0 of 0")
         self.ui.toolBar_3.addWidget(label2)
         
+        
+        self.cwd = os.getcwd() #get current execution (working) directory
+        
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
         #####################
+
+
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -712,11 +717,9 @@ class Main(QtGui.QMainWindow):
         dialog.exec_()
         
     def printpressed(self):    
-        #self.getSettingsDialogValues()
-          
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime
-                                                , self.projectorcontrolenabled, self.controller, self.slideshowenabled, self.screennumber, self)
+                                                , self.projectorcontrolenabled, self.controller, self.screennumber, self.cwd, self)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
         self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      
@@ -724,6 +727,9 @@ class Main(QtGui.QMainWindow):
         self.connect(self.printThread, QtCore.SIGNAL('enable_stop_button'), self.enablestopbutton)     
         self.printThread.start()
 
+    def StopPrinting(self):
+        print "Stopping print cycle.. finishing current layer"
+        self.printThread.stop = True
 ################################################################################
 def GetInHMS(seconds):
     m, s = divmod(seconds, 60)

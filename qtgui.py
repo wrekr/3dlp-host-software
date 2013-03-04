@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Feb 24 11:15:09 2013
+# Created: Sun Mar 03 19:30:59 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -90,7 +90,7 @@ class Ui_MainWindow(object):
         self.pushButton_5.setObjectName(_fromUtf8("pushButton_5"))
         self.horizontalLayout.addWidget(self.pushButton_5)
         self.button_stop_printing = QtGui.QPushButton(self.centralwidget)
-        self.button_stop_printing.setEnabled(True)
+        self.button_stop_printing.setEnabled(False)
         self.button_stop_printing.setMinimumSize(QtCore.QSize(150, 0))
         self.button_stop_printing.setText(QtGui.QApplication.translate("MainWindow", "Stop Printing", None, QtGui.QApplication.UnicodeUTF8))
         icon2 = QtGui.QIcon()
@@ -662,9 +662,16 @@ class Ui_MainWindow(object):
         self.actionConnect_To_Printer.setText(QtGui.QApplication.translate("MainWindow", "Connect To Printer", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect_To_Printer.setToolTip(QtGui.QApplication.translate("MainWindow", "Connect To Printer", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect_To_Printer.setObjectName(_fromUtf8("actionConnect_To_Printer"))
+        self.actionFirmware_Configurator = QtGui.QAction(MainWindow)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/gears.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionFirmware_Configurator.setIcon(icon16)
+        self.actionFirmware_Configurator.setText(QtGui.QApplication.translate("MainWindow", "Firmware Configurator", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionFirmware_Configurator.setObjectName(_fromUtf8("actionFirmware_Configurator"))
         self.menuAbout.addAction(self.actionAbout)
         self.menuAbout.addAction(self.actionHelp)
         self.menuTools.addAction(self.actionOpen_manual_printer_control)
+        self.menuTools.addAction(self.actionFirmware_Configurator)
         self.menuTools.addAction(self.actionSave_current_settings_as_default)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionQuit)
@@ -694,6 +701,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionPreferences, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenSettingsDialog)
         QtCore.QObject.connect(self.actionGo_To_Layer, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.GoToLayer)
         QtCore.QObject.connect(self.actionOpen_manual_printer_control, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openmanualcontrol)
+        QtCore.QObject.connect(self.button_stop_printing, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.StopPrinting)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

@@ -13,8 +13,7 @@ from time import sleep
 
 class printmodel(QtCore.QThread):
     def __init__(self, zscript, COM_Port, Printer_Baud, ExposeTime, NumberOfStartLayers, StartLayersExposureTime
-                , projectorcontrolenabled, controller, slideshowenabled, screennumber, parent):
-        print "HEY"
+                , projectorcontrolenabled, controller, screennumber, cwd, parent):
         self.zscript = zscript
         self.COM_Port = COM_Port
         self.Printer_Baud = Printer_Baud
@@ -23,14 +22,14 @@ class printmodel(QtCore.QThread):
         self.NumberOfStartLayers = NumberOfStartLayers
         self.StartLayersExposureTime = StartLayersExposureTime
         self.projectorcontrolenabled = projectorcontrolenabled
-        self.slideshowenabled = slideshowenabled
         self.controller = controller
+        self.stop = False
+        self.cwd = cwd
         super(printmodel, self).__init__(parent)
         #QtCore.QThread.__init__(self, parent = None)
         #self.printmodel() #start the printmodel method below
      
     def run(self):
-        print "RUNNING"
         self.emit(QtCore.SIGNAL('enable_stop_button')) #emit signal to enable stop button
     
         #************Start custom z scripting*******
@@ -52,8 +51,7 @@ class printmodel(QtCore.QThread):
             self.commands.append(match)      
         #*******************************************
     
-        self.executionpath = os.getcwd() #get current execution (working) directory
-        self.startingexecutionpath = self.executionpath
+        self.startingexecutionpath = self.cwd
         #**********************************************
         if self.controller=="ramps":
             print "Connecting to RAMPS board..."
@@ -80,14 +78,13 @@ class printmodel(QtCore.QThread):
 
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
-        #slideshow starts around here so if it's disabled kill the thread now 
-        if self.slideshowenabled==False:
-            return         #kill it now  
+
         concatenater = "\\"
-        seq = (self.executionpath, "slices") #concatenate this list of strings with "str" as a separator
+        seq = (self.cwd, "slices") #concatenate this list of strings with "str" as a separator
         slicesdir = concatenater.join(seq) #build slices path relative to working directory, separated by concatenator string
         try:
             os.chdir(slicesdir)#change to slices dir
+            print slicesdir
         except:
             print "Slices folder does not exist."
             print"waiting for thread to close."
@@ -100,7 +97,7 @@ class printmodel(QtCore.QThread):
             if file.endswith(".png"): #if it's the specified image type
                 imgnum = imgnum + 1
                 stringg = "\\"
-                seq = (self.executionpath, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
+                seq = (self.cwd, "slices", "%s" %(file)) #concatenate this list of strings with "str" as a separator
                 imagepath = stringg.join(seq) #build image path relative to working directory
                 FileList.append(imagepath)
                 #**************
@@ -134,6 +131,11 @@ class printmodel(QtCore.QThread):
         percentagechunk = 100.0/float(NumberOfImages)
         ProgPercentage = 0.0
         for layer in range(NumberOfImages):
+            if self.stop == True:
+                print "Exiting print cycle now."
+                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+                self.printer.close() #close connection with printer
+                return
             TimeRemaining = GetInHMS(eta)
             if layer >= self.NumberOfStartLayers:
                 ExposureTime = float(self.ExposeTime)

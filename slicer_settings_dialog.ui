@@ -43,7 +43,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="image_height">
+          <widget class="QLineEdit" name="imageHeight">
            <property name="text">
             <string/>
            </property>
@@ -61,7 +61,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="image_width">
+          <widget class="QLineEdit" name="imageWidth">
            <property name="text">
             <string/>
            </property>
@@ -83,7 +83,10 @@
           </widget>
          </item>
          <item>
-          <widget class="QLineEdit" name="layer_thickness">
+          <widget class="QLineEdit" name="layerThickness">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="text">
             <string/>
            </property>
@@ -101,7 +104,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="slicing_plane">
+          <widget class="QComboBox" name="slicingPlane">
            <item>
             <property name="text">
              <string>XZ</string>
@@ -133,7 +136,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="z_options_start">
+        <widget class="QLineEdit" name="startingDepth">
          <property name="text">
           <string/>
          </property>
@@ -151,7 +154,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="z_options_end">
+        <widget class="QLineEdit" name="endingDepth">
          <property name="text">
           <string/>
          </property>
@@ -169,7 +172,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="z_options_increment">
+        <widget class="QLineEdit" name="slicingIncrement">
          <property name="minimumSize">
           <size>
            <width>100</width>

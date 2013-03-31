@@ -26,10 +26,11 @@ class StartSettingsDialog(QtGui.QDialog, Ui_Dialog, Ui_MainWindow):
         self.setupUi(self)
         
     def accept(self):
-        Main.getvalues()
+        self.emit(QtCore.SIGNAL('ApplySettings()'))
+        self.reject()
 
     def quit(self):
-        print "quitting"
+        self.reject()
 
     # Create a class for our main window
 class Main(QtGui.QMainWindow):
@@ -42,6 +43,16 @@ class Main(QtGui.QMainWindow):
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Slicer", None, QtGui.QApplication.UnicodeUTF8))
+
+        #load previous settings from config file here:
+        self.imageHeight = ""
+        self.imageWidth = ""
+        self.layerThickness = ""
+        self.startingDepth = ""
+        self.endingDepth = ""
+        self.slicingIncrement = ""
+        self.slicingplane = "XZ"
+        self.slicingplaneDict = {"XZ":0, "XY":1, "YZ":2}
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -60,6 +71,13 @@ class Main(QtGui.QMainWindow):
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-1,self.ui.ModelFrame.geometry().height()-1)
 
     def OpenModel(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                QtGui.QMessageBox.critical(self, 'Error loading model',"You have already loaded a model into the slicer. Please restart to load another model.", QtGui.QMessageBox.Ok)
+                return 
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            pass
+        
         self.filename = QtGui.QFileDialog.getOpenFileName()
 #        self.ui.displayfilenamelabel.setText(self.filename)
 
@@ -149,13 +167,13 @@ class Main(QtGui.QMainWindow):
     
     def SliceModel(self):
         self.slicer = slicer.slicer()
-        self.slicer.imageheight = 800
-        self.slicer.imagewidth = 600
+        self.slicer.imageheight = int(self.imageHeight)
+        self.slicer.imagewidth = int(self.imageWidth)
         # check to see if starting depth is less than ending depth!! this assumption is crucial
-        self.slicer.startingdepth = 0.0
-        self.slicer.endingdepth = 50.0
-        self.slicer.layerincrement = 0.5       
-        self.slicer.OpenModel("wfu_cbi_skull_cleaned.stl")
+        self.slicer.startingdepth = float(self.startingDepth)
+        self.slicer.endingdepth = float(self.endingDepth)
+        self.slicer.layerincrement = float(self.slicingIncrement)
+        self.slicer.OpenModel(self.filename)
         self.slicer.slice()
         
     def UpdateModelOpacity(self):
@@ -168,7 +186,7 @@ class Main(QtGui.QMainWindow):
                 self.ren.Render()
                 self.ModelView.Render()
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
-            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)        
+            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must first load a model to change its opacity!", QtGui.QMessageBox.Ok)        
             
     def Update_Position_X(self, position):
         self.transform.Translate((float(position)-self.CurrentXPosition), 0.0, 0.0)
@@ -259,23 +277,30 @@ class Main(QtGui.QMainWindow):
     
     def Update_Scale_Z(self, scale):
         pass
-            
-    def getvalues(self):
-        print "got here"
-            
+ 
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
+        self.connect(self.SettingsDialog, QtCore.SIGNAL('ApplySettings()'), self.getSettingsDialogValues)
+        self.SettingsDialog.imageHeight.setText(self.imageHeight)
+        self.SettingsDialog.imageWidth.setText(self.imageWidth)
+        self.SettingsDialog.layerThickness.setText(self.layerThickness)
+        self.SettingsDialog.startingDepth.setText(self.startingDepth)
+        self.SettingsDialog.endingDepth.setText(self.endingDepth)
+        self.SettingsDialog.slicingIncrement.setText(self.slicingIncrement)
+        try:
+            self.SettingsDialog.slicingPlane.setCurrentIndex(self.slicingplaneDict[self.slicingplane])
+        except: #anything other than a valid entry will default to XZ (index 0)
+            self.SettingsDialog.slicingPlane.setCurrentIndex(0)
         self.SettingsDialog.exec_()
         
     def getSettingsDialogValues(self):
-        pass
-         
-    def openhelp(self):
-        webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
- 
-    def openaboutdialog(self):
-        dialog = OpenAbout(self)
-        dialog.exec_()
+        self.imageHeight = self.SettingsDialog.imageHeight.text()
+        self.imageWidth = self.SettingsDialog.imageWidth.text()
+        self.layerThickness = self.SettingsDialog.layerThickness.text()
+        self.startingDepth = self.SettingsDialog.startingDepth.text()
+        self.endingDepth = self.SettingsDialog.endingDepth.text()
+        self.slicingIncrement = self.SettingsDialog.slicingIncrement.text()
+        self.slicingplane = self.SettingsDialog.slicingPlane.currentText()
            
 def main():
     app = QtGui.QApplication(sys.argv)

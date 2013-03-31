@@ -700,19 +700,22 @@ def GetInHMS(seconds):
 
 ################################################################################        
 def main():
-    #start thread with old 3dlp stuff
-
-    ####
-
     ################pyQt stuff
     app = QtGui.QApplication(sys.argv)
+    
+    splash_pix = QPixmap('3dlp_splash.png')
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    splash.setMask(splash_pix.mask())
+    splash.show()
+    app.processEvents()
+    
     window=Main()
     window.show()
+    splash.finish(window)
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
     ###############
     
-
 if __name__ == "__main__":
     main()
     

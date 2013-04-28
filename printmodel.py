@@ -26,6 +26,7 @@ class printmodel(QtCore.QThread):
         self.controller = controller
         self.stop = False
         self.cwd = cwd
+        self.printer = parent.printer
         super(printmodel, self).__init__(parent)
         #QtCore.QThread.__init__(self, parent = None)
         #self.printmodel() #start the printmodel method below
@@ -45,6 +46,10 @@ class printmodel(QtCore.QThread):
         X_UP - change direction of x axis to move up
         X_DOWN - change direction of x axis to move down
         PAUSE_xxxx - pause xxxx number of milliseconds in scripting sequence
+        Z_ENABLE
+        Z_DISABLE
+        X_ENABLE
+        X_DISABLE
         
         """
         self.commands = []
@@ -55,28 +60,29 @@ class printmodel(QtCore.QThread):
     
         self.startingexecutionpath = self.cwd
         #**********************************************
-        if self.controller=="ramps":
-            print "Connecting to RAMPS board..."
-            self.printer = hardware.ramps(self.COM_Port)
+
+#        if self.controller=="ramps":
+#            print "Connecting to RAMPS board..."
+#            self.printer = hardware.ramps(self.COM_Port)
             
-        if self.controller=="arduinoUNO":
-            print "Connecting to printer firmware..."
-            try:
-                self.board = hardware.arduinoUno(self.COM_Port)
-                print "no issues opening serial connection to firmata..."
-            except:
-                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
-                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                return
-                
-        if self.controller=="arduinoMEGA":
-            try:
-                self.board = hardware.arduinoMega(self.COM_Port)
-                print "no issues opening serial connection to firmata..."
-            except:
-                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
-                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                return
+#        if self.controller=="arduinoUNO":
+#            print "Connecting to printer firmware..."
+#            try:
+#                self.board = hardware.arduinoUno(self.COM_Port)
+#                print "no issues opening serial connection to firmata..."
+#            except:
+#                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
+#                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+#                return
+#                
+#        if self.controller=="arduinoMEGA":
+#            try:
+#                self.board = hardware.arduinoMega(self.COM_Port)
+#                print "no issues opening serial connection to firmata..."
+#            except:
+#                print"Failed to connect to firmata on %s. Check connections and settings, restart the program, and try again." %self.COM_Port
+#                self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
+#                return
 
         #******************************************
         imgnum = 0 #initialize variable at 0, it is appended +1 for each file found
@@ -136,7 +142,7 @@ class printmodel(QtCore.QThread):
             if self.stop == True:
                 print "Exiting print cycle now."
                 self.emit(QtCore.SIGNAL('disable_stop_button')) #emit signal to disable stop button
-                self.printer.close() #close connection with printer
+                #self.printer.close() #close connection with printer
                 return
             TimeRemaining = GetInHMS(eta)
             if layer >= self.NumberOfStartLayers:
@@ -153,7 +159,7 @@ class printmodel(QtCore.QThread):
             QCoreApplication.processEvents() #have to call this so the GUI updates before the sleep function
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
-            
+             
             print "sending custom scripted command sequence..."
             for command in self.commands:
                 if command == "Z_UP":

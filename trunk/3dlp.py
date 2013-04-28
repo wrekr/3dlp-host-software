@@ -28,7 +28,6 @@ import vtk
 from settingsdialog import Ui_SettingsDialogBaseClass
 from manual_control_gui import Ui_Manual_Control
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
 import hardware
 
 #**********************************
@@ -75,12 +74,12 @@ class StartSettingsDialog(QtGui.QDialog, Ui_SettingsDialogBaseClass):
 class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
     def __init__(self, parent):
         QtGui.QDialog.__init__(self, None)
-        print "Connecting to RAMPS board..."
-        self.printer = hardware.ramps(parent.COM_Port)
-        if self.printer.status == 1:
-            return
+        self.printer = parent.printer
         self.setupUi(self)
         self.mm_per_step = float(parent.pitch)/float(parent.steps_per_rev)
+        self.microstepping = 0.0625 #1/16th microstepping
+        print self.microstepping
+        self.mm_per_step = self.mm_per_step#/self.microstepping
         self.Zpos = 0.0
         self.Xpos = 0.0
 
@@ -88,12 +87,12 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         if self.Z_001.isChecked(): #Z 0.01mm is checked
             self.Zpos = self.Zpos+.01
             self.DRO_Z.display(float(self.DRO_Z.value())+.01)
-            self.printer.IncrementZ(.01/self.mm_per_step)
+            self.printer.IncrementZ((.01/self.mm_per_step))
             #print "incrementing %r steps"%(.01/self.mm_per_step)
         elif self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos+.1
             self.DRO_Z.display(float(self.DRO_Z.value())+.1)
-            self.printer.IncrementZ(.1/self.mm_per_step)
+            self.printer.IncrementZ((.1/self.mm_per_step))
             #print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
             self.Zpos = self.Zpos+1
@@ -103,7 +102,7 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         elif self.Z_10.isChecked(): #Z 10mm is checked
             self.Zpos = self.Zpos+10
             self.DRO_Z.display(float(self.DRO_Z.value())+10)
-            self.printer.IncrementZ(10/self.mm_per_step)
+            self.printer.IncrementZ((10/self.mm_per_step))
             #print "incrementing %r steps"%(10/self.mm_per_step)
 
     def Z_down(self):
@@ -650,8 +649,21 @@ class Main(QtGui.QMainWindow):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")
         
     def openmanualcontrol(self):
+        try: #check to see if printer object exists
+            if self.printer:
+                pass
+        except:
+            QtGui.QMessageBox.critical(self, 'Error opening manual control dialog',"You must first connect to a printer to control it!", QtGui.QMessageBox.Ok)
+            return  
         ManualControl = StartManualControl(self)
         ManualControl.exec_()
+        
+    def ConnectToPrinter(self):
+        print "Connecting to printer.."
+        self.printer = hardware.ramps(self.COM_Port)
+        if self.printer.status == 1:
+            print "unknown error encountered while trying to connect to printer."
+            return
         
     def updatepreview(self):
         #print"updating picture"
@@ -677,7 +689,13 @@ class Main(QtGui.QMainWindow):
         dialog = OpenAbout(self)
         dialog.exec_()
         
-    def printpressed(self):    
+    def printpressed(self):   
+        try: #check to see if printer object exists
+            if self.printer:
+                pass
+        except:
+            QtGui.QMessageBox.critical(self, 'Error starting print job',"You must first connect to a printer to print to it!", QtGui.QMessageBox.Ok)
+            return   
         self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
                                                 , self.NumberOfStartLayers, self.StartLayersExposureTime
                                                 , self.projectorcontrolenabled, self.controller, self.screennumber, self.cwd, self)
@@ -703,7 +721,7 @@ def main():
     ################pyQt stuff
     app = QtGui.QApplication(sys.argv)
     
-    splash_pix = QPixmap('3dlp_splash.png')
+    splash_pix = QPixmap(':/splash/3dlp_splash.png')
     splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
     splash.setMask(splash_pix.mask())
     splash.show()

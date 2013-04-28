@@ -272,6 +272,7 @@
      <string>File</string>
     </property>
     <addaction name="actionOpen"/>
+    <addaction name="actionConnect_To_Printer_2"/>
     <addaction name="actionQuit"/>
    </widget>
    <addaction name="menuFile"/>
@@ -713,6 +714,7 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpen"/>
+   <addaction name="actionConnect_To_Printer_2"/>
    <addaction name="actionOpen_manual_printer_control"/>
    <addaction name="actionSet_Model_Opacity"/>
    <addaction name="actionPreferences"/>
@@ -1733,18 +1735,6 @@
     <string>Go To Layer</string>
    </property>
   </action>
-  <action name="actionConnect_To_Printer">
-   <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/Icons/icons/lightbulb.png</normaloff>:/Icons/icons/lightbulb.png</iconset>
-   </property>
-   <property name="text">
-    <string>Connect To Printer</string>
-   </property>
-   <property name="toolTip">
-    <string>Connect To Printer</string>
-   </property>
-  </action>
   <action name="actionFirmware_Configurator">
    <property name="icon">
     <iconset resource="resource.qrc">
@@ -1752,6 +1742,18 @@
    </property>
    <property name="text">
     <string>Firmware Configurator</string>
+   </property>
+  </action>
+  <action name="actionConnect_To_Printer_2">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/Icons/icons/check2.png</normaloff>:/Icons/icons/check2.png</iconset>
+   </property>
+   <property name="text">
+    <string>Connect</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect to Printer</string>
    </property>
   </action>
  </widget>
@@ -1798,7 +1800,7 @@
    <slot>printpressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>318</x>
+     <x>162</x>
      <y>655</y>
     </hint>
     <hint type="destinationlabel">
@@ -1942,12 +1944,28 @@
    <slot>StopPrinting()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>432</x>
-     <y>645</y>
+     <x>318</x>
+     <y>655</y>
     </hint>
     <hint type="destinationlabel">
      <x>482</x>
      <y>660</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionConnect_To_Printer_2</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ConnectToPrinter()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>511</x>
+     <y>383</y>
     </hint>
    </hints>
   </connection>
@@ -1976,5 +1994,6 @@
   <slot>OpenSettingsDialog()</slot>
   <slot>GoToLayer()</slot>
   <slot>StopPrinting()</slot>
+  <slot>ConnectToPrinter()</slot>
  </slots>
 </ui>

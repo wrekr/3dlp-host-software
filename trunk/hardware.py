@@ -35,10 +35,14 @@ class ramps():
     def Z_Up(self):
         self.board.write("Z_UP\n")
         print "set Z to UP"
+        print self.board.readline()
+        print self.board.readline()
     
     def Z_Down(self):
         self.board.write("Z_DOWN\n")
         print "Set Z to DOWN"
+        print self.board.readline()
+        print self.board.readline()
         
     def X_Up(self):
         print "Set X to UP"
@@ -62,6 +66,7 @@ class ramps():
         #send command
         print "sending ZMOVE_%d" %math.fabs(steps)
         self.board.write('ZMOVE_%d\n'%math.fabs(steps))
+        print self.board.readline()
         print self.board.readline()
         #look for response
         #print ".", self.board.readline(), "."

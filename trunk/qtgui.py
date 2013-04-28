@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Sun Mar 03 21:09:20 2013
+# Created: Wed Apr 24 18:16:27 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -648,30 +648,32 @@ class Ui_MainWindow(object):
         self.actionGo_To_Layer.setIcon(icon14)
         self.actionGo_To_Layer.setText(QtGui.QApplication.translate("MainWindow", "Go To Layer", None, QtGui.QApplication.UnicodeUTF8))
         self.actionGo_To_Layer.setObjectName(_fromUtf8("actionGo_To_Layer"))
-        self.actionConnect_To_Printer = QtGui.QAction(MainWindow)
-        icon15 = QtGui.QIcon()
-        icon15.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/lightbulb.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionConnect_To_Printer.setIcon(icon15)
-        self.actionConnect_To_Printer.setText(QtGui.QApplication.translate("MainWindow", "Connect To Printer", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionConnect_To_Printer.setToolTip(QtGui.QApplication.translate("MainWindow", "Connect To Printer", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionConnect_To_Printer.setObjectName(_fromUtf8("actionConnect_To_Printer"))
         self.actionFirmware_Configurator = QtGui.QAction(MainWindow)
-        icon16 = QtGui.QIcon()
-        icon16.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/gears.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionFirmware_Configurator.setIcon(icon16)
+        icon15 = QtGui.QIcon()
+        icon15.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/gears.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionFirmware_Configurator.setIcon(icon15)
         self.actionFirmware_Configurator.setText(QtGui.QApplication.translate("MainWindow", "Firmware Configurator", None, QtGui.QApplication.UnicodeUTF8))
         self.actionFirmware_Configurator.setObjectName(_fromUtf8("actionFirmware_Configurator"))
+        self.actionConnect_To_Printer_2 = QtGui.QAction(MainWindow)
+        icon16 = QtGui.QIcon()
+        icon16.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/check2.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionConnect_To_Printer_2.setIcon(icon16)
+        self.actionConnect_To_Printer_2.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionConnect_To_Printer_2.setToolTip(QtGui.QApplication.translate("MainWindow", "Connect to Printer", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionConnect_To_Printer_2.setObjectName(_fromUtf8("actionConnect_To_Printer_2"))
         self.menuAbout.addAction(self.actionAbout)
         self.menuAbout.addAction(self.actionHelp)
         self.menuTools.addAction(self.actionOpen_manual_printer_control)
         self.menuTools.addAction(self.actionFirmware_Configurator)
         self.menuTools.addAction(self.actionSave_current_settings_as_default)
         self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionConnect_To_Printer_2)
         self.menuFile.addAction(self.actionQuit)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
         self.toolBar.addAction(self.actionOpen)
+        self.toolBar.addAction(self.actionConnect_To_Printer_2)
         self.toolBar.addAction(self.actionOpen_manual_printer_control)
         self.toolBar.addAction(self.actionSet_Model_Opacity)
         self.toolBar.addAction(self.actionPreferences)
@@ -695,6 +697,7 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.actionGo_To_Layer, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.GoToLayer)
         QtCore.QObject.connect(self.actionOpen_manual_printer_control, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openmanualcontrol)
         QtCore.QObject.connect(self.button_stop_printing, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.StopPrinting)
+        QtCore.QObject.connect(self.actionConnect_To_Printer_2, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.ConnectToPrinter)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

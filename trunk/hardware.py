@@ -2,7 +2,7 @@
 """
 Created on Mon Dec 17 21:01:39 2012
 
-@author: Chris
+@author: Chris Marion
 """
 import serial
 import math
@@ -21,7 +21,7 @@ class ramps():
             self.board = serial.Serial("%s"%port, 115200)
             print "initialized connection successfully"
             self.status = 0
-            print self.board.readline()
+            print self.board.readline().strip()
         except:
             print "Could not connect to RAMPS board."
             self.status = 1

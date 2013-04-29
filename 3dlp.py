@@ -17,6 +17,7 @@ Still to add/known issues:
     -scripting commands for motor speed, GPIO (solenoids, etc), PWM control of gearmotors with encoder feedback, and pause
     -custom scripting for different sections of layers
     -ability to save custom hardware profiles for different printers
+    -generate 3d preview from layer slice images, scrolls through in real-time with the print job
 """
 import sys
 
@@ -284,18 +285,18 @@ class Main(QtGui.QMainWindow):
 
         #*********************************
         #After settings are loaded (default or saved), load all the settings into variables for use.
-        
-        self.ZStepPin = int(self.parser.get('pin_mapping', 'zstep'))
-        self.ZDirPin = int(self.parser.get('pin_mapping', 'zdir'))
-        self.XStepPin = int(self.parser.get('pin_mapping', 'xstep'))
-        self.XDirPin = int(self.parser.get('pin_mapping', 'xdir'))
-        self.ZEnablePin = int(self.parser.get('pin_mapping', 'zenable'))
-        self.XEnablePin = int(self.parser.get('pin_mapping', 'xenable'))
+
+#        self.ZStepPin = int(self.parser.get('pin_mapping', 'zstep'))
+#        self.ZDirPin = int(self.parser.get('pin_mapping', 'zdir'))
+#        self.XStepPin = int(self.parser.get('pin_mapping', 'xstep'))
+#        self.XDirPin = int(self.parser.get('pin_mapping', 'xdir'))
+#        self.ZEnablePin = int(self.parser.get('pin_mapping', 'zenable'))
+#        self.XEnablePin = int(self.parser.get('pin_mapping', 'xenable'))
         
         self.zscript = self.parser.get('scripting', 'sequence')
         self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
         #bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.printerbaud = self.parser.get('program_defaults', 'Printer_Baud')
+        self.printerbaud = self.parser.get('program_defaults', 'printerBAUD')
         self.exposure_time = self.parser.get('program_defaults', 'ExposeTime')
         self.starting_layers = self.parser.get('program_defaults', 'NumStartLayers')
         self.starting_layer_exposure = self.parser.get('program_defaults', 'StartLayersExposeTime')
@@ -526,7 +527,7 @@ class Main(QtGui.QMainWindow):
     def LoadSettingsFromConfigFile(self):
         print "Loading printing settings from config.ini"
         bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.printerbaud = bauddict[self.parser.get('program_defaults', 'Printer_Baud')]
+        self.printerbaud = bauddict[self.parser.get('program_defaults', 'printerBAUD')]
  
         self.zscript = self.parser.get('scripting', 'sequence')
         self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
@@ -535,9 +536,9 @@ class Main(QtGui.QMainWindow):
         self.NumberOfStartLayers = self.parser.get('program_defaults', 'NumStartLayers')
         self.StartLayersExposureTime = self.parser.get('program_defaults', 'StartLayersExposeTime')
         
-        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
+        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO_UNO':
             self.controller = "arduinoUNO"
-        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
+        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO_MEGA':
             self.controller = "arduinoMEGA"
         elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
             self.controller = "pymcu"
@@ -613,37 +614,60 @@ class Main(QtGui.QMainWindow):
     def getSettingsDialogValues(self):
         print "got here"
         self.zscript = self.SettingsDialog.zscript.document().toPlainText()
+        self.parser.set('scripting', 'sequence', '%s'%self.zscript)
         self.COM_Port = self.SettingsDialog.pickcom.currentText()
+        self.parser.set('program_defaults', 'printerCOM', '%s'%self.COM_Port)
         self.Printer_Baud = int(self.SettingsDialog.printerbaud.currentText())
+        self.parser.set('program_defaults', 'printerBAUD', '%s'%self.Printer_Baud)
         self.ExposeTime = float(self.SettingsDialog.exposure_time.text())
+        self.parser.set('program_defaults', 'ExposeTime', '%s'%self.ExposeTime)
         #AdvanceTime = float(self.ui.advance_time.text())
         self.Port = self.SettingsDialog.remote_port.text()
         self.NumberOfStartLayers = float(self.SettingsDialog.starting_layers.text())
+        self.parser.set('program_defaults', 'NumStartLayers', '%s'%self.NumberOfStartLayers)
         self.StartLayersExposureTime = float(self.SettingsDialog.starting_layer_exposure.text())
+        self.parser.set('program_defaults', 'StartLayersExposeTime', '%s'%self.StartLayersExposureTime)
         self.projector_com = self.SettingsDialog.projector_pickcom.currentText()
+
         self.projector_baud = self.SettingsDialog.projector_baud.currentText()
+        self.parser.set('program_defaults', 'projectorBAUD', '%s'%self.projector_baud)
 
         if self.SettingsDialog.projectorcontrol.isChecked():
             self.projectorcontrolenabled = True
+            self.parser.set('program_defaults', 'projectorcontrol', 'True')
         else:
             self.projectorcontrolenabled = False
+            self.parser.set('program_defaults', 'projectorcontrol', 'False')
             
         if self.SettingsDialog.enableprintercontrol.isChecked():
             self.printercontrolenabled = True  
+            self.parser.set('program_defaults', 'printercontrol', 'True')
         else:
             self.printercontrolenabled = False
+            self.parser.set('program_defaults', 'printercontrol', 'False')
 
         if self.SettingsDialog.enableslideshow.isChecked():
             self.slideshowenabled = True
+            self.parser.set('program_defaults', 'slideshowenabled', 'True')
+        else:
+            self.slideshowenabled = False
+            self.parser.set('program_defaults', 'slideshowenabled', 'False')
         if self.SettingsDialog.radio_pyMCU.isChecked():
             self.controller = "pymcu"
+            self.parser.set('program_defaults', 'printercontroller', 'PYMCU')
         self.screennumber = self.SettingsDialog.pickscreen.currentText() #get the screen number from picker
         if self.SettingsDialog.radio_arduinoUno.isChecked():
             self.controller = "arduinoUNO"
+            self.parser.set('program_defaults', 'printercontroller', 'ARDUINO_UNO')
         if self.SettingsDialog.radio_arduinoMega.isChecked():
             self.controller = "arduinoMEGA"
+            self.parser.set('program_defaults', 'printercontroller', 'ARDUINO_MEGA')
         if self.SettingsDialog.radio_ramps.isChecked():
             self.controller = "ramps"
+            self.parser.set('program_defaults', 'printercontroller', 'RAMPS')
+        outputini = open('config.ini', 'w') #open a file pointer for the config file parser to write changes to
+        self.parser.write(outputini)
+        outputini.close() #done writing config file changes
          
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")

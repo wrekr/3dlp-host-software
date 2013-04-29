@@ -27,6 +27,7 @@ class printmodel(QtCore.QThread):
         self.stop = False
         self.cwd = cwd
         self.printer = parent.printer
+        self.parent = parent
         super(printmodel, self).__init__(parent)
         #QtCore.QThread.__init__(self, parent = None)
         #self.printmodel() #start the printmodel method below
@@ -132,7 +133,9 @@ class printmodel(QtCore.QThread):
         #print "..ok."
             
         print "Printing..." 
- 
+        
+        self.parent.ui.progressBar.setEnabled(True)
+        self.parent.ui.progressBar.setValue(50)
         #eta = (NumberOfImages*ExposeTime) + (NumberOfImages*AdvanceTime) + custom commands!!!!
         eta = 0
         percentagechunk = 100.0/float(NumberOfImages)
@@ -159,7 +162,7 @@ class printmodel(QtCore.QThread):
             self.emit(QtCore.SIGNAL('updatePreviewBlank')) #emit signal to update preview image
             #**send command to stage
              
-            print "sending custom scripted command sequence..."
+            print "beginning custom scripted command sequence..."
             for command in self.commands:
                 if command == "Z_UP":
                     self.printer.Z_Up()

@@ -44,6 +44,18 @@ class ramps():
         print self.board.readline()
         print self.board.readline()
         
+    def Z_Enable(self):
+        self.board.write("Z_ENABLE\n")
+        print "z axis enabled"
+        print self.board.readline()
+        print self.board.readline()
+        
+    def Z_Disable(self):
+        self.board.write("Z_DISABLE\n")
+        print "z axis disabled"
+        print self.board.readline()
+        print self.board.readline()
+        
     def X_Up(self):
         print "Set X to UP"
         

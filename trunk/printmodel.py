@@ -50,7 +50,6 @@ class printmodel(QtCore.QThread):
         Z_DISABLE
         X_ENABLE
         X_DISABLE
-        
         """
         self.commands = []
         for match in re.findall("\[(.*?)\]", self.zscript):
@@ -163,17 +162,17 @@ class printmodel(QtCore.QThread):
             print "sending custom scripted command sequence..."
             for command in self.commands:
                 if command == "Z_UP":
-                    #board.digital[ZDirPin].write(1)
                     self.printer.Z_Up()
                 elif command == "Z_DOWN":
-                    #board.digital[ZDirPin].write(0)
                     self.printer.Z_Down()
                 elif command == "X_UP":
-                    #board.digital[XDirPin].write(1)
                     self.printer.Z_Up()
                 elif command == "X_DOWN":
-                    #board.digital[XDirPin].write(0)
                     self.printer.X_Down()
+                elif command == "Z_ENABLE":
+                    self.printer.Z_Enable()
+                elif command == "Z_DISABLE":
+                    self.printer.Z_Disable()
                 #make sure the next two cases are last to avoid false positives
                 elif command.startswith("Z"):
                     numsteps = int(command[2:command.__len__()])

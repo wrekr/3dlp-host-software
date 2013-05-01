@@ -446,7 +446,17 @@ class Main(QtGui.QMainWindow):
         QApplication.processEvents() #make sure the toolbar gets updated with new text
         
     def GoToLayer(self):
-        pass
+        layer, ok = QtGui.QInputDialog.getText(self, 'Go To Layer', 'Enter the desired layer')
+        if not ok: #the user hit the "cancel" button
+            return
+        #####slice preview
+        self.currentlayer = int(layer)
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)    
+        QApplication.processEvents() #make sure the toolbar gets updated with new text
+        
         
     def UpdateModelOpacity(self):
         try:

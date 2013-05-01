@@ -1610,7 +1610,7 @@
      <normaloff>:/Icons/icons/import1.png</normaloff>:/Icons/icons/import1.png</iconset>
    </property>
    <property name="text">
-    <string>Open Model</string>
+    <string>Open Print Job</string>
    </property>
   </action>
   <action name="actionLoad_Image">
@@ -1651,7 +1651,7 @@
      <normaloff>:/Icons/icons/lightbulb_on.png</normaloff>:/Icons/icons/lightbulb_on.png</iconset>
    </property>
    <property name="text">
-    <string>Open manual printer control</string>
+    <string>Open Manual Control</string>
    </property>
   </action>
   <action name="actionPreferences">
@@ -1781,7 +1781,7 @@
    <sender>actionOpen</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>OpenModel()</slot>
+   <slot>OpenPrintJob()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1995,5 +1995,6 @@
   <slot>GoToLayer()</slot>
   <slot>StopPrinting()</slot>
   <slot>ConnectToPrinter()</slot>
+  <slot>OpenPrintJob()</slot>
  </slots>
 </ui>

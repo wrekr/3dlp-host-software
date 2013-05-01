@@ -185,35 +185,14 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
         QtGui.QDialog.__init__(self,parent)
         self.setupUi(self)
-    
-#*****************************
-#class OpenProgressBar(QtGui.QDialog, Ui_Progress):
-#    def __init__(self,parent=None):
-#        QtGui.QDialog.__init__(self,parent)
-#        self.setupUi(self)
-#        self.ctimer = QtCore.QTimer()
-#        self.ctimer.start(10)
-#        QtCore.QObject.connect(self.ctimer, QtCore.SIGNAL("timeout()"), self.constantUpdate)
-#    
-#    def constantUpdate(self):
-#        if progressBLAH:
-#            self.progressbar.setValue(progressBLAH*100)
-#            previousval = progressBLAH
-#            if progressBLAH == 1:
-#                sleep(.5)
-#                self.close()
-#**********************************************************************************************************************************
 
-#**********************************************************************************************************************************
-# Create a class for our main window
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
-        pass
-        #print Event.size().height() #mainwindow size 
-        #print self.ui.ModelFrame.geometry().width(), self.ui.ModelFrame.geometry().height()
-        ###self.ModelView.resize(self.ui.ModelFrame.geometry().width()-15,self.ui.ModelFrame.geometry().height()-39)
+        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height())
+        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)  
         
-
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         self.ui=Ui_MainWindow()
@@ -221,85 +200,45 @@ class Main(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
         
         #add toolbar labels
-        label = QtGui.QLabel(" Current Layer:")
+        label = QtGui.QLabel(" Current Layer: ")
         self.ui.toolBar_3.addWidget(label)
-        label2 = QtGui.QLabel(" 0 of 0")
-        self.ui.toolBar_3.addWidget(label2)
-        
+        self.layercount = QtGui.QLabel("0 of 0")
+        self.ui.toolBar_3.addWidget(self.layercount)
         self.cwd = os.getcwd() #get current execution (working) directory
-        
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
-        #####################
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
         
         # create the modelview widget
-        self.ModelView = QVTKRenderWindowInteractor(self.ui.splitter)
+        self.ModelView = QVTKRenderWindowInteractor(self.ui.frame)
         self.ModelView.SetInteractorStyle(MyInteractorStyle())
         self.ModelView.Initialize()
         self.ModelView.Start()
 
-        #self.ModelView.setGeometry(200,200,200,200)
         self.renWin=self.ModelView.GetRenderWindow()
         self.renWin.AddRenderer(self.ren)
         self.ModelView.show()
 
-        #self.ModelView.SetFixedSize(500,500)
-        #self.ModelView.setBaseSize(200,200)
-        #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-500,self.ui.ModelFrame.geometry().height()-500)
-        #self.ModelView.resize(690-100,550-100)
-
-        #####################
-        # create the sliceview widget
-#        self.SliceView = QVTKRenderWindowInteractor(self.ui.splitter)
-#        self.SliceView.SetInteractorStyle(MyInteractorStyle())
-#        self.SliceView.blockSignals(True)
-#        #self.SliceView.setFixedSize(294,200)
-#        #self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
-#        self.SliceView.Initialize()
-#
-#        self.sliceren = vtk.vtkRenderer()
-#        self.sliceren.InteractiveOff() #why doesnt this work?!
-#        
-#        self.sliceWin = self.SliceView.GetRenderWindow()
-#        self.sliceWin.AddRenderer(self.sliceren)
-#        self.SliceView.Start()
-        #######################      
-        
-        self.slicepreview = QtGui.QLabel(self.ui.splitter)
+        self.slicepreview = QtGui.QLabel(self.ui.frame_2)
         pm = QtGui.QPixmap(os.getcwd() + "\\10x10black.png")
         pmscaled = pm.scaled(400, 600)
         self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
-        
-          
-        print self.ui.splitter.sizes()
+
         self.screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", self.screencount
 
-        #autodetect COM ports:  
         self.ports = comscan.comscan() #returns a list with each entry being a dict of useful information
         print self.ports
         self.numports = len(self.ports) #how many dicts did comscan return?
         
-        #print "Found %d ports, %d available." %(length, numports)
-        #*********************************
-        #IF YOU'RE EVER GOING TO LOAD PREVIOUS SETTINGS, DO IT HERE. 
+        #print "Found %d ports, %d available." %(self.numports, numports)
+
         self.parser = SafeConfigParser()
         self.parser.read('config.ini')
         self.LoadSettingsFromConfigFile()
-
-        #*********************************
-        #After settings are loaded (default or saved), load all the settings into variables for use.
-
-#        self.ZStepPin = int(self.parser.get('pin_mapping', 'zstep'))
-#        self.ZDirPin = int(self.parser.get('pin_mapping', 'zdir'))
-#        self.XStepPin = int(self.parser.get('pin_mapping', 'xstep'))
-#        self.XDirPin = int(self.parser.get('pin_mapping', 'xdir'))
-#        self.ZEnablePin = int(self.parser.get('pin_mapping', 'zenable'))
-#        self.XEnablePin = int(self.parser.get('pin_mapping', 'xenable'))
-        
+   
         self.zscript = self.parser.get('scripting', 'sequence')
         self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
         #bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
@@ -307,31 +246,8 @@ class Main(QtGui.QMainWindow):
         self.exposure_time = self.parser.get('program_defaults', 'ExposeTime')
         self.starting_layers = self.parser.get('program_defaults', 'NumStartLayers')
         self.starting_layer_exposure = self.parser.get('program_defaults', 'StartLayersExposeTime')
+        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height())
         
-#        if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO UNO':
-#            self.ui.radio_arduinoUno.click()
-#        elif self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO MEGA':
-#            self.ui.radio_arduinoMega.click()
-#        elif self.parser.get('program_defaults', 'printercontroller') == 'PYMCU':
-#            self.ui.radio_pyMCU.click()
-#        if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
-#            self.ui.enableslideshow.click()
-#        if self.parser.get('program_defaults', 'printercontrol') == 'True':
-#            self.ui.enableprintercontrol.click()
-#        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
-#            self.ui.projectorcontrol.click()
-            
-#        self.ProjectorControlToggled() #enable or disable projector stuff based on current status of projector enable checkbox
-        
-        #*********************************
-#        if self.ui.radio_pyMCU.isChecked(): #if selected on startup: means projector comms are handled through it. disable printer com config stuff. 
-#            self.ui.projector_pickcom.setEnabled(False)
-#            self.ui.projector_baud.setEnabled(False)
-#            self.ui.projector_parity.setEnabled(False)
-#            self.ui.projector_databits.setEnabled(False)
-#            self.ui.projector_stopbits.setEnabled(False)
-#            self.ui.zscript.setEnabled(False)
-        #*********************************
     def __del__(self):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__           
@@ -345,24 +261,6 @@ class Main(QtGui.QMainWindow):
         self.ui.consoletext.setTextCursor(cursor)
         self.ui.consoletext.ensureCursorVisible()
             
-#    def ProjectorControlToggled(self):
-#        if self.ui.projectorcontrol.isChecked(): #only if projector control is enabled can you re-enable all the control settings.
-#            self.ui.projector_pickcom.setEnabled(True)
-#            self.ui.projector_baud.setEnabled(True)
-#            self.ui.projector_parity.setEnabled(True)
-#            self.ui.projector_databits.setEnabled(True)
-#            self.ui.projector_stopbits.setEnabled(True)
-#            self.ui.projector_poweroffcommand.setEnabled(True)
-#            self.ui.projector_testpoweroffcommand.setEnabled(True)
-#        else:
-#            self.ui.projector_pickcom.setEnabled(False)
-#            self.ui.projector_baud.setEnabled(False)
-#            self.ui.projector_parity.setEnabled(False)
-#            self.ui.projector_databits.setEnabled(False)
-#            self.ui.projector_stopbits.setEnabled(False)
-#            self.ui.projector_poweroffcommand.setEnabled(False)
-#            self.ui.projector_testpoweroffcommand.setEnabled(False)
-
     def OpenPrintJob(self):
         self.printDirectory = str(QFileDialog.getExistingDirectory(self, "Select Directory of Desired Print Job"))
         if not os.path.isdir(self.printDirectory + "\\slices"):
@@ -383,13 +281,19 @@ class Main(QtGui.QMainWindow):
             self.printconfigparser = SafeConfigParser()
             self.printconfigparser.read(self.printDirectory + '\\printconfiguration.ini')
         except:
-            print "unknown error encountered trying to read print configuration file"
+            print "unknown error encountered while trying to parse print configuration file"
             return
         self.OpenModel(self.printconfigparser.get('print_settings', 'STL_name'))
+        self.currentlayer = 1
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)    
+        QApplication.processEvents() #make sure the toolbar gets updated with new text
+        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
 
     def OpenModel(self, filename):
-        #self.filename = QtGui.QFileDialog.getOpenFileName()
-#        self.ui.displayfilenamelabel.setText(self.filename)
+        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height()) #just in case resizeEvent() hasn't been called yet
 
         self.filename = filename
         
@@ -433,7 +337,6 @@ class Main(QtGui.QMainWindow):
         self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
         self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
         self.cutPoly.Update()
-        #print cutStrips.GetOutput()
         
         # Triangle filter
         self.cutTriangles = vtk.vtkTriangleFilter()
@@ -459,11 +362,7 @@ class Main(QtGui.QMainWindow):
         self.slicingplaneoutlineActor.GetProperty().SetColor(1.0,0,0)
         self.slicingplaneoutlineActor.GetProperty().SetLineWidth(4)
         self.slicingplaneoutlineActor.SetMapper(self.cutterOutlineMapper)
-#        
-#        self.sliceActor = vtk.vtkActor()
-#        self.sliceActor.GetProperty().SetColor(1,1,1)
-#        self.sliceActor.SetMapper(self.cutterMapper)
-# 
+
         #create outline mapper
         self.outline = vtk.vtkOutlineFilter()
         self.outline.SetInputConnection(self.reader.GetOutputPort())
@@ -475,7 +374,7 @@ class Main(QtGui.QMainWindow):
         self.outlineActor.SetMapper(self.outlineMapper)
         
         #create annotated cube anchor actor
-        self.axesActor = vtk.vtkAnnotatedCubeActor();
+        self.axesActor = vtk.vtkAnnotatedCubeActor()
         self.axesActor.SetXPlusFaceText('Right')
         self.axesActor.SetXMinusFaceText('Left')
         self.axesActor.SetYMinusFaceText('Front')
@@ -497,12 +396,7 @@ class Main(QtGui.QMainWindow):
         self.ren.AddActor(self.slicingplaneActor)
         self.ren.AddActor(self.slicingplaneoutlineActor)
         self.ren.AddActor(self.outlineActor)
-        self.sliceren.AddActor(self.slicingplaneActor)
-        self.sliceren.ResetCamera()
-        self.sliceren.ResetCameraClippingRange(-100.0,100.0,-100.0,100.0,-100.0,100.0)
-        self.sliceren.InteractiveOff() #why doesnt this work?!
-        self.SliceView.Render()
-        #self.SliceView.Disable()
+
         #create orientation markers
         self.axes = vtk.vtkOrientationMarkerWidget()
         self.axes.SetOrientationMarker(self.axesActor)
@@ -512,7 +406,6 @@ class Main(QtGui.QMainWindow):
         
         self.ren.ResetCamera()  
         self.ModelView.Render() #update model view
-        print self.ui.splitter.sizes()
     
     def IncrementSlicingPlanePositive(self):
         self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
@@ -524,9 +417,14 @@ class Main(QtGui.QMainWindow):
         self.cutPoly.Update()
         self.cutTriangles.Update()
         self.ren.Render()
-        self.sliceren.Render()
         self.ModelView.Render()
-        self.SliceView.Render()
+        #####slice preview
+        self.currentlayer = self.currentlayer + 1
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)    
+        QApplication.processEvents() #make sure the toolbar gets updated with new text
         
     def IncrementSlicingPlaneNegative(self):
         self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
@@ -538,9 +436,14 @@ class Main(QtGui.QMainWindow):
         self.cutPoly.Update()
         self.cutTriangles.Update()
         self.ren.Render()
-        self.sliceren.Render()
         self.ModelView.Render()
-        self.SliceView.Render()
+        #####slice preview
+        self.currentlayer = self.currentlayer - 1
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)    
+        QApplication.processEvents() #make sure the toolbar gets updated with new text
         
     def GoToLayer(self):
         pass

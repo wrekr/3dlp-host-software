@@ -253,20 +253,27 @@ class Main(QtGui.QMainWindow):
 
         #####################
         # create the sliceview widget
-        self.SliceView = QVTKRenderWindowInteractor(self.ui.splitter)
-        self.SliceView.SetInteractorStyle(MyInteractorStyle())
-        self.SliceView.blockSignals(True)
-        #self.SliceView.setFixedSize(294,200)
-        #self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
-        self.SliceView.Initialize()
-
-        self.sliceren = vtk.vtkRenderer()
-        self.sliceren.InteractiveOff() #why doesnt this work?!
+#        self.SliceView = QVTKRenderWindowInteractor(self.ui.splitter)
+#        self.SliceView.SetInteractorStyle(MyInteractorStyle())
+#        self.SliceView.blockSignals(True)
+#        #self.SliceView.setFixedSize(294,200)
+#        #self.SliceView.resize(self.ui.SliceFrame.geometry().width()+8,self.ui.SliceFrame.geometry().height()-39)
+#        self.SliceView.Initialize()
+#
+#        self.sliceren = vtk.vtkRenderer()
+#        self.sliceren.InteractiveOff() #why doesnt this work?!
+#        
+#        self.sliceWin = self.SliceView.GetRenderWindow()
+#        self.sliceWin.AddRenderer(self.sliceren)
+#        self.SliceView.Start()
+        #######################      
         
-        self.sliceWin = self.SliceView.GetRenderWindow()
-        self.sliceWin.AddRenderer(self.sliceren)
-        self.SliceView.Start()
-        #######################        
+        self.slicepreview = QtGui.QLabel(self.ui.splitter)
+        pm = QtGui.QPixmap(os.getcwd() + "\\10x10black.png")
+        pmscaled = pm.scaled(400, 600)
+        self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
+        
+          
         print self.ui.splitter.sizes()
         self.screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", self.screencount
@@ -356,10 +363,36 @@ class Main(QtGui.QMainWindow):
 #            self.ui.projector_poweroffcommand.setEnabled(False)
 #            self.ui.projector_testpoweroffcommand.setEnabled(False)
 
-    def OpenModel(self):
-        self.filename = QtGui.QFileDialog.getOpenFileName()
+    def OpenPrintJob(self):
+        self.printDirectory = str(QFileDialog.getExistingDirectory(self, "Select Directory of Desired Print Job"))
+        if not os.path.isdir(self.printDirectory + "\\slices"):
+            print "no slices directory found"
+            return
+        self.FileList = []
+        for file in os.listdir(self.printDirectory + "\\slices"): #for every file in slices dir (changed dir above)
+            if file.endswith(".png"): #if it's a supported image type
+                imagepath = self.printDirectory + "\\slices\\" + file
+                self.FileList.append(imagepath)
+        if len(self.FileList)<1:
+            print "no valid slice images were found"
+            return
+        if not os.path.isfile(self.printDirectory + "\\printconfiguration.ini"):
+            print "no print configuration file was found"
+            return
+        try:
+            self.printconfigparser = SafeConfigParser()
+            self.printconfigparser.read(self.printDirectory + '\\printconfiguration.ini')
+        except:
+            print "unknown error encountered trying to read print configuration file"
+            return
+        self.OpenModel(self.printconfigparser.get('print_settings', 'STL_name'))
+
+    def OpenModel(self, filename):
+        #self.filename = QtGui.QFileDialog.getOpenFileName()
 #        self.ui.displayfilenamelabel.setText(self.filename)
 
+        self.filename = filename
+        
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))
          
@@ -574,15 +607,11 @@ class Main(QtGui.QMainWindow):
                 #print portname 
                 self.SettingsDialog.pickcom.addItem(portname)
                 self.SettingsDialog.pickcom.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
-                self.SettingsDialog.projector_pickcom.addItem(portname)
-                self.SettingsDialog.projector_pickcom.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%s"%portname, None, QtGui.QApplication.UnicodeUTF8))
+
         ####setup screen picker####
         for x in range(self.screencount):
             self.SettingsDialog.pickscreen.addItem("")
             self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
-
-        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.SettingsDialog.printerbaud.setCurrentIndex(bauddict[self.printerbaud])
  
         #insert all other values from current namespace
         self.SettingsDialog.zscript.setPlainText(self.zscript)
@@ -617,18 +646,14 @@ class Main(QtGui.QMainWindow):
         self.parser.set('scripting', 'sequence', '%s'%self.zscript)
         self.COM_Port = self.SettingsDialog.pickcom.currentText()
         self.parser.set('program_defaults', 'printerCOM', '%s'%self.COM_Port)
-        self.Printer_Baud = int(self.SettingsDialog.printerbaud.currentText())
-        self.parser.set('program_defaults', 'printerBAUD', '%s'%self.Printer_Baud)
+
         self.ExposeTime = float(self.SettingsDialog.exposure_time.text())
         self.parser.set('program_defaults', 'ExposeTime', '%s'%self.ExposeTime)
         #AdvanceTime = float(self.ui.advance_time.text())
-        self.Port = self.SettingsDialog.remote_port.text()
         self.NumberOfStartLayers = float(self.SettingsDialog.starting_layers.text())
         self.parser.set('program_defaults', 'NumStartLayers', '%s'%self.NumberOfStartLayers)
         self.StartLayersExposureTime = float(self.SettingsDialog.starting_layer_exposure.text())
         self.parser.set('program_defaults', 'StartLayersExposeTime', '%s'%self.StartLayersExposureTime)
-        self.projector_com = self.SettingsDialog.projector_pickcom.currentText()
-
         self.projector_baud = self.SettingsDialog.projector_baud.currentText()
         self.parser.set('program_defaults', 'projectorBAUD', '%s'%self.projector_baud)
 

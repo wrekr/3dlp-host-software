@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp.ui'
 #
-# Created: Wed Apr 24 18:16:27 2013
+# Created: Tue Apr 30 20:05:36 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -571,7 +571,7 @@ class Ui_MainWindow(object):
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/import1.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOpen.setIcon(icon3)
-        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open Model", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen.setText(QtGui.QApplication.translate("MainWindow", "Open Print Job", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen.setObjectName(_fromUtf8("actionOpen"))
         self.actionLoad_Image = QtGui.QAction(MainWindow)
         self.actionLoad_Image.setText(QtGui.QApplication.translate("MainWindow", "Load Image", None, QtGui.QApplication.UnicodeUTF8))
@@ -598,7 +598,7 @@ class Ui_MainWindow(object):
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap(_fromUtf8(":/Icons/icons/lightbulb_on.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.actionOpen_manual_printer_control.setIcon(icon7)
-        self.actionOpen_manual_printer_control.setText(QtGui.QApplication.translate("MainWindow", "Open manual printer control", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionOpen_manual_printer_control.setText(QtGui.QApplication.translate("MainWindow", "Open Manual Control", None, QtGui.QApplication.UnicodeUTF8))
         self.actionOpen_manual_printer_control.setObjectName(_fromUtf8("actionOpen_manual_printer_control"))
         self.actionPreferences = QtGui.QAction(MainWindow)
         icon8 = QtGui.QIcon()
@@ -686,7 +686,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
         QtCore.QObject.connect(self.actionQuit, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.close)
-        QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenModel)
+        QtCore.QObject.connect(self.actionOpen, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.OpenPrintJob)
         QtCore.QObject.connect(self.pushButton_5, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.printpressed)
         QtCore.QObject.connect(self.actionAbout, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openaboutdialog)
         QtCore.QObject.connect(self.actionHelp, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.openhelp)

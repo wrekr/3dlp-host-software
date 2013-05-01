@@ -7,6 +7,8 @@ from slicer_gui import Ui_MainWindow
 from slicer_settings_dialog_gui import Ui_Dialog
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
+###IDEA TO SPEED UP SLICER: slice in one thread, send data through queue to another thread which saves data to hard drive at its leisure
+
 class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
     def __init__(self,parent=None):
         self.AddObserver("MiddleButtonPressEvent",self.middleButtonPressEvent)

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
+    <width>742</width>
     <height>452</height>
    </rect>
   </property>
@@ -676,8 +676,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>442</x>
-     <y>317</y>
+     <x>449</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
      <x>532</x>
@@ -692,8 +692,8 @@
    <slot>ApplySettings()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>185</x>
-     <y>310</y>
+     <x>368</x>
+     <y>440</y>
     </hint>
     <hint type="destinationlabel">
      <x>82</x>

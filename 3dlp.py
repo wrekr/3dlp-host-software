@@ -2,14 +2,11 @@
 """
 Created on Thu Apr 05 22:20:39 2012
 
-@author: Chris Marion Copyright 2012
+@author: Chris Marion Copyright 2012-2013
 www.chrismarion.net
 
 Still to add/known issues:
-    -fix ETA and advance time
     -projector control functionality is not finished.
-    -I would like to support many different hardware types - poll community on hardware (drivers, feedback control, etc.)
-    -Manual printer control dialog for manually jogging each printer axis
     -still looking for a good method of calibrating for X and Y (image size)
     -raise the bed to a final position after build is complete
     -Trapezoidal motion profiling of Z movement
@@ -198,6 +195,8 @@ class Main(QtGui.QMainWindow):
         self.ui=Ui_MainWindow()
         self.ui.setupUi(self)  
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Host", None, QtGui.QApplication.UnicodeUTF8))
+        
+        self.pm = QtGui.QPixmap(':/blank/10x10black.png')
         
         #add toolbar labels
         label = QtGui.QLabel(" Current Layer: ")
@@ -446,8 +445,11 @@ class Main(QtGui.QMainWindow):
         QApplication.processEvents() #make sure the toolbar gets updated with new text
         
     def GoToLayer(self):
-        layer, ok = QtGui.QInputDialog.getText(self, 'Go To Layer', 'Enter the desired layer')
+        layer, ok = QtGui.QInputDialog.getText(self, 'Go To Layer', 'Enter the desired layer (1 - %s)' %(int(len(self.FileList))))
         if not ok: #the user hit the "cancel" button
+            return
+        if int(layer)<0:
+            QtGui.QMessageBox.critical(self, 'Error going to layer',"You must enter a layer between 1 and %s" %(int(len(self.FileList))), QtGui.QMessageBox.Ok)
             return
         #####slice preview
         self.currentlayer = int(layer)
@@ -456,8 +458,7 @@ class Main(QtGui.QMainWindow):
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)    
         QApplication.processEvents() #make sure the toolbar gets updated with new text
-        
-        
+                
     def UpdateModelOpacity(self):
         try:
             if self.modelActor: #check to see if a model is loaded, if not it will throw an exception

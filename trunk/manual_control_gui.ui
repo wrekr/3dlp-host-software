@@ -120,7 +120,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset>
+                   <iconset resource="resource.qrc">
                     <normaloff>:/Icons/icons/nav_up_blue.png</normaloff>:/Icons/icons/nav_up_blue.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -137,7 +137,7 @@
                    <string>...</string>
                   </property>
                   <property name="icon">
-                   <iconset>
+                   <iconset resource="resource.qrc">
                     <normaloff>:/Icons/icons/nav_down_blue.png</normaloff>:/Icons/icons/nav_down_blue.png</iconset>
                   </property>
                   <property name="iconSize">
@@ -284,7 +284,7 @@
                <string>Trigger X Axis</string>
               </property>
               <property name="icon">
-               <iconset>
+               <iconset resource="resource.qrc">
                 <normaloff>:/Icons/icons/nav_right_blue.png</normaloff>:/Icons/icons/nav_right_blue.png</iconset>
               </property>
               <property name="iconSize">
@@ -346,7 +346,7 @@
           <string>Stop Motion</string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="resource.qrc">
            <normaloff>:/Icons/icons/stop.png</normaloff>:/Icons/icons/stop.png</iconset>
          </property>
          <property name="iconSize">
@@ -390,8 +390,8 @@
    <slot>Z_up()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>120</x>
-     <y>93</y>
+     <x>189</x>
+     <y>121</y>
     </hint>
     <hint type="destinationlabel">
      <x>178</x>
@@ -406,8 +406,8 @@
    <slot>Z_down()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>128</x>
-     <y>159</y>
+     <x>189</x>
+     <y>181</y>
     </hint>
     <hint type="destinationlabel">
      <x>176</x>
@@ -435,7 +435,7 @@
    <sender>toolButton_2</sender>
    <signal>clicked()</signal>
    <receiver>Manual_Control</receiver>
-   <slot>X_up()</slot>
+   <slot>activateX()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>296</x>
@@ -451,7 +451,7 @@
  <slots>
   <slot>Z_up()</slot>
   <slot>Z_down()</slot>
-  <slot>X_up()</slot>
+  <slot>activateX()</slot>
   <slot>X_down()</slot>
   <slot>Zero_Z()</slot>
   <slot>Zero_X()</slot>

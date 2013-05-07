@@ -1794,8 +1794,8 @@
    <slot>printpressed()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>162</x>
-     <y>655</y>
+     <x>160</x>
+     <y>681</y>
     </hint>
     <hint type="destinationlabel">
      <x>283</x>
@@ -1938,8 +1938,8 @@
    <slot>StopPrinting()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>318</x>
-     <y>655</y>
+     <x>316</x>
+     <y>681</y>
     </hint>
     <hint type="destinationlabel">
      <x>482</x>
@@ -1960,6 +1960,38 @@
     <hint type="destinationlabel">
      <x>511</x>
      <y>383</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFirst_Slice</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>GoToFirstLayer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>531</x>
+     <y>399</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionLast_Slice</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>GoToLastLayer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>531</x>
+     <y>399</y>
     </hint>
    </hints>
   </connection>
@@ -1990,5 +2022,7 @@
   <slot>StopPrinting()</slot>
   <slot>ConnectToPrinter()</slot>
   <slot>OpenPrintJob()</slot>
+  <slot>GoToFirstLayer()</slot>
+  <slot>GoToLastLayer()</slot>
  </slots>
 </ui>

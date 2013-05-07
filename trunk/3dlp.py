@@ -27,6 +27,7 @@ from settingsdialog import Ui_SettingsDialogBaseClass
 from manual_control_gui import Ui_Manual_Control
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import hardware
+import cPickle as pickle
 
 #**********************************
 
@@ -74,7 +75,7 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         QtGui.QDialog.__init__(self, None)
         self.printer = parent.printer
         self.setupUi(self)
-        self.mm_per_step = float(parent.pitch)/float(parent.steps_per_rev)
+        self.mm_per_step = float(parent.pitch)/float(parent.stepsPerRev)
         self.microstepping = 0.0625 #1/16th microstepping
         print self.microstepping
         self.mm_per_step = self.mm_per_step#/self.microstepping
@@ -124,59 +125,14 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
             self.DRO_Z.display(float(self.DRO_Z.value())-10)
             self.printer.IncrementZ(-10/self.mm_per_step)
             #print "incrementing %r steps"%(10/self.mm_per_step)
-    
-    def X_up(self):
-        if self.X_001.isChecked(): #X 0.01mm is checked
-            self.Xpos = self.Xpos+.01
-            self.DRO_X.display(float(self.DRO_X.value())+.01)
-            self.printer.IncrementX(.01/self.mm_per_step)
-            #print "incrementing %r steps"%(.01/self.mm_per_step)
-        elif self.X_01.isChecked(): #X 0.1mm is checked
-            self.Xpos = self.Xpos+.1
-            self.DRO_X.display(float(self.DRO_X.value())+.1)
-            self.printer.IncrementX(.1/self.mm_per_step)
-            #print "incrementing %r steps"%(.1/self.mm_per_step)
-        elif self.X_1.isChecked(): #X 1mm is checked
-            self.Xpos = self.Xpos+1
-            self.DRO_X.display(float(self.DRO_X.value())+1)
-            self.printer.IncrementX(1/self.mm_per_step)
-            #print "incrementing %r steps"%(1/self.mm_per_step)
-        elif self.X_10.isChecked(): #X 10mm is checked
-            self.Xpos = self.Xpos+10
-            self.DRO_X.display(float(self.DRO_X.value())+10)
-            self.printer.IncrementX(10/self.mm_per_step)
-            #print "incrementing %r steps"%(10/self.mm_per_step)
-    
-    def X_down(self):
-        if self.X_001.isChecked(): #X 0.01mm is checked
-            self.Xpos = self.Xpos-.01
-            self.DRO_X.display(float(self.DRO_X.value())-.01)
-            self.printer.IncrementX(-.01/self.mm_per_step)
-            #print "incrementing %r steps"%(.01/self.mm_per_step)
-        elif self.X_01.isChecked(): #X 0.1mm is checked
-            self.Xpos = self.Xpos-.1
-            self.DRO_X.display(float(self.DRO_X.value())-.1)
-            self.printer.IncrementX(-.1/self.mm_per_step)
-            #print "incrementing %r steps"%(.1/self.mm_per_step)
-        elif self.X_1.isChecked(): #X 1mm is checked
-            self.Xpos = self.Xpos-1
-            self.DRO_X.display(float(self.DRO_X.value())-1)
-            self.printer.IncrementX(-1/self.mm_per_step)
-            #print "incrementing %r steps"%(1/self.mm_per_step)
-        elif self.X_10.isChecked(): #X 10mm is checked
-            self.Xpos = self.Xpos-10
-            self.DRO_X.display(float(self.DRO_X.value())-10)
-            self.printer.IncrementX(-10/self.mm_per_step)
-            #print "incrementing %r steps"%(10/self.mm_per_step)
-    
+   
     def Zero_Z(self):
         self.Zpos = 0
         self.DRO_Z.display(0)
+        
+    def activateX(self):
+        pass
     
-    def Zero_X(self):
-        self.Xpos = 0
-        self.DRO_X.display(0)
-
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
@@ -238,13 +194,6 @@ class Main(QtGui.QMainWindow):
         self.parser.read('config.ini')
         self.LoadSettingsFromConfigFile()
    
-        self.zscript = self.parser.get('scripting', 'sequence')
-        self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
-        #bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.printerbaud = self.parser.get('program_defaults', 'printerBAUD')
-        self.exposure_time = self.parser.get('program_defaults', 'ExposeTime')
-        self.starting_layers = self.parser.get('program_defaults', 'NumStartLayers')
-        self.starting_layer_exposure = self.parser.get('program_defaults', 'StartLayersExposeTime')
         self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height())
         
     def __del__(self):
@@ -266,7 +215,7 @@ class Main(QtGui.QMainWindow):
             print "no slices directory found"
             return
         self.FileList = []
-        for file in os.listdir(self.printDirectory + "\\slices"): #for every file in slices dir (changed dir above)
+        for file in os.listdir(self.printDirectory + "\\slices"): #for every file in slices dir
             if file.endswith(".png"): #if it's a supported image type
                 imagepath = self.printDirectory + "\\slices\\" + file
                 self.FileList.append(imagepath)
@@ -282,12 +231,21 @@ class Main(QtGui.QMainWindow):
         except:
             print "unknown error encountered while trying to parse print configuration file"
             return
-        self.OpenModel(self.printconfigparser.get('print_settings', 'STL_name'))
+        self.OpenModel(self.printconfigparser.get('preview_settings', 'STL_name'))
+        if not os.path.isfile(self.printDirectory + "\\slices.p"):
+            print "Error loading slices.p"
+            QtGui.QMessageBox.information(self, 'Error loading preview correlations',"Error finding or loading slices.p. You will not be able to preview slices in real-time within the 3D model.", QtGui.QMessageBox.Ok)
+            self.preview = False
+        else:
+            self.sliceCorrelations = pickle.load(open(self.printDirectory + "//slices.p", "rb"))
+            self.preview = True
         self.currentlayer = 1
+        self.numberOfLayers = len(self.FileList)
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
         self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
-        self.slicepreview.setPixmap(self.pmscaled)    
+        self.slicepreview.setPixmap(self.pmscaled)
+        self.UpdateModelLayer(self.sliceCorrelations[self.currentlayer-1][1])
         QApplication.processEvents() #make sure the toolbar gets updated with new text
         self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
 
@@ -295,12 +253,9 @@ class Main(QtGui.QMainWindow):
         self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height()) #just in case resizeEvent() hasn't been called yet
 
         self.filename = filename
-        
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))
-         
         self.polyDataOutput = self.reader.GetOutput()       
-        
         self.mapper = vtk.vtkPolyDataMapper()
         self.mapper.SetInputConnection(self.reader.GetOutputPort())
          
@@ -407,16 +362,13 @@ class Main(QtGui.QMainWindow):
         self.ModelView.Render() #update model view
     
     def IncrementSlicingPlanePositive(self):
-        self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
-        self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal+1)
-        self.cutter.Update()
-        self.cutStrips.Update()
-        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
-        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
-        self.cutPoly.Update()
-        self.cutTriangles.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            return
+        if  self.currentlayer == len(self.FileList):
+            return
         #####slice preview
         self.currentlayer = self.currentlayer + 1
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
@@ -424,18 +376,28 @@ class Main(QtGui.QMainWindow):
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)    
         QApplication.processEvents() #make sure the toolbar gets updated with new text
+        #####model preview
+        if not self.preview:
+            return
+        else:
+            self.slicingplane.SetOrigin(0,0,self.sliceCorrelations[self.currentlayer-1][1])
+            self.cutter.Update()
+            self.cutStrips.Update()
+            self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+            self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+            self.cutPoly.Update()
+            self.cutTriangles.Update()
+            self.ren.Render()
+            self.ModelView.Render()
         
     def IncrementSlicingPlaneNegative(self):
-        self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
-        self.slicingplane.SetOrigin(0,0,self.previousPlaneZVal-1)
-        self.cutter.Update()
-        self.cutStrips.Update()
-        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
-        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
-        self.cutPoly.Update()
-        self.cutTriangles.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            return   
+        if  self.currentlayer == 1:
+            return
         #####slice preview
         self.currentlayer = self.currentlayer - 1
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
@@ -443,8 +405,27 @@ class Main(QtGui.QMainWindow):
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)    
         QApplication.processEvents() #make sure the toolbar gets updated with new text
+        #####model preview
+        if not self.preview:
+            return
+        else:
+            self.slicingplane.SetOrigin(0,0,self.sliceCorrelations[self.currentlayer-1][1])
+            self.cutter.Update()
+            self.cutStrips.Update()
+            self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+            self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+            self.cutPoly.Update()
+            self.cutTriangles.Update()
+            self.ren.Render()
+            self.ModelView.Render()
         
     def GoToLayer(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            QtGui.QMessageBox.critical(self, 'Error changing current layer',"You must load a model to navigate between layers!", QtGui.QMessageBox.Ok)
+            return   
         layer, ok = QtGui.QInputDialog.getText(self, 'Go To Layer', 'Enter the desired layer (1 - %s)' %(int(len(self.FileList))))
         if not ok: #the user hit the "cancel" button
             return
@@ -456,8 +437,71 @@ class Main(QtGui.QMainWindow):
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
         self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
-        self.slicepreview.setPixmap(self.pmscaled)    
+        self.slicepreview.setPixmap(self.pmscaled)
         QApplication.processEvents() #make sure the toolbar gets updated with new text
+        
+    def GoToFirstLayer(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            return   
+        self.currentlayer = 1
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)
+        QApplication.processEvents() #make sure the toolbar gets updated with new text
+        #####model preview
+        if not self.preview:
+            return
+        else:
+            self.slicingplane.SetOrigin(0,0,self.sliceCorrelations[self.currentlayer-1][1])
+            self.cutter.Update()
+            self.cutStrips.Update()
+            self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+            self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+            self.cutPoly.Update()
+            self.cutTriangles.Update()
+            self.ren.Render()
+            self.ModelView.Render()
+        
+    def GoToLastLayer(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            return
+        self.currentlayer = int(self.numberOfLayers)
+        self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
+        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)
+        QApplication.processEvents() #make sure the toolbar gets updated with new text 
+        #####model preview
+        if not self.preview:
+            return
+        else:
+            self.slicingplane.SetOrigin(0,0,self.sliceCorrelations[self.currentlayer-1][1])
+            self.cutter.Update()
+            self.cutStrips.Update()
+            self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+            self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+            self.cutPoly.Update()
+            self.cutTriangles.Update()
+            self.ren.Render()
+            self.ModelView.Render()
+        
+    def UpdateModelLayer(self, z):
+        self.slicingplane.SetOrigin(0,0,z)
+        self.cutter.Update()
+        self.cutStrips.Update()
+        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+        self.cutPoly.Update()
+        self.cutTriangles.Update()
+        self.ren.Render()
+        self.ModelView.Render()
                 
     def UpdateModelOpacity(self):
         try:
@@ -472,16 +516,13 @@ class Main(QtGui.QMainWindow):
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)       
             
     def LoadSettingsFromConfigFile(self):
-        print "Loading printing settings from config.ini"
-        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
-        self.printerbaud = bauddict[self.parser.get('program_defaults', 'printerBAUD')]
- 
-        self.zscript = self.parser.get('scripting', 'sequence')
-        self.projector_poweroffcommand = self.parser.get('program_defaults', 'PowerOffCommand')
-
-        self.ExposeTime = self.parser.get('program_defaults', 'ExposeTime')
-        self.NumberOfStartLayers = self.parser.get('program_defaults', 'NumStartLayers')
-        self.StartLayersExposureTime = self.parser.get('program_defaults', 'StartLayersExposeTime')
+        self.printerBaud = int(self.parser.get('program_defaults', 'printerBAUD'))
+        self.zScript = self.parser.get('scripting', 'sequence')
+        self.projectorPowerOffCommand = self.parser.get('projector_settings', 'PowerOffCommand')
+        self.projectorBaud = self.parser.get('projector_settings', 'projectorBAUD')
+        self.exposeTime = self.parser.get('program_defaults', 'ExposeTime')
+        self.numberOfStartLayers = self.parser.get('program_defaults', 'NumStartLayers')
+        self.startLayersExposureTime = self.parser.get('program_defaults', 'StartLayersExposeTime')
         
         if self.parser.get('program_defaults', 'printercontroller') == 'ARDUINO_UNO':
             self.controller = "arduinoUNO"
@@ -492,24 +533,23 @@ class Main(QtGui.QMainWindow):
         elif self.parser.get('program_defaults', 'printercontroller') == 'RAMPS':
             self.controller = "ramps"
         if self.parser.get('program_defaults', 'slideshowenabled') == 'True':
-            self.slideshowenabled = True
+            self.slideshowEnabled = True
         else:
-            self.slideshowenabled = False
+            self.slideshowEnabled = False
         if self.parser.get('program_defaults', 'printercontrol') == 'True':
-            self.enableprintercontrol = True
+            self.enablePrinterControl = True
         else:
-            self.enableprintercontrol = False
-        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
-            self.projectorcontrolenabled = True
+            self.enablePrinterControl = False
+        if self.parser.get('projector_settings', 'projectorcontrol') == 'True':
+            self.projectorControlEnabled = True
         else:
-            self.projectorcontrolenabled = False
+            self.projectorControlEnabled = False
             
         self.COM_Port = self.parser.get('program_defaults', 'printerCOM')
-        self.Printer_Baud = self.parser.get('program_defaults', 'printerBAUD')
-        self.screennumber = self.parser.get('program_defaults', 'screennumber')
+        self.screenNumber = self.parser.get('program_defaults', 'screennumber')
         
         self.pitch = int(self.parser.get('printer_hardware', 'Leadscrew_pitch'))
-        self.steps_per_rev = int(self.parser.get('printer_hardware', 'Steps_per_rev'))
+        self.stepsPerRev = int(self.parser.get('printer_hardware', 'Steps_per_rev'))
             
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
@@ -526,14 +566,17 @@ class Main(QtGui.QMainWindow):
         for x in range(self.screencount):
             self.SettingsDialog.pickscreen.addItem("")
             self.SettingsDialog.pickscreen.setItemText(x, QtGui.QApplication.translate("SettingsDialogBaseClass", "%d"%x, None, QtGui.QApplication.UnicodeUTF8))
+            
+        bauddict = {'115200':0, '57600':1, '38400':2, '19200':3, '9600':4, '4800':5, '2400':6}
+        #self. = bauddict[self.parser.get('program_defaults', 'projectorBAUD')]
  
         #insert all other values from current namespace
-        self.SettingsDialog.zscript.setPlainText(self.zscript)
-        self.SettingsDialog.projector_poweroffcommand.setText(self.projector_poweroffcommand)
+        self.SettingsDialog.zscript.setPlainText(self.zScript)
+        self.SettingsDialog.projector_poweroffcommand.setText(self.projectorPowerOffCommand)
 
-        self.SettingsDialog.exposure_time.setText(self.exposure_time)
-        self.SettingsDialog.starting_layers.setText(self.starting_layers)
-        self.SettingsDialog.starting_layer_exposure.setText(self.starting_layer_exposure)
+        self.SettingsDialog.exposure_time.setText(self.exposeTime)
+        self.SettingsDialog.starting_layers.setText(self.numberOfStartLayers)
+        self.SettingsDialog.starting_layer_exposure.setText(self.startLayersExposureTime)
         
         if self.controller == 'arduinoUNO':
             self.SettingsDialog.radio_arduinoUno.click()
@@ -547,7 +590,7 @@ class Main(QtGui.QMainWindow):
             self.SettingsDialog.enableslideshow.click()
         if self.parser.get('program_defaults', 'printercontrol') == 'True':
             self.SettingsDialog.enableprintercontrol.click()
-        if self.parser.get('program_defaults', 'projectorcontrol') == 'True':
+        if self.parser.get('projector_settings', 'projectorcontrol') == 'True':
             self.SettingsDialog.projectorcontrol.click()
         
         #self.getSettingsDialogValues()
@@ -556,26 +599,26 @@ class Main(QtGui.QMainWindow):
         
     def getSettingsDialogValues(self):
         print "got here"
-        self.zscript = self.SettingsDialog.zscript.document().toPlainText()
-        self.parser.set('scripting', 'sequence', '%s'%self.zscript)
+        self.zScript = self.SettingsDialog.zscript.document().toPlainText()
+        self.parser.set('scripting', 'sequence', '%s'%self.zScript)
         self.COM_Port = self.SettingsDialog.pickcom.currentText()
         self.parser.set('program_defaults', 'printerCOM', '%s'%self.COM_Port)
 
-        self.ExposeTime = float(self.SettingsDialog.exposure_time.text())
-        self.parser.set('program_defaults', 'ExposeTime', '%s'%self.ExposeTime)
+        self.exposeTime = float(self.SettingsDialog.exposure_time.text())
+        self.parser.set('program_defaults', 'ExposeTime', '%s'%self.exposeTime)
         #AdvanceTime = float(self.ui.advance_time.text())
-        self.NumberOfStartLayers = float(self.SettingsDialog.starting_layers.text())
-        self.parser.set('program_defaults', 'NumStartLayers', '%s'%self.NumberOfStartLayers)
-        self.StartLayersExposureTime = float(self.SettingsDialog.starting_layer_exposure.text())
-        self.parser.set('program_defaults', 'StartLayersExposeTime', '%s'%self.StartLayersExposureTime)
+        self.numberOfStartLayers = float(self.SettingsDialog.starting_layers.text())
+        self.parser.set('program_defaults', 'NumStartLayers', '%s'%self.numberOfStartLayers)
+        self.startLayersExposureTime = float(self.SettingsDialog.starting_layer_exposure.text())
+        self.parser.set('program_defaults', 'StartLayersExposeTime', '%s'%self.startLayersExposureTime)
         self.projector_baud = self.SettingsDialog.projector_baud.currentText()
         self.parser.set('program_defaults', 'projectorBAUD', '%s'%self.projector_baud)
 
         if self.SettingsDialog.projectorcontrol.isChecked():
-            self.projectorcontrolenabled = True
+            self.projectorControlEnabled = True
             self.parser.set('program_defaults', 'projectorcontrol', 'True')
         else:
-            self.projectorcontrolenabled = False
+            self.projectorControlEnabled = False
             self.parser.set('program_defaults', 'projectorcontrol', 'False')
             
         if self.SettingsDialog.enableprintercontrol.isChecked():
@@ -586,15 +629,15 @@ class Main(QtGui.QMainWindow):
             self.parser.set('program_defaults', 'printercontrol', 'False')
 
         if self.SettingsDialog.enableslideshow.isChecked():
-            self.slideshowenabled = True
+            self.slideshowEnabled = True
             self.parser.set('program_defaults', 'slideshowenabled', 'True')
         else:
-            self.slideshowenabled = False
+            self.slideshowEnabled = False
             self.parser.set('program_defaults', 'slideshowenabled', 'False')
         if self.SettingsDialog.radio_pyMCU.isChecked():
             self.controller = "pymcu"
             self.parser.set('program_defaults', 'printercontroller', 'PYMCU')
-        self.screennumber = self.SettingsDialog.pickscreen.currentText() #get the screen number from picker
+        self.screenNumber = self.SettingsDialog.pickscreen.currentText() #get the screen number from picker
         if self.SettingsDialog.radio_arduinoUno.isChecked():
             self.controller = "arduinoUNO"
             self.parser.set('program_defaults', 'printercontroller', 'ARDUINO_UNO')
@@ -627,20 +670,6 @@ class Main(QtGui.QMainWindow):
         if self.printer.status == 1:
             print "unknown error encountered while trying to connect to printer."
             return
-        
-    def updatepreview(self):
-        #print"updating picture"
-        pass        
-        #pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        #self.ui.imagepreview.setPixmap(pmscaled)
-        
-    def updatepreviewblank(self):
-        pass
-        #print"updating pictire to blank slide"    
-        #blankpath = "%s\\10x10black.png" %(startingexecutionpath)
-        #pm = QtGui.QPixmap(blankpath)
-        #pmscaled = pm.scaled(500, 500, QtCore.Qt.KeepAspectRatio)
-        #self.ui.imagepreview.setPixmap(pmscaled)#set black pixmap for blank slide
     
     def disablestopbutton(self):
         self.ui.button_stop_printing.setEnabled(False)
@@ -659,9 +688,9 @@ class Main(QtGui.QMainWindow):
         except:
             QtGui.QMessageBox.critical(self, 'Error starting print job',"You must first connect to a printer to print to it!", QtGui.QMessageBox.Ok)
             return   
-        self.printThread = printmodel.printmodel(self.zscript, self.COM_Port, self.Printer_Baud, self.ExposeTime
-                                                , self.NumberOfStartLayers, self.StartLayersExposureTime
-                                                , self.projectorcontrolenabled, self.controller, self.screennumber, self.cwd, self)
+        self.printThread = printmodel.printmodel(self.zScript, self.COM_Port, self.printerBaud, self.exposeTime
+                                                , self.numberOfStartLayers, self.startLayersExposureTime
+                                                , self.projectorControlEnabled, self.controller, self.screenNumber, self.cwd, self)
         #connect to slideshow signal
         self.connect(self.printThread, QtCore.SIGNAL('updatePreview'), self.updatepreview)      
         self.connect(self.printThread, QtCore.SIGNAL('updatePreviewBlank'), self.updatepreviewblank)      

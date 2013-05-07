@@ -3,6 +3,8 @@ import time
 import os
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
+import ConfigParser
+import cPickle as pickle
 
 class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
     def __init__(self,parent=None):
@@ -72,6 +74,9 @@ class slicer():
         self.renWin.SetWindowName("3DLP STL SLicer")      
         self.renWin.Render()
         
+        self.sliceCorrelations = []
+        
+        self.startDirectory = os.getcwd()
         os.chdir(os.getcwd()+"\\slices") #change to slices directory       
         x = self.startingdepth
         layercount = 0
@@ -81,10 +86,12 @@ class slicer():
             layercount = layercount + 1
             self.UpdateSlicingPlane(x)
             self.WindowToImage("slice%s.png"%(str(layercount).zfill(4)))
+            self.sliceCorrelations.append([layercount,x]) #store correlations between slice plane and layer number for later visualization in 3DLP Host
 
         elapsedtime = time.time() - starttime
         print elapsedtime
         print layercount
+        self.GenerateConfigFile()
 
     def UpdateSlicingPlane(self, value):
         #self.previousPlaneZVal = self.slicingplane.GetOrigin()[2] #pull Z coordinate off plane origin 
@@ -108,6 +115,18 @@ class slicer():
         self.writer.SetFileName(filename)
         #writer.WriteToMemoryOn()
         self.writer.Write()
+        
+    def GenerateConfigFile(self):
+        configFile = open(self.startDirectory + "//printconfiguration.ini", 'w')
+        Config = ConfigParser.ConfigParser()
+        Config.add_section('print_settings')
+        Config.set('print_settings', 'layer_thickness', self.layerincrement)
+        Config.add_section('preview_settings')
+        base, file = os.path.split(str(self.filename)) #can't be QString
+        Config.set('preview_settings', 'STL_name', file)
+        Config.write(configFile)
+        configFile.close()
+        pickle.dump(self.sliceCorrelations, open(self.startDirectory + "//slices.p", 'wb')) #pickle and save the layer-plane correlations 
               
 #slicer = slicer()
 #slicer.imagewidth = 640

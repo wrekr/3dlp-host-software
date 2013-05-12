@@ -28,6 +28,7 @@ from manual_control_gui import Ui_Manual_Control
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import hardware
 import cPickle as pickle
+from time import sleep
 
 #**********************************
 
@@ -141,7 +142,7 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
 
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
-        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height())
+        self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30)
         self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)  
@@ -193,8 +194,7 @@ class Main(QtGui.QMainWindow):
         self.parser = SafeConfigParser()
         self.parser.read('config.ini')
         self.LoadSettingsFromConfigFile()
-   
-        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height())
+        
         
     def __del__(self):
         # Restore sys.stdout
@@ -250,7 +250,7 @@ class Main(QtGui.QMainWindow):
         self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
 
     def OpenModel(self, filename):
-        self.ModelView.resize(self.ui.frame.geometry().width(),self.ui.frame.geometry().height()) #just in case resizeEvent() hasn't been called yet
+        self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30) #just in case resizeEvent() hasn't been called yet
 
         self.filename = filename
         self.reader = vtk.vtkSTLReader()
@@ -722,9 +722,17 @@ def main():
     window=Main()
     window.show()
     splash.finish(window)
+
+    #this is needed here to resize after the window is created to fill frames
+    window.slicepreview.resize(window.ui.frame_2.geometry().width(), window.ui.frame_2.geometry().height())
+    window.pmscaled = window.pm.scaled(window.ui.frame_2.geometry().width(), window.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+    window.slicepreview.setPixmap(window.pmscaled)
+    window.ModelView.resize(window.ui.frame.geometry().width(), window.ui.frame.geometry().height())
+    
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
     ###############
+    
     
 if __name__ == "__main__":
     main()

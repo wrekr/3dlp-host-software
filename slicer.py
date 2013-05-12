@@ -5,6 +5,9 @@ from Tkinter import Tk
 from tkFileDialog import askopenfilename
 import ConfigParser
 import cPickle as pickle
+import zipfile
+import StringIO
+import tempfile
 
 class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
     def __init__(self,parent=None):
@@ -20,6 +23,10 @@ class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the
         return 
 
 class slicer():
+    def __init__(self, parent):
+        self.parent = parent
+        self.zfile = zipfile.ZipFile("test.3dlp", 'w')
+    
     def OpenModel(self, filename):
         self.filename = filename
         self.reader = vtk.vtkSTLReader()
@@ -112,22 +119,40 @@ class slicer():
         self.w2i.SetInput(self.renWin)
         self.w2i.Update()
         self.writer.SetInputConnection(self.w2i.GetOutputPort())
+        
+        temp = tempfile.TemporaryFile()
+        
         self.writer.SetFileName(filename)
         #writer.WriteToMemoryOn()
-        self.writer.Write()
+        
+        temp.write(self.writer.Write())
+        
+        self.zfile.writestr(filename, temp)
         
     def GenerateConfigFile(self):
-        configFile = open(self.startDirectory + "//printconfiguration.ini", 'w')
         Config = ConfigParser.ConfigParser()
         Config.add_section('print_settings')
         Config.set('print_settings', 'layer_thickness', self.layerincrement)
         Config.add_section('preview_settings')
         base, file = os.path.split(str(self.filename)) #can't be QString
         Config.set('preview_settings', 'STL_name', file)
-        Config.write(configFile)
-        configFile.close()
-        pickle.dump(self.sliceCorrelations, open(self.startDirectory + "//slices.p", 'wb')) #pickle and save the layer-plane correlations 
-              
+        
+        stringio = StringIO.StringIO()
+        Config.write(stringio)        
+        
+        
+        self.zfile.writestr("printconfiguration.ini", stringio.getvalue())#arcname = "printconfiguration.ini")
+
+        stringio2 = StringIO.StringIO()
+        pickle.dump(self.sliceCorrelations, stringio2)
+        
+        self.zfile.writestr("slices.p", stringio2.getvalue()) #pickle and save the layer-plane correlations 
+        
+        self.zfile.write(str(self.filename), arcname = file)    
+        
+        self.zfile.close()
+        
+               
 #slicer = slicer()
 #slicer.imagewidth = 640
 #slicer.imageheight = 480

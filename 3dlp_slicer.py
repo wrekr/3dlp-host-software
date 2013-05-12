@@ -168,7 +168,7 @@ class Main(QtGui.QMainWindow):
         self.ui.Transform_groupbox.setEnabled(True)
     
     def SliceModel(self):
-        self.slicer = slicer.slicer()
+        self.slicer = slicer.slicer(self)
         self.slicer.imageheight = int(self.imageHeight)
         self.slicer.imagewidth = int(self.imageWidth)
         # check to see if starting depth is less than ending depth!! this assumption is crucial

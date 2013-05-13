@@ -8,6 +8,9 @@ import cPickle as pickle
 import zipfile
 import StringIO
 import tempfile
+import numpy
+import Image
+from vtk.util.numpy_support import vtk_to_numpy
 
 class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
     def __init__(self,parent=None):
@@ -118,16 +121,19 @@ class slicer():
         self.writer = vtk.vtkPNGWriter()
         self.w2i.SetInput(self.renWin)
         self.w2i.Update()
-        self.writer.SetInputConnection(self.w2i.GetOutputPort())
+
+        vtk_image = self.w2i.GetOutput()
         
-        temp = tempfile.TemporaryFile()
+        height, width, _ = vtk_image.GetDimensions()
+        vtk_array = vtk_image.GetPointData().GetScalars()
+        components = vtk_array.GetNumberOfComponents()
         
-        self.writer.SetFileName(filename)
-        #writer.WriteToMemoryOn()
+        array = vtk_to_numpy(vtk_array).reshape(height, width, components)
         
-        temp.write(self.writer.Write())
-        
-        self.zfile.writestr(filename, temp)
+        stringio3 = StringIO.StringIO()
+        im = Image.fromarray(numpy.uint8(array))
+        im.save(stringio3, "PNG")
+        self.zfile.writestr("\\slices\\" + filename, stringio3.getvalue())
         
     def GenerateConfigFile(self):
         Config = ConfigParser.ConfigParser()
@@ -139,8 +145,7 @@ class slicer():
         
         stringio = StringIO.StringIO()
         Config.write(stringio)        
-        
-        
+ 
         self.zfile.writestr("printconfiguration.ini", stringio.getvalue())#arcname = "printconfiguration.ini")
 
         stringio2 = StringIO.StringIO()

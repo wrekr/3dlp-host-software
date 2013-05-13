@@ -29,6 +29,9 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import hardware
 import cPickle as pickle
 from time import sleep
+import zipfile
+import StringIO
+import tempfile
 
 #**********************************
 
@@ -195,7 +198,6 @@ class Main(QtGui.QMainWindow):
         self.parser.read('config.ini')
         self.LoadSettingsFromConfigFile()
         
-        
     def __del__(self):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__           
@@ -210,39 +212,52 @@ class Main(QtGui.QMainWindow):
         self.ui.consoletext.ensureCursorVisible()
             
     def OpenPrintJob(self):
-        self.printDirectory = str(QFileDialog.getExistingDirectory(self, "Select Directory of Desired Print Job"))
-        if not os.path.isdir(self.printDirectory + "\\slices"):
-            print "no slices directory found"
-            return
+        
+        self._3dlpfile = zipfile.ZipFile(str(QtGui.QFileDialog.getOpenFileName(self, 'Open 3DLP Print Job', '.', '*.3dlp')))
+        
         self.FileList = []
-        for file in os.listdir(self.printDirectory + "\\slices"): #for every file in slices dir
-            if file.endswith(".png"): #if it's a supported image type
-                imagepath = self.printDirectory + "\\slices\\" + file
-                self.FileList.append(imagepath)
+        for file in self._3dlpfile.namelist(): 
+            if file.startswith("/slices/") and file.endswith(".png"): #if it's a supported image type in the slices directory
+                temp = tempfile.SpooledTemporaryFile()
+                temp.write(self._3dlpfile.read(file))
+                temp.seek(0)
+                self.FileList.append(temp)
+        print self.FileList
         if len(self.FileList)<1:
             print "no valid slice images were found"
             return
-        if not os.path.isfile(self.printDirectory + "\\printconfiguration.ini"):
+        if not "printconfiguration.ini" in self._3dlpfile.namelist():
             print "no print configuration file was found"
             return
         try:
             self.printconfigparser = SafeConfigParser()
-            self.printconfigparser.read(self.printDirectory + '\\printconfiguration.ini')
+            ini = self._3dlpfile.open("printconfiguration.ini")
+            string = StringIO.StringIO(ini.read())
+            self.printconfigparser.readfp(string)
         except:
             print "unknown error encountered while trying to parse print configuration file"
             return
+        
+        #extract model for opening - can't open it from memory unfortunately :(
+        temp = tempfile.NamedTemporaryFile()
+        self._3dlpfile.extract((self.printconfigparser.get('preview_settings', 'STL_name')), os.getcwd())
         self.OpenModel(self.printconfigparser.get('preview_settings', 'STL_name'))
-        if not os.path.isfile(self.printDirectory + "\\slices.p"):
+        
+        if not "slices.p" in self._3dlpfile.namelist():
             print "Error loading slices.p"
             QtGui.QMessageBox.information(self, 'Error loading preview correlations',"Error finding or loading slices.p. You will not be able to preview slices in real-time within the 3D model.", QtGui.QMessageBox.Ok)
             self.preview = False
         else:
-            self.sliceCorrelations = pickle.load(open(self.printDirectory + "//slices.p", "rb"))
+            p = self._3dlpfile.read("slices.p")
+            string = StringIO.StringIO(p)
+            self.sliceCorrelations = pickle.load(string)
+            print self.sliceCorrelations
             self.preview = True
         self.currentlayer = 1
         self.numberOfLayers = len(self.FileList)
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm = QtGui.QPixmap() #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read())
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
         self.UpdateModelLayer(self.sliceCorrelations[self.currentlayer-1][1])
@@ -254,7 +269,7 @@ class Main(QtGui.QMainWindow):
 
         self.filename = filename
         self.reader = vtk.vtkSTLReader()
-        self.reader.SetFileName(str(self.filename))
+        self.reader.SetFileName(filename)
         self.polyDataOutput = self.reader.GetOutput()       
         self.mapper = vtk.vtkPolyDataMapper()
         self.mapper.SetInputConnection(self.reader.GetOutputPort())
@@ -372,7 +387,8 @@ class Main(QtGui.QMainWindow):
         #####slice preview
         self.currentlayer = self.currentlayer + 1
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read())
+        self.FileList[self.currentlayer-1].seek(0)
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)    
         QApplication.processEvents() #make sure the toolbar gets updated with new text
@@ -401,7 +417,8 @@ class Main(QtGui.QMainWindow):
         #####slice preview
         self.currentlayer = self.currentlayer - 1
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read())
+        self.FileList[self.currentlayer-1].seek(0)
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)    
         QApplication.processEvents() #make sure the toolbar gets updated with new text
@@ -435,7 +452,8 @@ class Main(QtGui.QMainWindow):
         #####slice preview
         self.currentlayer = int(layer)
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read())
+        self.FileList[self.currentlayer-1].seek(0)
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
         QApplication.processEvents() #make sure the toolbar gets updated with new text
@@ -448,7 +466,8 @@ class Main(QtGui.QMainWindow):
             return   
         self.currentlayer = 1
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read()) #remember to compensate for 0-index
+        self.FileList[self.currentlayer-1].seek(0)
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
         QApplication.processEvents() #make sure the toolbar gets updated with new text
@@ -474,7 +493,8 @@ class Main(QtGui.QMainWindow):
             return
         self.currentlayer = int(self.numberOfLayers)
         self.layercount.setText(str(self.currentlayer) + " of " + str(len(self.FileList)))
-        self.pm = QtGui.QPixmap(self.FileList[self.currentlayer-1]) #remember to compensate for 0-index
+        self.pm.loadFromData(self.FileList[self.currentlayer-1].read()) #remember to compensate for 0-index
+        self.FileList[self.currentlayer-1].seek(0)
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
         QApplication.processEvents() #make sure the toolbar gets updated with new text 

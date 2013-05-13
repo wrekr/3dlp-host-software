@@ -6,6 +6,7 @@ from PyQt4.Qt import *
 from slicer_gui import Ui_MainWindow
 from slicer_settings_dialog_gui import Ui_Dialog
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from ConfigParser import SafeConfigParser
 
 ###IDEA TO SPEED UP SLICER: slice in one thread, send data through queue to another thread which saves data to hard drive at its leisure
 
@@ -47,14 +48,14 @@ class Main(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Slicer", None, QtGui.QApplication.UnicodeUTF8))
 
         #load previous settings from config file here:
-        self.imageHeight = ""
-        self.imageWidth = ""
-        self.layerThickness = ""
-        self.startingDepth = ""
-        self.endingDepth = ""
-        self.slicingIncrement = ""
-        self.slicingplane = "XZ"
-        self.slicingplaneDict = {"XZ":0, "XY":1, "YZ":2}
+        
+        self.parser = SafeConfigParser()
+        self.parser.read('sliceconfig.ini')
+        self.LoadSettingsFromConfigFile()
+        
+ 
+
+
 
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -280,15 +281,23 @@ class Main(QtGui.QMainWindow):
     def Update_Scale_Z(self, scale):
         pass
  
+    def LoadSettingsFromConfigFile(self):
+        self.imageHeight = int(self.parser.get('slicing_settings', 'Image_Height'))
+        self.imageWidth = int(self.parser.get('slicing_settings', 'Image_Width'))
+        self.startingDepth = int(self.parser.get('slicing_settings', 'Starting_Depth'))
+        self.endingDepth = int(self.parser.get('slicing_settings', 'Ending_Depth'))
+        self.slicingIncrement = int(self.parser.get('slicing_settings', 'Slicing_Increment'))
+        self.slicingplane = self.parser.get('slicing_settings', 'Slicing_Plane')
+
     def OpenSettingsDialog(self):
         self.SettingsDialog = StartSettingsDialog(self)
         self.connect(self.SettingsDialog, QtCore.SIGNAL('ApplySettings()'), self.getSettingsDialogValues)
-        self.SettingsDialog.imageHeight.setText(self.imageHeight)
-        self.SettingsDialog.imageWidth.setText(self.imageWidth)
-        self.SettingsDialog.layerThickness.setText(self.layerThickness)
-        self.SettingsDialog.startingDepth.setText(self.startingDepth)
-        self.SettingsDialog.endingDepth.setText(self.endingDepth)
-        self.SettingsDialog.slicingIncrement.setText(self.slicingIncrement)
+        self.SettingsDialog.imageHeight.setText(str(self.imageHeight))
+        self.SettingsDialog.imageWidth.setText(str(self.imageWidth))
+        self.SettingsDialog.startingDepth.setText(str(self.startingDepth))
+        self.SettingsDialog.endingDepth.setText(str(self.endingDepth))
+        self.SettingsDialog.slicingIncrement.setText(str(self.slicingIncrement))
+        self.slicingplaneDict = {"XZ":0, "XY":1, "YZ":2}
         try:
             self.SettingsDialog.slicingPlane.setCurrentIndex(self.slicingplaneDict[self.slicingplane])
         except: #anything other than a valid entry will default to XZ (index 0)
@@ -296,14 +305,13 @@ class Main(QtGui.QMainWindow):
         self.SettingsDialog.exec_()
         
     def getSettingsDialogValues(self):
-        self.imageHeight = self.SettingsDialog.imageHeight.text()
-        self.imageWidth = self.SettingsDialog.imageWidth.text()
-        self.layerThickness = self.SettingsDialog.layerThickness.text()
-        self.startingDepth = self.SettingsDialog.startingDepth.text()
-        self.endingDepth = self.SettingsDialog.endingDepth.text()
-        self.slicingIncrement = self.SettingsDialog.slicingIncrement.text()
+        self.imageHeight = int(self.SettingsDialog.imageHeight.text())
+        self.imageWidth = int(self.SettingsDialog.imageWidth.text())
+        self.startingDepth = int(self.SettingsDialog.startingDepth.text())
+        self.endingDepth = int(self.SettingsDialog.endingDepth.text())
+        self.slicingIncrement = int(self.SettingsDialog.slicingIncrement.text())
         self.slicingplane = self.SettingsDialog.slicingPlane.currentText()
-           
+        
 def main():
     app = QtGui.QApplication(sys.argv)
     window=Main()

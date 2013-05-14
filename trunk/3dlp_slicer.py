@@ -52,11 +52,7 @@ class Main(QtGui.QMainWindow):
         self.parser = SafeConfigParser()
         self.parser.read('sliceconfig.ini')
         self.LoadSettingsFromConfigFile()
-        
  
-
-
-
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
         

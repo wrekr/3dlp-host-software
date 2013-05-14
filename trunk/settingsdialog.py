@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'settingsdialog.ui'
 #
-# Created: Tue Apr 30 20:00:57 2013
+# Created: Mon May 13 19:24:11 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -17,7 +17,7 @@ except AttributeError:
 class Ui_SettingsDialogBaseClass(object):
     def setupUi(self, SettingsDialogBaseClass):
         SettingsDialogBaseClass.setObjectName(_fromUtf8("SettingsDialogBaseClass"))
-        SettingsDialogBaseClass.resize(737, 452)
+        SettingsDialogBaseClass.resize(742, 452)
         SettingsDialogBaseClass.setWindowTitle(QtGui.QApplication.translate("SettingsDialogBaseClass", "3DLP Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.horizontalLayout_21 = QtGui.QHBoxLayout(SettingsDialogBaseClass)
         self.horizontalLayout_21.setObjectName(_fromUtf8("horizontalLayout_21"))
@@ -95,7 +95,9 @@ class Ui_SettingsDialogBaseClass(object):
         spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_8.addItem(spacerItem2)
         self.horizontalLayout_16.addLayout(self.verticalLayout_8)
-        self.groupBox_4 = QtGui.QGroupBox(self.groupBox_2)
+        self.horizontalLayout_17.addLayout(self.horizontalLayout_16)
+        self.horizontalLayout_18.addWidget(self.groupBox_2)
+        self.groupBox_4 = QtGui.QGroupBox(SettingsDialogBaseClass)
         self.groupBox_4.setTitle(QtGui.QApplication.translate("SettingsDialogBaseClass", "Stepping Mode", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
         self.horizontalLayout_13 = QtGui.QHBoxLayout(self.groupBox_4)
@@ -124,9 +126,7 @@ class Ui_SettingsDialogBaseClass(object):
         self.radioButton_5.setObjectName(_fromUtf8("radioButton_5"))
         self.verticalLayout_3.addWidget(self.radioButton_5)
         self.horizontalLayout_13.addLayout(self.verticalLayout_3)
-        self.horizontalLayout_16.addWidget(self.groupBox_4)
-        self.horizontalLayout_17.addLayout(self.horizontalLayout_16)
-        self.horizontalLayout_18.addWidget(self.groupBox_2)
+        self.horizontalLayout_18.addWidget(self.groupBox_4)
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_18.addItem(spacerItem3)
         self.verticalLayout_9.addLayout(self.horizontalLayout_18)
@@ -321,9 +321,9 @@ class Ui_SettingsDialogBaseClass(object):
         self.label_3.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "Z Axis Leadscrew Pitch", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setObjectName(_fromUtf8("label_3"))
         self.horizontalLayout_22.addWidget(self.label_3)
-        self.lineEdit = QtGui.QLineEdit(self.groupBox_7)
-        self.lineEdit.setObjectName(_fromUtf8("lineEdit"))
-        self.horizontalLayout_22.addWidget(self.lineEdit)
+        self.pitch = QtGui.QLineEdit(self.groupBox_7)
+        self.pitch.setObjectName(_fromUtf8("pitch"))
+        self.horizontalLayout_22.addWidget(self.pitch)
         self.label_5 = QtGui.QLabel(self.groupBox_7)
         self.label_5.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "mm/rev", None, QtGui.QApplication.UnicodeUTF8))
         self.label_5.setObjectName(_fromUtf8("label_5"))
@@ -335,9 +335,9 @@ class Ui_SettingsDialogBaseClass(object):
         self.label_4.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "Z Axis Steps/rev", None, QtGui.QApplication.UnicodeUTF8))
         self.label_4.setObjectName(_fromUtf8("label_4"))
         self.horizontalLayout_23.addWidget(self.label_4)
-        self.lineEdit_2 = QtGui.QLineEdit(self.groupBox_7)
-        self.lineEdit_2.setObjectName(_fromUtf8("lineEdit_2"))
-        self.horizontalLayout_23.addWidget(self.lineEdit_2)
+        self.stepsPerRev = QtGui.QLineEdit(self.groupBox_7)
+        self.stepsPerRev.setObjectName(_fromUtf8("stepsPerRev"))
+        self.horizontalLayout_23.addWidget(self.stepsPerRev)
         self.label_7 = QtGui.QLabel(self.groupBox_7)
         self.label_7.setText(QtGui.QApplication.translate("SettingsDialogBaseClass", "steps", None, QtGui.QApplication.UnicodeUTF8))
         self.label_7.setObjectName(_fromUtf8("label_7"))

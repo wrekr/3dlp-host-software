@@ -87,12 +87,7 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         self.Xpos = 0.0
 
     def Z_up(self):
-        if self.Z_001.isChecked(): #Z 0.01mm is checked
-            self.Zpos = self.Zpos+.01
-            self.DRO_Z.display(float(self.DRO_Z.value())+.01)
-            self.printer.IncrementZ((.01/self.mm_per_step))
-            #print "incrementing %r steps"%(.01/self.mm_per_step)
-        elif self.Z_01.isChecked(): #Z 0.1mm is checked
+        if self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos+.1
             self.DRO_Z.display(float(self.DRO_Z.value())+.1)
             self.printer.IncrementZ((.1/self.mm_per_step))
@@ -109,12 +104,7 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
             #print "incrementing %r steps"%(10/self.mm_per_step)
 
     def Z_down(self):
-        if self.Z_001.isChecked(): #Z 0.01mm is checked
-            self.Zpos = self.Zpos-.01
-            self.DRO_Z.display(float(self.DRO_Z.value())-.01)
-            self.printer.IncrementZ(-.01/self.mm_per_step)
-            #print "incrementing %r steps"%(-.01/self.mm_per_step)
-        elif self.Z_01.isChecked(): #Z 0.1mm is checked
+        if self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos-.1
             self.DRO_Z.display(float(self.DRO_Z.value())-.1)
             self.printer.IncrementZ(-.1/self.mm_per_step)
@@ -457,6 +447,19 @@ class Main(QtGui.QMainWindow):
         self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
         QApplication.processEvents() #make sure the toolbar gets updated with new text
+        #####model preview
+        if not self.preview:
+            return
+        else:
+            self.slicingplane.SetOrigin(0,0,self.sliceCorrelations[self.currentlayer-1][1])
+            self.cutter.Update()
+            self.cutStrips.Update()
+            self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+            self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+            self.cutPoly.Update()
+            self.cutTriangles.Update()
+            self.ren.Render()
+            self.ModelView.Render()
         
     def GoToFirstLayer(self):
         try:
@@ -594,9 +597,12 @@ class Main(QtGui.QMainWindow):
         self.SettingsDialog.zscript.setPlainText(self.zScript)
         self.SettingsDialog.projector_poweroffcommand.setText(self.projectorPowerOffCommand)
 
-        self.SettingsDialog.exposure_time.setText(self.exposeTime)
-        self.SettingsDialog.starting_layers.setText(self.numberOfStartLayers)
-        self.SettingsDialog.starting_layer_exposure.setText(self.startLayersExposureTime)
+        self.SettingsDialog.exposure_time.setText(str(self.exposeTime))
+        self.SettingsDialog.starting_layers.setText(str(self.numberOfStartLayers))
+        self.SettingsDialog.starting_layer_exposure.setText(str(self.startLayersExposureTime))
+        
+        self.SettingsDialog.pitch.setText(str(self.pitch))
+        self.SettingsDialog.stepsPerRev.setText(str(self.stepsPerRev))
         
         if self.controller == 'arduinoUNO':
             self.SettingsDialog.radio_arduinoUno.click()
@@ -633,6 +639,10 @@ class Main(QtGui.QMainWindow):
         self.parser.set('program_defaults', 'StartLayersExposeTime', '%s'%self.startLayersExposureTime)
         self.projector_baud = self.SettingsDialog.projector_baud.currentText()
         self.parser.set('program_defaults', 'projectorBAUD', '%s'%self.projector_baud)
+        self.pitch = int(self.SettingsDialog.pitch.text())
+        self.parser.set('printer_hardware', 'Leadscrew_pitch', '%s'%self.pitch)
+        self.stepsPerRev = int(self.SettingsDialog.stepsPerRev.text())
+        self.parser.set('printer_hardware', 'Steps_per_rev', '%s'%self.stepsPerRev)
 
         if self.SettingsDialog.projectorcontrol.isChecked():
             self.projectorControlEnabled = True
@@ -686,7 +696,7 @@ class Main(QtGui.QMainWindow):
         
     def ConnectToPrinter(self):
         print "Connecting to printer.."
-        self.printer = hardware.ramps(self.COM_Port)
+        self.printer = hardware.ramps("COM11")
         if self.printer.status == 1:
             print "unknown error encountered while trying to connect to printer."
             return

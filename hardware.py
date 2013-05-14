@@ -18,6 +18,7 @@ class arduinoMega():
 class ramps():
     def __init__(self, port):
         try:
+            print "trying board"
             self.board = serial.Serial("%s"%port, 115200)
             print "initialized connection successfully"
             self.status = 0

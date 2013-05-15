@@ -32,6 +32,7 @@ from time import sleep
 import zipfile
 import StringIO
 import tempfile
+import shutil
 
 #**********************************
 
@@ -171,7 +172,15 @@ class Main(QtGui.QMainWindow):
         self.ModelView.show()
 
         self.slicepreview = QtGui.QLabel(self.ui.frame_2)
-        pm = QtGui.QPixmap(os.getcwd() + "\\10x10black.png")
+        filename = '10x10black.png'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            os.chdir(sys._MEIPASS)
+            filename = os.path.join(sys._MEIPASS, filename)
+        else: #otherwise it's running in pydev environment: use the 10x10black.png file in the dev folder
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+        pm = QtGui.QPixmap(filename)
         pmscaled = pm.scaled(400, 600)
         self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
 
@@ -185,8 +194,31 @@ class Main(QtGui.QMainWindow):
         #print "Found %d ports, %d available." %(self.numports, numports)
 
         self.parser = SafeConfigParser()
-        self.parser.read('config.ini')
-        self.LoadSettingsFromConfigFile()
+        ##to make sure it can find the config.ini file originally bundled with the .exe by Pyinstaller
+        filename = 'config.ini'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            os.chdir(sys._MEIPASS)
+            filename = os.path.join(sys._MEIPASS, filename)
+            APPNAME = '3DLP'
+            APPDATA = os.path.join(os.environ['APPDATA'], APPNAME)
+            if not os.path.isdir(os.path.join(APPDATA)):
+                os.mkdir(os.path.join(APPDATA))
+                shutil.copy(filename, os.path.join(APPDATA, ''))
+                self.parser.read(os.path.join(APPDATA, 'config.ini'))
+                self.LoadSettingsFromConfigFile()
+            else:
+                if not os.path.isfile(os.path.join(APPDATA, 'config.ini')):
+                    shutil.copy(filename, os.path.join(APPDATA))
+                else:
+                    self.parser.read(os.path.join(APPDATA, 'config.ini'))
+                    self.LoadSettingsFromConfigFile()
+        else: #otherwise it's running in pydev environment: use the dev config file
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+            self.parser.read('config.ini')
+            self.LoadSettingsFromConfigFile()
+        ##
         
     def __del__(self):
         # Restore sys.stdout
@@ -677,9 +709,35 @@ class Main(QtGui.QMainWindow):
         if self.SettingsDialog.radio_ramps.isChecked():
             self.controller = "ramps"
             self.parser.set('program_defaults', 'printercontroller', 'RAMPS')
-        outputini = open('config.ini', 'w') #open a file pointer for the config file parser to write changes to
-        self.parser.write(outputini)
-        outputini.close() #done writing config file changes
+        #SAVE config settings
+        ##to make sure it can find the config.ini file bundled with the .exe by Pyinstaller
+#        filename = 'config.ini'
+#        if hasattr(sys, '_MEIPASS'):
+#            # PyInstaller >= 1.6
+#            os.chdir(sys._MEIPASS)
+#            filename = os.path.join(sys._MEIPASS, filename)
+#        else:
+#            os.chdir(os.path.dirname(sys.argv[0]))
+#            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+        ##
+        
+        
+        filename = 'config.ini'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            APPNAME = '3DLP'
+            APPDATA = os.path.join(os.environ['APPDATA'], APPNAME)
+            filename = os.path.join(APPDATA, filename)
+            outputini = open(filename, 'w') #open a file pointer for the config file parser to write changes to
+            self.parser.write(outputini)
+            outputini.close() #done writing config file changes
+        else: #otherwise it's running in pydev environment: use the dev config file
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+            outputini = open(filename, 'w') #open a file pointer for the config file parser to write changes to
+            self.parser.write(outputini)
+            outputini.close() #done writing config file changes
+        ##
          
     def openhelp(self):
         webbrowser.open("http://www.chrismarion.net/3dlp/software/help")

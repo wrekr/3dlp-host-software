@@ -3,10 +3,14 @@ import vtk
 import sys
 from PyQt4 import QtCore,QtGui
 from PyQt4.Qt import *
+from PyQt4.QtGui import QFileDialog, QPixmap, QSplashScreen
+#from PyQt4.Qt import *
 from slicer_gui import Ui_MainWindow
 from slicer_settings_dialog_gui import Ui_Dialog
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from ConfigParser import SafeConfigParser
+import os
+import shutil
 
 ###IDEA TO SPEED UP SLICER: slice in one thread, send data through queue to another thread which saves data to hard drive at its leisure
 
@@ -48,10 +52,31 @@ class Main(QtGui.QMainWindow):
         self.setWindowTitle(QtGui.QApplication.translate("MainWindow", "3DLP Slicer", None, QtGui.QApplication.UnicodeUTF8))
 
         #load previous settings from config file here:
-        
         self.parser = SafeConfigParser()
-        self.parser.read('sliceconfig.ini')
-        self.LoadSettingsFromConfigFile()
+        filename = 'sliceconfig.ini'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            os.chdir(sys._MEIPASS)
+            filename = os.path.join(sys._MEIPASS, filename)
+            APPNAME = '3DLP'
+            APPDATA = os.path.join(os.environ['APPDATA'], APPNAME)
+            if not os.path.isdir(os.path.join(APPDATA)):
+                os.mkdir(os.path.join(APPDATA))
+                shutil.copy(filename, os.path.join(APPDATA, ''))
+                self.parser.read(os.path.join(APPDATA, 'sliceconfig.ini'))
+                self.LoadSettingsFromConfigFile()
+            else:
+                if not os.path.isfile(os.path.join(APPDATA, 'sliceconfig.ini')):
+                    shutil.copy(filename, os.path.join(APPDATA))
+                else:
+                    self.parser.read(os.path.join(APPDATA, 'sliceconfig.ini'))
+                    self.LoadSettingsFromConfigFile()
+        else: #otherwise it's running in pydev environment: use the dev config file
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+            self.parser.read('sliceconfig.ini')
+            self.LoadSettingsFromConfigFile()
+        
  
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -78,6 +103,8 @@ class Main(QtGui.QMainWindow):
             pass
         
         self.filename = QtGui.QFileDialog.getOpenFileName()
+        if self.filename == '': #user hit cancel
+            return
 #        self.ui.displayfilenamelabel.setText(self.filename)
 
         self.reader = vtk.vtkSTLReader()
@@ -165,6 +192,13 @@ class Main(QtGui.QMainWindow):
         self.ui.Transform_groupbox.setEnabled(True)
     
     def SliceModel(self):
+        try:
+            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            QtGui.QMessageBox.critical(self, 'Error slicing model',"You must first load a model to slice it!", QtGui.QMessageBox.Ok)   
+            return
+        self.outputFile = str(QFileDialog.getSaveFileName(self, "Save file", "", ".3dlp"))
         self.slicer = slicer.slicer(self)
         self.slicer.imageheight = int(self.imageHeight)
         self.slicer.imagewidth = int(self.imageWidth)
@@ -302,16 +336,48 @@ class Main(QtGui.QMainWindow):
         
     def getSettingsDialogValues(self):
         self.imageHeight = int(self.SettingsDialog.imageHeight.text())
+        self.parser.set('slicing_settings', 'Image_Height', "%s"%self.imageHeight)
         self.imageWidth = int(self.SettingsDialog.imageWidth.text())
+        self.parser.set('slicing_settings', 'Image_Width', "%s"%self.imageWidth)
         self.startingDepth = int(self.SettingsDialog.startingDepth.text())
+        self.parser.set('slicing_settings', 'Starting_Depth', "%s"%self.startingDepth)
         self.endingDepth = int(self.SettingsDialog.endingDepth.text())
+        self.parser.set('slicing_settings', 'Ending_Depth', "%s"%self.endingDepth)
         self.slicingIncrement = int(self.SettingsDialog.slicingIncrement.text())
+        self.parser.set('slicing_settings', 'Slicing_Increment', "%s"%self.slicingIncrement)
         self.slicingplane = self.SettingsDialog.slicingPlane.currentText()
+        self.parser.set('slicing_settings', 'Slicing_Plane', "%s"%self.slicingplane)
+        
+        filename = 'sliceconfig.ini'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            APPNAME = '3DLP'
+            APPDATA = os.path.join(os.environ['APPDATA'], APPNAME)
+            filename = os.path.join(APPDATA, filename)
+            outputini = open(filename, 'w') #open a file pointer for the config file parser to write changes to
+            self.parser.write(outputini)
+            outputini.close() #done writing config file changes
+        else: #otherwise it's running in pydev environment: use the dev config file
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+            outputini = open(filename, 'w') #open a file pointer for the config file parser to write changes to
+            self.parser.write(outputini)
+            outputini.close() #done writing config file changes
+        ##
         
 def main():
     app = QtGui.QApplication(sys.argv)
+    
+    splash_pix = QPixmap(':/splash/3dlp_slicer_splash.png')
+    splash = QSplashScreen(splash_pix, Qt.WindowStaysOnTopHint)
+    splash.setMask(splash_pix.mask())
+    splash.show()
+    app.processEvents()
+    
     window=Main()
     window.show()
+    splash.finish(window)
+
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
     

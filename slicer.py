@@ -28,7 +28,9 @@ class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the
 class slicer():
     def __init__(self, parent):
         self.parent = parent
-        self.zfile = zipfile.ZipFile("test.3dlp", 'w')
+        self.outputFile = self.parent.outputFile
+        os.chdir(os.path.split(str(self.outputFile))[0]) #change to base dir of the selected filename
+        self.zfile = zipfile.ZipFile(os.path.split(str(self.outputFile))[1], 'w')
     
     def OpenModel(self, filename):
         self.filename = filename
@@ -39,6 +41,11 @@ class slicer():
         self.clean.SetInputConnection(self.reader.GetOutputPort())
         self.clean.PointMergingOn()
          
+    def close_window(self, iren):
+        render_window = iren.GetRenderWindow()
+        render_window.Finalize()
+        #iren.TerminateApp()
+    
     def slice(self):
         #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
         self.slicingplane=vtk.vtkPlane()
@@ -85,9 +92,7 @@ class slicer():
         self.renWin.Render()
         
         self.sliceCorrelations = []
-        
-        self.startDirectory = os.getcwd()
-        os.chdir(os.getcwd()+"\\slices") #change to slices directory       
+
         x = self.startingdepth
         layercount = 0
         starttime = time.time()
@@ -97,6 +102,9 @@ class slicer():
             self.UpdateSlicingPlane(x)
             self.WindowToImage("slice%s.png"%(str(layercount).zfill(4)))
             self.sliceCorrelations.append([layercount,x]) #store correlations between slice plane and layer number for later visualization in 3DLP Host
+            
+        self.close_window(self.sliceren)
+        del self.sliceren
 
         elapsedtime = time.time() - starttime
         print elapsedtime

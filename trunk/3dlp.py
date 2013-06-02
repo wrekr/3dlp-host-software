@@ -128,6 +128,16 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
     def activateX(self):
         pass
     
+    
+class _3dlpfile():
+    def __init__(self):
+        print "init"
+        self.name = ""
+        self.description = ""
+        self.notes = ""
+    
+    
+    
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):

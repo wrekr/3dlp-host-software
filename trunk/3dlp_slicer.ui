@@ -471,6 +471,78 @@
           </widget>
          </item>
          <item>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>100</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>254</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="title">
+            <string>Model List</string>
+           </property>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
+                <item>
+                 <widget class="QPushButton" name="addModel">
+                  <property name="text">
+                   <string>Add</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="removeModel">
+                  <property name="text">
+                   <string>Remove</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QListWidget" name="modelList">
+                <property name="frameShadow">
+                 <enum>QFrame::Plain</enum>
+                </property>
+                <property name="alternatingRowColors">
+                 <bool>false</bool>
+                </property>
+                <property name="spacing">
+                 <number>1</number>
+                </property>
+                <property name="modelColumn">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
+         </item>
+         <item>
           <widget class="QGroupBox" name="Transform_groupbox">
            <property name="enabled">
             <bool>false</bool>
@@ -504,7 +576,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_7">
+                 <widget class="QDoubleSpinBox" name="positionX">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -524,7 +596,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_8">
+                 <widget class="QDoubleSpinBox" name="positionY">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -544,7 +616,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
+                 <widget class="QDoubleSpinBox" name="positionZ">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -575,7 +647,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox">
+                 <widget class="QDoubleSpinBox" name="rotationX">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -601,7 +673,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_2">
+                 <widget class="QDoubleSpinBox" name="rotationY">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -627,7 +699,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_3">
+                 <widget class="QDoubleSpinBox" name="rotationZ">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -648,23 +720,16 @@
                </layout>
               </item>
               <item>
-               <widget class="QLabel" name="label_8">
-                <property name="text">
-                 <string>Scaling Factor:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <layout class="QHBoxLayout" name="horizontalLayout_3">
                 <item>
-                 <widget class="QLabel" name="label_5">
+                 <widget class="QLabel" name="label_8">
                   <property name="text">
-                   <string>X:</string>
+                   <string>Scaling Factor:</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_4">
+                 <widget class="QDoubleSpinBox" name="scale">
                   <property name="minimumSize">
                    <size>
                     <width>55</width>
@@ -677,53 +742,19 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="label_6">
-                  <property name="text">
-                   <string>Y:</string>
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
                   </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
-                  <property name="minimumSize">
+                  <property name="sizeHint" stdset="0">
                    <size>
-                    <width>55</width>
-                    <height>0</height>
+                    <width>40</width>
+                    <height>20</height>
                    </size>
                   </property>
-                  <property name="minimum">
-                   <double>-99.989999999999995</double>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="text">
-                   <string>Z:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QDoubleSpinBox" name="doubleSpinBox_6">
-                  <property name="minimumSize">
-                   <size>
-                    <width>55</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="minimum">
-                   <double>-99.989999999999995</double>
-                  </property>
-                 </widget>
+                 </spacer>
                 </item>
                </layout>
-              </item>
-              <item>
-               <widget class="QCheckBox" name="checkBox">
-                <property name="text">
-                 <string>Maintain Aspect Ratio</string>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>
@@ -751,7 +782,7 @@
     <item>
      <widget class="QFrame" name="ModelFrame">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>
@@ -1289,7 +1320,7 @@
    <sender>actionOpen_Model</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>OpenModel()</slot>
+   <slot>AddModel()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -1350,14 +1381,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_7</sender>
+   <sender>positionX</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Position_X()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>85</x>
-     <y>313</y>
+     <x>104</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>283</x>
@@ -1366,14 +1397,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_8</sender>
+   <sender>positionY</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Position_Y()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>153</x>
-     <y>309</y>
+     <x>182</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>282</x>
@@ -1382,14 +1413,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_9</sender>
+   <sender>positionZ</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Position_Z()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>223</x>
-     <y>310</y>
+     <x>261</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>282</x>
@@ -1398,14 +1429,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox</sender>
+   <sender>rotationX</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Rotation_X()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>58</x>
-     <y>358</y>
+     <x>104</x>
+     <y>626</y>
     </hint>
     <hint type="destinationlabel">
      <x>283</x>
@@ -1414,14 +1445,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_2</sender>
+   <sender>rotationY</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Rotation_Y()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>126</x>
-     <y>356</y>
+     <x>182</x>
+     <y>626</y>
     </hint>
     <hint type="destinationlabel">
      <x>282</x>
@@ -1430,14 +1461,14 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_3</sender>
+   <sender>rotationZ</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
    <slot>Update_Rotation_Z()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>211</x>
-     <y>361</y>
+     <x>261</x>
+     <y>626</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
@@ -1446,50 +1477,50 @@
    </hints>
   </connection>
   <connection>
-   <sender>doubleSpinBox_6</sender>
+   <sender>scale</sender>
    <signal>valueChanged(QString)</signal>
    <receiver>MainWindow</receiver>
-   <slot>Update_Scale_Z()</slot>
+   <slot>Update_Scale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>237</x>
-     <y>410</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>284</x>
-     <y>427</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>doubleSpinBox_5</sender>
-   <signal>valueChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>Update_Scale_Y()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>138</x>
-     <y>410</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>283</x>
-     <y>465</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>doubleSpinBox_4</sender>
-   <signal>valueChanged(QString)</signal>
-   <receiver>MainWindow</receiver>
-   <slot>Update_Scale_X()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>71</x>
-     <y>412</y>
+     <x>162</x>
+     <y>662</y>
     </hint>
     <hint type="destinationlabel">
      <x>281</x>
      <y>508</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>modelList</sender>
+   <signal>currentItemChanged(QListWidgetItem*,QListWidgetItem*)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>ModelIndexChanged()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>60</x>
+     <y>356</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>290</x>
+     <y>333</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>addModel</sender>
+   <signal>pressed()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>AddModel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>69</x>
+     <y>296</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>310</y>
     </hint>
    </hints>
   </connection>
@@ -1505,8 +1536,8 @@
   <slot>Update_Rotation_X()</slot>
   <slot>Update_Rotation_Y()</slot>
   <slot>Update_Rotation_Z()</slot>
-  <slot>Update_Scale_X()</slot>
-  <slot>Update_Scale_Y()</slot>
-  <slot>Update_Scale_Z()</slot>
+  <slot>Update_Scale()</slot>
+  <slot>ModelIndexChanged()</slot>
+  <slot>AddModel()</slot>
  </slots>
 </ui>

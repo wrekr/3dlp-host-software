@@ -38,7 +38,50 @@ class StartSettingsDialog(QtGui.QDialog, Ui_Dialog, Ui_MainWindow):
 
     def quit(self):
         self.reject()
+        
+        
+class model():
+    def __init__(self, parent, filename):
+        self.parent = parent
+        self.filename = filename
+        self.transform = vtk.vtkTransform()
+        self.CurrentXPosition = 0.0
+        self.CurrentYPosition = 0.0
+        self.CurrentZPosition = 0.0
+        self.CurrentXRotation = 0.0
+        self.CurrentYRotation = 0.0
+        self.CurrentZRotation = 0.0
+        self.CurrentScale = 0.0
+        self.load()
+            
+    def load(self):
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))   
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+        
+        #create model actor
+        self.actor = vtk.vtkActor()
+        self.actor.GetProperty().SetColor(1,1,1)
+        self.actor.GetProperty().SetOpacity(1)
+        self.actor.SetMapper(self.mapper)
 
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #add actors to parent render window
+        self.parent.ren.AddActor(self.actor)
+        self.parent.ren.AddActor(self.outlineActor)
+        
+        
     # Create a class for our main window
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
@@ -93,60 +136,24 @@ class Main(QtGui.QMainWindow):
 
         self.ModelView.resize(1006-17,716-39)
         #self.ModelView.resize(self.ui.ModelFrame.geometry().width()-1,self.ui.ModelFrame.geometry().height()-1)
-
-    def OpenModel(self):
-        try:
-            if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
-                QtGui.QMessageBox.critical(self, 'Error loading model',"You have already loaded a model into the slicer. Please restart to load another model.", QtGui.QMessageBox.Ok)
-                return 
-        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
-            pass
         
-        self.filename = QtGui.QFileDialog.getOpenFileName()
-        if self.filename == '': #user hit cancel
+        self.modelList = [] 
+        
+        
+    def AddModel(self):
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open 3D Model', '.', '*.stl')
+        if filename == '': #user hit cancel
             return
-#        self.ui.displayfilenamelabel.setText(self.filename)
-
-        self.reader = vtk.vtkSTLReader()
-        self.reader.SetFileName(str(self.filename))
-        
-        self.plane=vtk.vtkPlane()
-        self.plane.SetOrigin(0,0,20)
-        self.plane.SetNormal(0,0,1)
-        
-        self.extrude = vtk.vtkLinearExtrusionFilter()
-        self.extrude.SetExtrusionType(2)
-        self.extrude.SetScaleFactor(20.0)
-         
-        #self.polyDataOutput = self.reader.GetOutput()       
-        
-        self.mapper = vtk.vtkPolyDataMapper()
-        self.mapper.SetInputConnection(self.reader.GetOutputPort())
-        
-        self.mapper_plane = vtk.vtkPolyDataMapper()
-        #self.mapper_plane.SetInput(self.extrude.GetOutputPort())
-        
-        self.planeActor = vtk.vtkActor()
-        self.planeActor.GetProperty().SetColor(1,0,0)
-        self.planeActor.GetProperty().SetOpacity(1)
-        self.planeActor.SetMapper(self.mapper_plane)
-        
-        #create model actor
-        self.modelActor = vtk.vtkActor()
-        self.modelActor.GetProperty().SetColor(1,1,1)
-        self.modelActor.GetProperty().SetOpacity(1)
-        self.modelActor.SetMapper(self.mapper)
-
-        #create outline mapper
-        self.outline = vtk.vtkOutlineFilter()
-        self.outline.SetInputConnection(self.reader.GetOutputPort())
-        self.outlineMapper = vtk.vtkPolyDataMapper()
-        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
-        
-        #create outline actor
-        self.outlineActor = vtk.vtkActor()
-        self.outlineActor.SetMapper(self.outlineMapper)
-        
+        modelObject = model(self, filename)
+        self.modelList.append(modelObject)
+        self.ui.modelList.addItem(os.path.basename(str(filename)))
+        if len(self.modelList) == 1:
+            self.FirstOpen()
+            
+        self.ren.ResetCamera()  
+        self.ModelView.Render() #update model view
+            
+    def FirstOpen(self):
         #create annotated cube anchor actor
         self.axesActor = vtk.vtkAnnotatedCubeActor();
         self.axesActor.SetXPlusFaceText('Right')
@@ -166,10 +173,7 @@ class Main(QtGui.QMainWindow):
         self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
         self.axesActor.SetFaceTextScale(0.25)
         self.axesActor.SetZFaceTextRotation(90)
-        self.ren.AddActor(self.modelActor)
-        self.ren.AddActor(self.planeActor)
-        self.ren.AddActor(self.outlineActor)
-       
+   
         #create orientation markers
         self.axes = vtk.vtkOrientationMarkerWidget()
         self.axes.SetOrientationMarker(self.axesActor)
@@ -177,18 +181,6 @@ class Main(QtGui.QMainWindow):
         self.axes.EnabledOn()
         self.axes.InteractiveOff()
         
-        self.ren.ResetCamera()  
-        self.ModelView.Render() #update model view
-        self.transform = vtk.vtkTransform()
-        self.CurrentXPosition = 0.0
-        self.CurrentYPosition = 0.0
-        self.CurrentZPosition = 0.0
-        self.CurrentXRotation = 0.0
-        self.CurrentYRotation = 0.0
-        self.CurrentZRotation = 0.0
-        self.CurrentXScale = 0.0
-        self.CurrentYScale = 0.0
-        self.CurrentZScale = 0.0
         self.ui.Transform_groupbox.setEnabled(True)
     
     def SliceModel(self):
@@ -221,96 +213,116 @@ class Main(QtGui.QMainWindow):
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must first load a model to change its opacity!", QtGui.QMessageBox.Ok)        
             
+    def ModelIndexChanged(self, new, previous):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        self.ui.positionX.setValue(modelObject.CurrentXPosition)
+        self.ui.positionY.setValue(modelObject.CurrentYPosition)
+        self.ui.positionZ.setValue(modelObject.CurrentZPosition)
+        self.ui.rotationX.setValue(modelObject.CurrentXRotation)
+        self.ui.rotationY.setValue(modelObject.CurrentYRotation)
+        self.ui.rotationZ.setValue(modelObject.CurrentZRotation)
+        self.ui.scale.setValue(modelObject.CurrentScale)
+            
     def Update_Position_X(self, position):
-        self.transform.Translate((float(position)-self.CurrentXPosition), 0.0, 0.0)
-        self.CurrentXPosition = self.CurrentXPosition + (float(position)-self.CurrentXPosition)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate((float(position)-modelObject.CurrentXPosition), 0.0, 0.0)
+        modelObject.CurrentXPosition = modelObject.CurrentXPosition + (float(position)-modelObject.CurrentXPosition)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
     def Update_Position_Y(self, position):
-        self.transform.Translate(0.0, (float(position)-self.CurrentYPosition), 0.0)
-        self.CurrentYPosition = self.CurrentYPosition + (float(position)-self.CurrentYPosition)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate(0.0, (float(position)-modelObject.CurrentYPosition), 0.0)
+        modelObject.CurrentYPosition = modelObject.CurrentYPosition + (float(position)-modelObject.CurrentYPosition)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
     def Update_Position_Z(self, position):
-        self.transform.Translate(0.0, 0.0, (float(position)-self.CurrentZPosition))
-        self.CurrentZPosition = self.CurrentZPosition + (float(position)-self.CurrentZPosition)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate(0.0, 0.0, (float(position)-modelObject.CurrentZPosition))
+        modelObject.CurrentZPosition = modelObject.CurrentZPosition + (float(position)-modelObject.CurrentZPosition)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
     def Update_Rotation_X(self, rotation):
-        self.transform.RotateX((float(rotation)-self.CurrentXRotation))
-        self.CurrentXRotation = self.CurrentXRotation + (float(rotation)-self.CurrentXRotation)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateX((float(rotation)-modelObject.CurrentXRotation))
+        modelObject.CurrentXRotation = modelObject.CurrentXRotation + (float(rotation)-modelObject.CurrentXRotation)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
     def Update_Rotation_Y(self, rotation):
-        self.transform.RotateY((float(rotation)-self.CurrentYRotation))
-        self.CurrentYRotation = self.CurrentYRotation + (float(rotation)-self.CurrentYRotation)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateY((float(rotation)-modelObject.CurrentYRotation))
+        modelObject.CurrentYRotation = modelObject.CurrentYRotation + (float(rotation)-modelObject.CurrentYRotation)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
     def Update_Rotation_Z(self, rotation):
-        self.transform.RotateZ((float(rotation)-self.CurrentZRotation))
-        self.CurrentZRotation = self.CurrentZRotation + (float(rotation)-self.CurrentZRotation)
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateZ((float(rotation)-modelObject.CurrentZRotation))
+        modelObject.CurrentZRotation = modelObject.CurrentZRotation + (float(rotation)-modelObject.CurrentZRotation)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
-    def Update_Scale_X(self, scale):
-        self.transform.Scale((float(scale)-self.CurrentXScale)/100, 0.0, 0.0)
-        self.CurrentXScale = self.CurrentXScale + (float(scale)-self.CurrentXScale)
+    def Update_Scale(self, scale):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        #transform.Scale((float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0)
+        transform.Scale(2.0, 2.0, 2.0)
+        modelObject.CurrentScale = modelObject.CurrentScale + (float(scale)-modelObject.CurrentScale)
         transformFilter = vtk.vtkTransformPolyDataFilter()
-        transformFilter.SetTransform(self.transform)
-        transformFilter.SetInputConnection(self.reader.GetOutputPort())
+        transformFilter.SetTransform(modelObject.transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
-        self.mapper.SetInputConnection(transformFilter.GetOutputPort())
-        self.mapper.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
     
-    def Update_Scale_Y(self, scale):
-        pass
-    
-    def Update_Scale_Z(self, scale):
-        pass
- 
+
     def LoadSettingsFromConfigFile(self):
         self.imageHeight = int(self.parser.get('slicing_settings', 'Image_Height'))
         self.imageWidth = int(self.parser.get('slicing_settings', 'Image_Width'))

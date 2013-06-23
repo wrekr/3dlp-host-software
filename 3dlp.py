@@ -14,7 +14,6 @@ Still to add/known issues:
     -scripting commands for motor speed, GPIO (solenoids, etc), PWM control of gearmotors with encoder feedback, and pause
     -custom scripting for different sections of layers
     -ability to save custom hardware profiles for different printers
-    -generate 3d preview from layer slice images, scrolls through in real-time with the print job
 """
 import sys
 
@@ -86,12 +85,13 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
         self.mm_per_step = self.mm_per_step#/self.microstepping
         self.Zpos = 0.0
         self.Xpos = 0.0
+        self.printer.EnableZ()
 
     def Z_up(self):
         if self.Z_01.isChecked(): #Z 0.1mm is checked
             self.Zpos = self.Zpos+.1
             self.DRO_Z.display(float(self.DRO_Z.value())+.1)
-            self.printer.IncrementZ((.1/self.mm_per_step))
+            self.printer.IncrementZ(200)
             #print "incrementing %r steps"%(.1/self.mm_per_step)
         elif self.Z_1.isChecked(): #Z 1mm is checked
             self.Zpos = self.Zpos+1
@@ -128,16 +128,55 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
     def activateX(self):
         pass
     
-    
 class _3dlpfile():
     def __init__(self):
         print "init"
         self.name = ""
         self.description = ""
         self.notes = ""
-    
-    
-    
+        
+class model():
+    def __init__(self, parent, filename):
+        self.parent = parent
+        self.filename = filename
+        self.transform = vtk.vtkTransform()
+        self.CurrentXPosition = 0.0
+        self.CurrentYPosition = 0.0
+        self.CurrentZPosition = 0.0
+        self.CurrentXRotation = 0.0
+        self.CurrentYRotation = 0.0
+        self.CurrentZRotation = 0.0
+        self.CurrentScale = 0.0
+        self.PreviousScale = 0.0
+        self.load()
+            
+    def load(self):
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))   
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+        
+        #create model actor
+        self.actor = vtk.vtkActor()
+        self.actor.GetProperty().SetColor(1,1,1)
+        self.actor.GetProperty().SetOpacity(1)
+        self.actor.SetMapper(self.mapper)
+
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #add actors to parent render window
+        self.parent.renPre.AddActor(self.actor)
+        self.parent.renPre.AddActor(self.outlineActor)
+        
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
@@ -146,10 +185,21 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
 
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
-        self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30)
-        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
-        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
-        self.slicepreview.setPixmap(self.pmscaled)  
+        try:
+            self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30)
+            self.ui.toolbar.resize(QSize(43,658))
+            self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
+            self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+            self.slicepreview.setPixmap(self.pmscaled)  
+        except: #no frames to resize
+            pass    
+        
+    def closeEvent(self, event):
+        reply = QtGui.QMessageBox.question(self, "Quit", "Are you sure you want to quit?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            event.accept()
+        else:
+            event.ignore()
         
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -167,32 +217,6 @@ class Main(QtGui.QMainWindow):
         self.cwd = os.getcwd() #get current execution (working) directory
         # Install the custom output stream
         sys.stdout = EmittingStream(textWritten=self.normalOutputWritten)
-
-        self.ren = vtk.vtkRenderer()
-        self.ren.SetBackground(.4,.4,.4)
-        
-        # create the modelview widget
-        self.ModelView = QVTKRenderWindowInteractor(self.ui.frame)
-        self.ModelView.SetInteractorStyle(MyInteractorStyle())
-        self.ModelView.Initialize()
-        self.ModelView.Start()
-
-        self.renWin=self.ModelView.GetRenderWindow()
-        self.renWin.AddRenderer(self.ren)
-        self.ModelView.show()
-
-        self.slicepreview = QtGui.QLabel(self.ui.frame_2)
-        filename = '10x10black.png'
-        if hasattr(sys, '_MEIPASS'):
-            # PyInstaller >= 1.6
-            os.chdir(sys._MEIPASS)
-            filename = os.path.join(sys._MEIPASS, filename)
-        else: #otherwise it's running in pydev environment: use the 10x10black.png file in the dev folder
-            os.chdir(os.path.dirname(sys.argv[0]))
-            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
-        pm = QtGui.QPixmap(filename)
-        pmscaled = pm.scaled(400, 600)
-        self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
 
         self.screencount = QtGui.QDesktopWidget().numScreens()
         print "number of monitors: ", self.screencount
@@ -228,11 +252,43 @@ class Main(QtGui.QMainWindow):
             filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
             self.parser.read('config.ini')
             self.LoadSettingsFromConfigFile()
-        ##
+            
+        self.modelList = [] 
+            
+        ####pre-slice setup
+        
+        self.renPre = vtk.vtkRenderer()
+        self.renPre.SetBackground(.4,.4,.4)
+        
+        self.ModelViewPre = QVTKRenderWindowInteractor(self.ui.modelFramePre)
+        self.ModelViewPre.SetInteractorStyle(MyInteractorStyle())
+        self.ModelViewPre.Initialize()
+        self.ModelViewPre.Start()
+        
+        self.renWinPre=self.ModelViewPre.GetRenderWindow()
+        self.renWinPre.AddRenderer(self.renPre)
+        
+        ###post-slice setup
+        
+        self.renPost = vtk.vtkRenderer()
+        self.renPost.SetBackground(.4,.4,.4)
+        
+        self.ModelViewPost = QVTKRenderWindowInteractor(self.ui.modelFramePost)
+        self.ModelViewPost.SetInteractorStyle(MyInteractorStyle())
+        self.ModelViewPost.Initialize()
+        self.ModelViewPost.Start()
+        
+        self.renWin=self.ModelViewPost.GetRenderWindow()
+        self.renWin.AddRenderer(self.renPost)
+        
+
+        ########
+        self.ChangeWorkspacePostSlice()
         
     def __del__(self):
         # Restore sys.stdout
-        sys.stdout = sys.__stdout__           
+        sys.stdout = sys.__stdout__     
+        self.printer.close()      #close serial connection to printer if open
         
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
@@ -242,9 +298,54 @@ class Main(QtGui.QMainWindow):
         cursor.insertText(text)
         self.ui.consoletext.setTextCursor(cursor)
         self.ui.consoletext.ensureCursorVisible()
-            
-    def OpenPrintJob(self):
         
+    def ChangeWorkspacePreSlice(self):
+        self.ui.preSliceBar.show()
+        self.ui.sliceListBar.hide()
+        self.ui.printJobInfoBar.hide()
+        self.ui.workspacePost.hide()
+        self.ui.workspacePre.show()
+        
+        self.ModelViewPre.show()
+        self.ModelViewPre.resize(self.ui.modelFramePre.geometry().width(), self.ui.modelFramePre.geometry().height())
+        
+        self.ui.printJobInfoBar.hide()
+        self.ui.sliceListBar.hide()
+        self.ui.actionPreSlice.setChecked(True)
+        self.ui.actionPostSlice.setChecked(False)
+            
+    def ChangeWorkspacePostSlice(self):
+        self.ui.preSliceBar.hide()
+        self.ui.sliceListBar.show()
+        self.ui.printJobInfoBar.show()
+        self.ui.workspacePost.show()
+        self.ui.workspacePre.hide()
+
+        self.ModelViewPost.show()
+        self.ModelViewPost.resize(self.ui.modelFramePost.geometry().width(), self.ui.modelFramePost.geometry().height())
+            
+        self.slicepreview = QtGui.QLabel(self.ui.sliceFramePost)
+        filename = '10x10black.png'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            os.chdir(sys._MEIPASS)
+            filename = os.path.join(sys._MEIPASS, filename)
+        else: #otherwise it's running in pydev environment: use the 10x10black.png file in the dev folder
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+        pm = QtGui.QPixmap(filename)
+        pmscaled = pm.scaled(400, 600)
+        self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
+        
+            #this is needed here to resize after the window is created to fill frames
+        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)
+          
+        self.ui.actionPreSlice.setChecked(False)
+        self.ui.actionPostSlice.setChecked(True)
+
+    def OpenPrintJob(self):
         self._3dlpfile = zipfile.ZipFile(str(QtGui.QFileDialog.getOpenFileName(self, 'Open 3DLP Print Job', '.', '*.3dlp')))
         
         self.FileList = []
@@ -295,6 +396,49 @@ class Main(QtGui.QMainWindow):
         self.UpdateModelLayer(self.sliceCorrelations[self.currentlayer-1][1])
         QApplication.processEvents() #make sure the toolbar gets updated with new text
         self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
+
+    def AddModel(self):
+        filename = QtGui.QFileDialog.getOpenFileName(self, 'Open 3D Model', '.', '*.stl')
+        if filename == '': #user hit cancel
+            return
+        modelObject = model(self, filename)
+        self.modelList.append(modelObject)
+        self.ui.modelList.addItem(os.path.basename(str(filename)))
+        if len(self.modelList) == 1:
+            self.FirstOpen()
+            
+        self.renPre.ResetCamera()  
+        self.ModelViewPre.Render() #update model view
+        
+    def FirstOpen(self):
+        #create annotated cube anchor actor
+        self.axesActor = vtk.vtkAnnotatedCubeActor();
+        self.axesActor.SetXPlusFaceText('Right')
+        self.axesActor.SetXMinusFaceText('Left')
+        self.axesActor.SetYMinusFaceText('Front')
+        self.axesActor.SetYPlusFaceText('Back')
+        self.axesActor.SetZMinusFaceText('Bot')
+        self.axesActor.SetZPlusFaceText('Top')
+        self.axesActor.GetTextEdgesProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetTextEdgesProperty().SetLineWidth(2)
+        self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
+        self.axesActor.SetFaceTextScale(0.25)
+        self.axesActor.SetZFaceTextRotation(90)
+   
+        #create orientation markers
+        self.axes = vtk.vtkOrientationMarkerWidget()
+        self.axes.SetOrientationMarker(self.axesActor)
+        self.axes.SetInteractor(self.ModelViewPre)
+        self.axes.EnabledOn()
+        self.axes.InteractiveOff()
+        
+        self.ui.Transform_groupbox.setEnabled(True)
 
     def OpenModel(self, filename):
         self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30) #just in case resizeEvent() hasn't been called yet
@@ -580,6 +724,145 @@ class Main(QtGui.QMainWindow):
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)       
             
+    def ModelIndexChanged(self, new, previous):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        self.ui.positionX.setValue(modelObject.CurrentXPosition)
+        self.ui.positionY.setValue(modelObject.CurrentYPosition)
+        self.ui.positionZ.setValue(modelObject.CurrentZPosition)
+        self.ui.rotationX.setValue(modelObject.CurrentXRotation)
+        self.ui.rotationY.setValue(modelObject.CurrentYRotation)
+        self.ui.rotationZ.setValue(modelObject.CurrentZRotation)
+        self.ui.scale.setValue(modelObject.CurrentScale)
+            
+    def UpdatePositionX(self, position):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate((float(position)-modelObject.CurrentXPosition), 0.0, 0.0)
+        modelObject.CurrentXPosition = modelObject.CurrentXPosition + (float(position)-modelObject.CurrentXPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdatePositionY(self, position):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate(0.0, (float(position)-modelObject.CurrentYPosition), 0.0)
+        modelObject.CurrentYPosition = modelObject.CurrentYPosition + (float(position)-modelObject.CurrentYPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdatePositionZ(self, position):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.Translate(0.0, 0.0, (float(position)-modelObject.CurrentZPosition))
+        modelObject.CurrentZPosition = modelObject.CurrentZPosition + (float(position)-modelObject.CurrentZPosition)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdateRotationX(self, rotation):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateX((float(rotation)-modelObject.CurrentXRotation))
+        modelObject.CurrentXRotation = modelObject.CurrentXRotation + (float(rotation)-modelObject.CurrentXRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdateRotationY(self, rotation):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateY((float(rotation)-modelObject.CurrentYRotation))
+        modelObject.CurrentYRotation = modelObject.CurrentYRotation + (float(rotation)-modelObject.CurrentYRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdateRotationZ(self, rotation):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        transform.RotateZ((float(rotation)-modelObject.CurrentZRotation))
+        modelObject.CurrentZRotation = modelObject.CurrentZRotation + (float(rotation)-modelObject.CurrentZRotation)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+    
+    def UpdateScale(self, scale):
+        modelObject = self.modelList[self.ui.modelList.currentRow()]
+        transform = modelObject.transform
+        
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))   
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+        
+        #create model actor
+        self.actor = vtk.vtkActor()
+        self.actor.GetProperty().SetColor(1,1,1)
+        self.actor.GetProperty().SetOpacity(1)
+        self.actor.SetMapper(self.mapper)
+
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #add actors to parent render window
+        self.parent.ren.AddActor(self.actor)
+        self.parent.ren.AddActor(self.outlineActor)   
+
+        
+        delta = modelObject.PreviousScale - modelObject.CurrentScale
+        modelObject.transform
+        #transform.Scale((float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0)
+        transform.Scale
+        modelObject.CurrentScale = modelObject.CurrentScale + (float(scale)-modelObject.CurrentScale)
+        transformFilter = vtk.vtkTransformPolyDataFilter()
+        transformFilter.SetTransform(modelObject.transform)
+        transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+        transformFilter.Update()
+        modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
+        modelObject.mapper.Update()
+        self.ren.Render()
+        self.ModelView.Render()
+            
     def LoadSettingsFromConfigFile(self):
         self.printerBaud = int(self.parser.get('program_defaults', 'printerBAUD'))
         self.zScript = self.parser.get('scripting', 'sequence')
@@ -731,7 +1014,6 @@ class Main(QtGui.QMainWindow):
 #            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
         ##
         
-        
         filename = 'config.ini'
         if hasattr(sys, '_MEIPASS'):
             # PyInstaller >= 1.6
@@ -763,7 +1045,6 @@ class Main(QtGui.QMainWindow):
         ManualControl.exec_()
         
     def ConnectToPrinter(self):
-        print "Connecting to printer.."
         self.printer = hardware.ramps("COM11")
         if self.printer.status == 1:
             print "unknown error encountered while trying to connect to printer."
@@ -821,11 +1102,7 @@ def main():
     window.show()
     splash.finish(window)
 
-    #this is needed here to resize after the window is created to fill frames
-    window.slicepreview.resize(window.ui.frame_2.geometry().width(), window.ui.frame_2.geometry().height())
-    window.pmscaled = window.pm.scaled(window.ui.frame_2.geometry().width(), window.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
-    window.slicepreview.setPixmap(window.pmscaled)
-    window.ModelView.resize(window.ui.frame.geometry().width(), window.ui.frame.geometry().height())
+
     
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())

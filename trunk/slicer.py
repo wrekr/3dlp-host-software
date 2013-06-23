@@ -142,7 +142,7 @@ class slicer():
         im = Image.fromarray(numpy.uint8(array))
         im.save(stringio3, "PNG")
         self.zfile.writestr("\\slices\\" + filename, stringio3.getvalue())
-        
+         
     def GenerateConfigFile(self):
         Config = ConfigParser.ConfigParser()
         Config.add_section('print_settings')

@@ -6,6 +6,27 @@ Created on Mon Dec 17 21:01:39 2012
 """
 import serial
 import math
+import time
+from threading import Thread
+
+class Heartbeat(Thread):
+    def __init__(self, parent):
+        self.stopped = False
+        self.parent = parent
+        Thread.__init__(self)
+        
+    def run(self):
+        while not self.stopped:
+            time.sleep(1.0)
+            self.ping()
+            
+    def ping(self):
+        self.parent.board.write("?\n")
+        response = str(self.parent.board.readline())
+        if response.strip() == ".":
+            print "OK"
+        else:
+            pass
 
 class arduinoUno():
     def __init__(self):
@@ -18,60 +39,47 @@ class arduinoMega():
 class ramps():
     def __init__(self, port):
         try:
-            print "trying board"
-            self.board = serial.Serial("%s"%port, 115200)
-            print "initialized connection successfully"
+            self.heartbeat = Heartbeat(self)
+            #print "trying board"
+            self.board = serial.Serial("%s"%port, 115200, timeout = 5)
+            print "Initialized serial connection successfully"
             self.status = 0
-            print self.board.readline().strip()
+            self.board.readline()
+            self.identify()
+            #time.sleep(5)
+            #self.heartbeat.start()
         except:
             print "Could not connect to RAMPS board."
             self.status = 1
-    
+            
+    def identify(self):
+        self.board.write("IDN\n")
+        print str(self.board.readline()).strip()
+
     def EnableZ(self):
-        print "Z Enabled."
+        self.board.write("Z_ENABLE\n")
+        if str(self.board.readline()).strip() == "OK":
+            print "done"
         
     def HomePrinter(self):
         pass
         
     def Z_Up(self):
         self.board.write("Z_UP\n")
-        print "set Z to UP"
-        print self.board.readline()
-        print self.board.readline()
+        print str(self.board.readline()).strip()
     
     def Z_Down(self):
         self.board.write("Z_DOWN\n")
-        print "Set Z to DOWN"
-        print self.board.readline()
-        print self.board.readline()
-        
-    def Z_Enable(self):
-        self.board.write("Z_ENABLE\n")
-        print "z axis enabled"
-        print self.board.readline()
-        print self.board.readline()
-        
-    def Z_Disable(self):
-        self.board.write("Z_DISABLE\n")
-        print "z axis disabled"
-        print self.board.readline()
-        print self.board.readline()
-        
-    def X_Up(self):
-        print "Set X to UP"
-        
-    def X_Down(self):
-        print "set X to DOWN"
+        print str(self.board.readline()).strip()
         
     def IncrementZ(self, steps):
         #check to make sure the step value is a whole number
-        if steps % 1 == 0:
-            pass
-        else:
-            print "ERROR! Steps value must be an integer!"
-            return
+#        if steps % 1 == 0:
+#            pass
+#        else:
+#            print "ERROR! Steps value must be an integer!"
+#            return
         #check if it's negative and take appropriate action
-        print steps
         if steps < 0:
             self.Z_Down()
         elif steps > 0:
@@ -79,18 +87,9 @@ class ramps():
         #send command
         print "sending ZMOVE_%d" %math.fabs(steps)
         self.board.write('ZMOVE_%d\n'%math.fabs(steps))
-        print self.board.readline()
-        print self.board.readline()
-        #look for response
-        #print ".", self.board.readline(), "."
-#        if self.board.readline() == "OK\n":
-#            print "success"
-#        else:
-#            print "FAILED"
+        if str(self.board.readline()).strip() == "OK":
+            print "success"
 
-    def IncrementX(self, steps):
-        pass
-    
     def HomeZ(self):
         pass
     
@@ -99,6 +98,7 @@ class ramps():
     
     def close(self):
         self.board.close()
+        self.heartbeat.join()
     
 class pymcu():
     def __init__(self):

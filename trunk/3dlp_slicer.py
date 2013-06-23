@@ -52,6 +52,7 @@ class model():
         self.CurrentYRotation = 0.0
         self.CurrentZRotation = 0.0
         self.CurrentScale = 0.0
+        self.PreviousScale = 0.0
         self.load()
             
     def load(self):
@@ -119,7 +120,6 @@ class Main(QtGui.QMainWindow):
             filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
             self.parser.read('sliceconfig.ini')
             self.LoadSettingsFromConfigFile()
-        
  
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(.4,.4,.4)
@@ -310,8 +310,38 @@ class Main(QtGui.QMainWindow):
     def Update_Scale(self, scale):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
         transform = modelObject.transform
+        
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(str(self.filename))   
+        
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+        
+        #create model actor
+        self.actor = vtk.vtkActor()
+        self.actor.GetProperty().SetColor(1,1,1)
+        self.actor.GetProperty().SetOpacity(1)
+        self.actor.SetMapper(self.mapper)
+
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #add actors to parent render window
+        self.parent.ren.AddActor(self.actor)
+        self.parent.ren.AddActor(self.outlineActor)   
+
+        
+        delta = modelObject.PreviousScale - modelObject.CurrentScale
+        modelObject.transform
         #transform.Scale((float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0)
-        transform.Scale(2.0, 2.0, 2.0)
+        transform.Scale
         modelObject.CurrentScale = modelObject.CurrentScale + (float(scale)-modelObject.CurrentScale)
         transformFilter = vtk.vtkTransformPolyDataFilter()
         transformFilter.SetTransform(modelObject.transform)
@@ -321,7 +351,6 @@ class Main(QtGui.QMainWindow):
         modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
-    
 
     def LoadSettingsFromConfigFile(self):
         self.imageHeight = int(self.parser.get('slicing_settings', 'Image_Height'))

@@ -33,6 +33,8 @@ import StringIO
 import tempfile
 import shutil
 
+import slicer
+
 #**********************************
 
 import os
@@ -149,7 +151,7 @@ class model():
         self.CurrentScale = 0.0
         self.PreviousScale = 0.0
         self.load()
-            
+    
     def load(self):
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(str(self.filename))   
@@ -185,15 +187,14 @@ class OpenAbout(QtGui.QDialog, Ui_Dialog):
 
 class Main(QtGui.QMainWindow):
     def resizeEvent(self,Event):
-        try:
-            self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30)
-            self.ui.toolbar.resize(QSize(43,658))
-            self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
-            self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        if self.ui.workspacePre.isVisible():
+            self.ModelViewPre.resize(self.ui.modelFramePre.geometry().width()-16,self.ui.modelFramePre.geometry().height()-30)
+        elif self.ui.workspacePost.isVisible():
+            self.ModelViewPost.resize(self.ui.modelFramePost.geometry().width()-16,self.ui.modelFramePost.geometry().height()-30)
+            self.slicepreview.resize(self.ui.sliceFramePost.geometry().width(), self.ui.sliceFramePost.geometry().height())
+            self.pmscaled = self.pm.scaled(self.ui.sliceFramePost.geometry().width(), self.ui.sliceFramePost.geometry().height(), QtCore.Qt.KeepAspectRatio)
             self.slicepreview.setPixmap(self.pmscaled)  
-        except: #no frames to resize
-            pass    
-        
+
     def closeEvent(self, event):
         reply = QtGui.QMessageBox.question(self, "Quit", "Are you sure you want to quit?", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
         if reply == QtGui.QMessageBox.Yes:
@@ -280,8 +281,25 @@ class Main(QtGui.QMainWindow):
         
         self.renWin=self.ModelViewPost.GetRenderWindow()
         self.renWin.AddRenderer(self.renPost)
+    
+        self.slicepreview = QtGui.QLabel(self.ui.sliceFramePost)
+        filename = '10x10black.png'
+        if hasattr(sys, '_MEIPASS'):
+            # PyInstaller >= 1.6
+            os.chdir(sys._MEIPASS)
+            filename = os.path.join(sys._MEIPASS, filename)
+        else: #otherwise it's running in pydev environment: use the 10x10black.png file in the dev folder
+            os.chdir(os.path.dirname(sys.argv[0]))
+            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
+        pm = QtGui.QPixmap(filename)
+        pmscaled = pm.scaled(400, 600)
+        self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
         
-
+            #this is needed here to resize after the window is created to fill frames
+        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
+        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.setPixmap(self.pmscaled)
+    
         ########
         self.ChangeWorkspacePostSlice()
         
@@ -309,8 +327,6 @@ class Main(QtGui.QMainWindow):
         self.ModelViewPre.show()
         self.ModelViewPre.resize(self.ui.modelFramePre.geometry().width(), self.ui.modelFramePre.geometry().height())
         
-        self.ui.printJobInfoBar.hide()
-        self.ui.sliceListBar.hide()
         self.ui.actionPreSlice.setChecked(True)
         self.ui.actionPostSlice.setChecked(False)
             
@@ -323,23 +339,8 @@ class Main(QtGui.QMainWindow):
 
         self.ModelViewPost.show()
         self.ModelViewPost.resize(self.ui.modelFramePost.geometry().width(), self.ui.modelFramePost.geometry().height())
-            
-        self.slicepreview = QtGui.QLabel(self.ui.sliceFramePost)
-        filename = '10x10black.png'
-        if hasattr(sys, '_MEIPASS'):
-            # PyInstaller >= 1.6
-            os.chdir(sys._MEIPASS)
-            filename = os.path.join(sys._MEIPASS, filename)
-        else: #otherwise it's running in pydev environment: use the 10x10black.png file in the dev folder
-            os.chdir(os.path.dirname(sys.argv[0]))
-            filename = os.path.join(os.path.dirname(sys.argv[0]), filename)
-        pm = QtGui.QPixmap(filename)
-        pmscaled = pm.scaled(400, 600)
-        self.slicepreview.setPixmap(pmscaled) #set black pixmap for blank slide     
-        
-            #this is needed here to resize after the window is created to fill frames
-        self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
-        self.pmscaled = self.pm.scaled(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height(), QtCore.Qt.KeepAspectRatio)
+        self.slicepreview.resize(self.ui.sliceFramePost.geometry().width(), self.ui.sliceFramePost.geometry().height())
+        self.pmscaled = self.pm.scaled(self.ui.sliceFramePost.geometry().width(), self.ui.sliceFramePost.geometry().height(), QtCore.Qt.KeepAspectRatio)
         self.slicepreview.setPixmap(self.pmscaled)
           
         self.ui.actionPreSlice.setChecked(False)
@@ -347,7 +348,6 @@ class Main(QtGui.QMainWindow):
 
     def OpenPrintJob(self):
         self._3dlpfile = zipfile.ZipFile(str(QtGui.QFileDialog.getOpenFileName(self, 'Open 3DLP Print Job', '.', '*.3dlp')))
-        
         self.FileList = []
         for file in self._3dlpfile.namelist(): 
             if file.startswith("/slices/") and file.endswith(".png"): #if it's a supported image type in the slices directory
@@ -370,7 +370,6 @@ class Main(QtGui.QMainWindow):
         except:
             print "unknown error encountered while trying to parse print configuration file"
             return
-        
         #extract model for opening - can't open it from memory unfortunately :(
         temp = tempfile.NamedTemporaryFile()
         self._3dlpfile.extract((self.printconfigparser.get('preview_settings', 'STL_name')), os.getcwd())
@@ -440,16 +439,16 @@ class Main(QtGui.QMainWindow):
         
         self.ui.Transform_groupbox.setEnabled(True)
 
-    def OpenModel(self, filename):
-        self.ModelView.resize(self.ui.frame.geometry().width()-16,self.ui.frame.geometry().height()-30) #just in case resizeEvent() hasn't been called yet
-
+    def EnterPostSliceMode(self, filename):
+        self.ModelViewPost.resize(self.ui.modelFramePost.geometry().width()-16,self.ui.modelFramePost.geometry().height()-30) #just in case resizeEvent() hasn't been called yet
+        
         self.filename = filename
         self.reader = vtk.vtkSTLReader()
         self.reader.SetFileName(filename)
         self.polyDataOutput = self.reader.GetOutput()       
         self.mapper = vtk.vtkPolyDataMapper()
         self.mapper.SetInputConnection(self.reader.GetOutputPort())
-         
+        
         #create model actor
         self.modelActor = vtk.vtkActor()
         self.modelActor.GetProperty().SetColor(0,.8,0)
@@ -551,6 +550,118 @@ class Main(QtGui.QMainWindow):
         
         self.ren.ResetCamera()  
         self.ModelView.Render() #update model view
+
+    def OpenModel(self, filename):
+        self.ModelViewPost.resize(self.ui.modelFramePost.geometry().width()-16,self.ui.modelFramePost.geometry().height()-30) #just in case resizeEvent() hasn't been called yet
+
+        self.filename = filename
+        self.reader = vtk.vtkSTLReader()
+        self.reader.SetFileName(filename)
+        self.polyDataOutput = self.reader.GetOutput()       
+        self.mapper = vtk.vtkPolyDataMapper()
+        self.mapper.SetInputConnection(self.reader.GetOutputPort())
+         
+        #create model actor
+        self.modelActor = vtk.vtkActor()
+        self.modelActor.GetProperty().SetColor(0,.8,0)
+        self.modelActor.GetProperty().SetOpacity(1)
+        self.modelActor.SetMapper(self.mapper)
+        
+        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
+        self.slicingplane=vtk.vtkPlane()
+        self.slicingplane.SetOrigin(0,0,20)
+        self.slicingplane.SetNormal(0,0,1)
+        
+        #create cutter
+        self.cutter=vtk.vtkCutter()
+        self.cutter.SetCutFunction(self.slicingplane)
+        self.cutter.SetInputConnection(self.reader.GetOutputPort())
+        self.cutter.Update()
+        
+        self.FeatureEdges = vtk.vtkFeatureEdges()
+        self.FeatureEdges.SetInputConnection(self.cutter.GetOutputPort())
+        self.FeatureEdges.BoundaryEdgesOn()
+        self.FeatureEdges.FeatureEdgesOff()
+        self.FeatureEdges.NonManifoldEdgesOff()
+        self.FeatureEdges.ManifoldEdgesOff()
+        self.FeatureEdges.Update()
+
+        self.cutStrips = vtk.vtkStripper() #Forms loops (closed polylines) from cutter
+        self.cutStrips.SetInputConnection(self.cutter.GetOutputPort())
+        self.cutStrips.Update()
+        self.cutPoly = vtk.vtkPolyData() #This trick defines polygons as polyline loop
+        self.cutPoly.SetPoints((self.cutStrips.GetOutput()).GetPoints())
+        self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
+        self.cutPoly.Update()
+        
+        # Triangle filter
+        self.cutTriangles = vtk.vtkTriangleFilter()
+        self.cutTriangles.SetInput(self.cutPoly)
+        self.cutTriangles.Update()
+        
+        #cutter mapper
+        self.cutterMapper=vtk.vtkPolyDataMapper()
+        self.cutterMapper.SetInput(self.cutPoly)
+        self.cutterMapper.SetInputConnection(self.cutTriangles.GetOutputPort())
+
+        self.cutterOutlineMapper=vtk.vtkPolyDataMapper()
+        self.cutterOutlineMapper.SetInputConnection(self.cutter.GetOutputPort())          
+             
+#        #create plane actor
+        self.slicingplaneActor=vtk.vtkActor()
+        self.slicingplaneActor.GetProperty().SetColor(1.0,1.0,1.0)
+        self.slicingplaneActor.GetProperty().SetLineWidth(4)
+        self.slicingplaneActor.SetMapper(self.cutterMapper)
+#        
+        #create plane actor
+        self.slicingplaneoutlineActor=vtk.vtkActor()
+        self.slicingplaneoutlineActor.GetProperty().SetColor(1.0,0,0)
+        self.slicingplaneoutlineActor.GetProperty().SetLineWidth(4)
+        self.slicingplaneoutlineActor.SetMapper(self.cutterOutlineMapper)
+
+        #create outline mapper
+        self.outline = vtk.vtkOutlineFilter()
+        self.outline.SetInputConnection(self.reader.GetOutputPort())
+        self.outlineMapper = vtk.vtkPolyDataMapper()
+        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
+        
+        #create outline actor
+        self.outlineActor = vtk.vtkActor()
+        self.outlineActor.SetMapper(self.outlineMapper)
+        
+        #create annotated cube anchor actor
+        self.axesActor = vtk.vtkAnnotatedCubeActor()
+        self.axesActor.SetXPlusFaceText('Right')
+        self.axesActor.SetXMinusFaceText('Left')
+        self.axesActor.SetYMinusFaceText('Front')
+        self.axesActor.SetYPlusFaceText('Back')
+        self.axesActor.SetZMinusFaceText('Bot')
+        self.axesActor.SetZPlusFaceText('Top')
+        self.axesActor.GetTextEdgesProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetZMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetXMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYPlusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetYMinusFaceProperty().SetColor(.8,.8,.8)
+        self.axesActor.GetTextEdgesProperty().SetLineWidth(2)
+        self.axesActor.GetCubeProperty().SetColor(.2,.2,.2)
+        self.axesActor.SetFaceTextScale(0.25)
+        self.axesActor.SetZFaceTextRotation(90)
+        self.renPost.AddActor(self.modelActor)
+        self.renPost.AddActor(self.slicingplaneActor)
+        self.renPost.AddActor(self.slicingplaneoutlineActor)
+        self.renPost.AddActor(self.outlineActor)
+
+        #create orientation markers
+        self.axes = vtk.vtkOrientationMarkerWidget()
+        self.axes.SetOrientationMarker(self.axesActor)
+        self.axes.SetInteractor(self.ModelViewPost)
+        self.axes.EnabledOn()
+        self.axes.InteractiveOff()
+        
+        self.renPost.ResetCamera()  
+        self.ModelViewPost.Render() #update model view
     
     def IncrementSlicingPlanePositive(self):
         try:
@@ -579,8 +690,8 @@ class Main(QtGui.QMainWindow):
             self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
             self.cutPoly.Update()
             self.cutTriangles.Update()
-            self.ren.Render()
-            self.ModelView.Render()
+            self.renPost.Render()
+            self.ModelViewPost.Render()
         
     def IncrementSlicingPlaneNegative(self):
         try:
@@ -609,8 +720,8 @@ class Main(QtGui.QMainWindow):
             self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
             self.cutPoly.Update()
             self.cutTriangles.Update()
-            self.ren.Render()
-            self.ModelView.Render()
+            self.renPost.Render()
+            self.ModelViewPost.Render()
         
     def GoToLayer(self):
         try:
@@ -644,8 +755,8 @@ class Main(QtGui.QMainWindow):
             self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
             self.cutPoly.Update()
             self.cutTriangles.Update()
-            self.ren.Render()
-            self.ModelView.Render()
+            self.renPost.Render()
+            self.ModelViewPost.Render()
         
     def GoToFirstLayer(self):
         try:
@@ -671,8 +782,8 @@ class Main(QtGui.QMainWindow):
             self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
             self.cutPoly.Update()
             self.cutTriangles.Update()
-            self.ren.Render()
-            self.ModelView.Render()
+            self.renPost.Render()
+            self.ModelViewPost.Render()
         
     def GoToLastLayer(self):
         try:
@@ -698,8 +809,8 @@ class Main(QtGui.QMainWindow):
             self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
             self.cutPoly.Update()
             self.cutTriangles.Update()
-            self.ren.Render()
-            self.ModelView.Render()
+            self.renPost.Render()
+            self.ModelViewPost.Render()
         
     def UpdateModelLayer(self, z):
         self.slicingplane.SetOrigin(0,0,z)
@@ -709,10 +820,22 @@ class Main(QtGui.QMainWindow):
         self.cutPoly.SetPolys((self.cutStrips.GetOutput()).GetLines())
         self.cutPoly.Update()
         self.cutTriangles.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPost.Render()
+        self.ModelViewPost.Render()
                 
-    def UpdateModelOpacity(self):
+    def UpdateModelOpacityPre(self):
+        if len(self.modelList)>0: #check to see if a model is loaded, if not it will throw an exception
+            modelObject = self.modelList[self.ui.modelList.currentRow()]
+            opacity, ok = QtGui.QInputDialog.getText(self, 'Set Model Opacity', 'Enter the desired opacity for %s (0-100):' %(os.path.basename(str(modelObject.filename))))
+            if not ok: #the user hit the "cancel" button
+                return
+            modelObject.actor.GetProperty().SetOpacity(float(opacity)/100)
+            self.renPre.Render()
+            self.ModelViewPre.Render()
+        else:
+            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)      
+            
+    def UpdateModelOpacityPost(self):
         try:
             if self.modelActor: #check to see if a model is loaded, if not it will throw an exception
                 opacity, ok = QtGui.QInputDialog.getText(self, 'Model Opacity', 'Enter the desired opacity (0-100):')
@@ -722,7 +845,7 @@ class Main(QtGui.QMainWindow):
                 self.ren.Render()
                 self.ModelView.Render()
         except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
-            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)       
+            QtGui.QMessageBox.critical(self, 'Error setting opacity',"You must load a model to change the opacity!", QtGui.QMessageBox.Ok)  
             
     def ModelIndexChanged(self, new, previous):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -733,7 +856,7 @@ class Main(QtGui.QMainWindow):
         self.ui.rotationY.setValue(modelObject.CurrentYRotation)
         self.ui.rotationZ.setValue(modelObject.CurrentZRotation)
         self.ui.scale.setValue(modelObject.CurrentScale)
-            
+
     def UpdatePositionX(self, position):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
         transform = modelObject.transform
@@ -745,8 +868,8 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdatePositionY(self, position):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -759,8 +882,8 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdatePositionZ(self, position):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -773,8 +896,8 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdateRotationX(self, rotation):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -787,8 +910,8 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdateRotationY(self, rotation):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -801,8 +924,8 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdateRotationZ(self, rotation):
         modelObject = self.modelList[self.ui.modelList.currentRow()]
@@ -815,10 +938,12 @@ class Main(QtGui.QMainWindow):
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
     
     def UpdateScale(self, scale):
+        
+        return
         modelObject = self.modelList[self.ui.modelList.currentRow()]
         transform = modelObject.transform
         
@@ -845,8 +970,8 @@ class Main(QtGui.QMainWindow):
         self.outlineActor.SetMapper(self.outlineMapper)
         
         #add actors to parent render window
-        self.parent.ren.AddActor(self.actor)
-        self.parent.ren.AddActor(self.outlineActor)   
+        self.parent.renPre.AddActor(self.actor)
+        self.parent.renPre.AddActor(self.outlineActor)   
 
         
         delta = modelObject.PreviousScale - modelObject.CurrentScale
@@ -862,6 +987,24 @@ class Main(QtGui.QMainWindow):
         modelObject.mapper.Update()
         self.ren.Render()
         self.ModelView.Render()
+        
+    def SliceModel(self):
+        try:
+            if len(self.modelList)>0: #check to see if a model is loaded, if not it will throw an exception
+                pass
+        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+            QtGui.QMessageBox.critical(self, 'Error slicing model',"You must first load a model to slice it!", QtGui.QMessageBox.Ok)   
+            return
+        self.outputFile = str(QFileDialog.getSaveFileName(self, "Save file", "", ".3dlp"))
+        self.slicer = slicer.slicer(self)
+        self.slicer.imageheight = 500
+        self.slicer.imagewidth = 500
+        # check to see if starting depth is less than ending depth!! this assumption is crucial
+        self.slicer.startingdepth = 0
+        self.slicer.endingdepth = 20
+        self.slicer.layerincrement = 1
+        self.slicer.OpenModel(self.modelList[0].filename)
+        self.slicer.slice()
             
     def LoadSettingsFromConfigFile(self):
         self.printerBaud = int(self.parser.get('program_defaults', 'printerBAUD'))
@@ -1101,8 +1244,6 @@ def main():
     window=Main()
     window.show()
     splash.finish(window)
-
-
     
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())

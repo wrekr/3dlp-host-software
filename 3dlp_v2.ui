@@ -166,22 +166,42 @@
           <widget class="QWidget" name="workspacePost" native="true">
            <layout class="QHBoxLayout" name="horizontalLayout_18">
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <layout class="QVBoxLayout" name="verticalLayout_13">
               <item>
-               <widget class="QFrame" name="modelFramePost">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="horizontalLayout_17">
+                <item>
+                 <widget class="QFrame" name="modelFramePost">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::Box</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QFrame" name="sliceFramePost">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::Box</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
               <item>
                <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -189,116 +209,104 @@
                  <number>0</number>
                 </property>
                 <item>
-                 <spacer name="verticalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="toolButton">
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resource.qrc">
-                    <normaloff>:/icons/icons/top.png</normaloff>:/icons/icons/top.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="toolButton_3">
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resource.qrc">
-                    <normaloff>:/icons/icons/up.png</normaloff>:/icons/icons/up.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="toolButton_4">
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resource.qrc">
-                    <normaloff>:/icons/icons/down.png</normaloff>:/icons/icons/down.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QToolButton" name="toolButton_6">
-                  <property name="text">
-                   <string>...</string>
-                  </property>
-                  <property name="icon">
-                   <iconset resource="resource.qrc">
-                    <normaloff>:/icons/icons/bottom.png</normaloff>:/icons/icons/bottom.png</iconset>
-                  </property>
-                  <property name="iconSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="verticalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Vertical</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>20</width>
-                    <height>40</height>
-                   </size>
-                  </property>
-                 </spacer>
+                 <layout class="QHBoxLayout" name="horizontalLayout_25">
+                  <item>
+                   <spacer name="horizontalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton_4">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="resource.qrc">
+                      <normaloff>:/icons/icons/media_beginning.png</normaloff>:/icons/icons/media_beginning.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton_3">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="resource.qrc">
+                      <normaloff>:/icons/icons/media_step_back.png</normaloff>:/icons/icons/media_step_back.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="resource.qrc">
+                      <normaloff>:/icons/icons/media_step_forward.png</normaloff>:/icons/icons/media_step_forward.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QToolButton" name="toolButton_6">
+                    <property name="text">
+                     <string>...</string>
+                    </property>
+                    <property name="icon">
+                     <iconset resource="resource.qrc">
+                      <normaloff>:/icons/icons/media_end.png</normaloff>:/icons/icons/media_end.png</iconset>
+                    </property>
+                    <property name="iconSize">
+                     <size>
+                      <width>24</width>
+                      <height>24</height>
+                     </size>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="horizontalSpacer_7">
+                    <property name="orientation">
+                     <enum>Qt::Horizontal</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>40</width>
+                      <height>20</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
                 </item>
                </layout>
-              </item>
-              <item>
-               <widget class="QFrame" name="sliceFramePost">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::Box</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Raised</enum>
-                </property>
-               </widget>
               </item>
              </layout>
             </item>
@@ -334,6 +342,7 @@
     </property>
     <addaction name="actionConnect_To_Printer_2"/>
     <addaction name="actionOpen_manual_printer_control"/>
+    <addaction name="actionSlice"/>
     <addaction name="actionFirmware_Configurator"/>
     <addaction name="actionSave_current_settings_as_default"/>
    </widget>
@@ -365,6 +374,8 @@
     </property>
     <addaction name="separator"/>
     <addaction name="actionPreferences_2"/>
+    <addaction name="actionAdd_Model"/>
+    <addaction name="actionRemove_Model"/>
    </widget>
    <widget class="QMenu" name="menuWindow_2">
     <property name="title">
@@ -1266,6 +1277,7 @@
    <addaction name="actionPreSlice"/>
    <addaction name="actionPostSlice"/>
    <addaction name="separator"/>
+   <addaction name="actionSlice"/>
   </widget>
   <widget class="QDockWidget" name="toolbar">
    <property name="autoFillBackground">
@@ -2383,6 +2395,26 @@
            <number>0</number>
           </property>
           <item>
+           <widget class="QToolButton" name="toolButton_10">
+            <property name="text">
+             <string>Slice</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resource.qrc">
+              <normaloff>:/_icons/icons/printer/Clipping.ico</normaloff>:/_icons/icons/printer/Clipping.ico</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>24</width>
+              <height>24</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextBesideIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QGroupBox" name="groupBox_2">
             <property name="minimumSize">
              <size>
@@ -2719,22 +2751,7 @@
              <item>
               <layout class="QVBoxLayout" name="verticalLayout_11">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_23">
-                 <item>
-                  <widget class="QLabel" name="label_20">
-                   <property name="text">
-                    <string>TextLabel</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QLabel" name="label_21">
-                   <property name="text">
-                    <string>TextLabel</string>
-                   </property>
-                  </widget>
-                 </item>
-                </layout>
+                <layout class="QHBoxLayout" name="horizontalLayout_23"/>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_24">
@@ -3071,10 +3088,41 @@
     <string>Post-slicing</string>
    </property>
   </action>
+  <action name="actionSlice">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/Clipping.ico</normaloff>:/_icons/icons/printer/Clipping.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Slice</string>
+   </property>
+   <property name="toolTip">
+    <string>Slice Model</string>
+   </property>
+  </action>
+  <action name="actionAdd_Model">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/3D object.ico</normaloff>:/_icons/icons/printer/3D object.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Add Model</string>
+   </property>
+  </action>
+  <action name="actionRemove_Model">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/Delete.ico</normaloff>:/_icons/icons/printer/Delete.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Remove Model</string>
+   </property>
+  </action>
   <zorder>toolbar</zorder>
   <zorder>sliceListBar</zorder>
   <zorder>printJobInfoBar</zorder>
   <zorder>preSliceBar</zorder>
+  <zorder>dockWidget</zorder>
  </widget>
  <resources>
   <include location="resource.qrc"/>
@@ -3180,7 +3228,7 @@
    <sender>actionSet_Model_Opacity</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
-   <slot>UpdateModelOpacity()</slot>
+   <slot>UpdateModelOpacityPre()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>-1</x>
@@ -3327,8 +3375,8 @@
    <slot>AddModel()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1038</x>
-     <y>381</y>
+     <x>1098</x>
+     <y>419</y>
     </hint>
     <hint type="destinationlabel">
      <x>993</x>
@@ -3423,8 +3471,8 @@
    <slot>UpdatePositionX()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1030</x>
-     <y>567</y>
+     <x>1096</x>
+     <y>576</y>
     </hint>
     <hint type="destinationlabel">
      <x>995</x>
@@ -3455,12 +3503,92 @@
    <slot>UpdatePositionZ()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>1197</x>
-     <y>561</y>
+     <x>1253</x>
+     <y>576</y>
     </hint>
     <hint type="destinationlabel">
      <x>1268</x>
      <y>518</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSlice</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SliceModel()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_4</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>GoToFirstLayer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>708</x>
+     <y>544</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>515</x>
+     <y>712</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_6</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>GoToLastLayer()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>815</x>
+     <y>547</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>948</x>
+     <y>713</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton_3</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>IncrementSlicingPlaneNegative()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>746</x>
+     <y>541</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>574</x>
+     <y>717</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>toolButton</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>IncrementSlicingPlanePositive()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>789</x>
+     <y>545</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>853</x>
+     <y>718</y>
     </hint>
    </hints>
   </connection>
@@ -3485,7 +3613,7 @@
   <slot>openmanualcontrol()</slot>
   <slot>IncrementSlicingPlanePositive()</slot>
   <slot>IncrementSlicingPlaneNegative()</slot>
-  <slot>UpdateModelOpacity()</slot>
+  <slot>UpdateModelOpacityPre()</slot>
   <slot>OpenSettingsDialog()</slot>
   <slot>GoToLayer()</slot>
   <slot>StopPrinting()</slot>
@@ -3504,5 +3632,7 @@
   <slot>UpdatePositionX()</slot>
   <slot>UpdatePositionY()</slot>
   <slot>UpdatePositionZ()</slot>
+  <slot>SliceModel()</slot>
+  <slot>UpdateModelOpacityPost()</slot>
  </slots>
 </ui>

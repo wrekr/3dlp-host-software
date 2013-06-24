@@ -149,7 +149,6 @@ class model():
         self.CurrentYRotation = 0.0
         self.CurrentZRotation = 0.0
         self.CurrentScale = 0.0
-        self.PreviousScale = 0.0
         self.load()
     
     def load(self):
@@ -254,7 +253,8 @@ class Main(QtGui.QMainWindow):
             self.parser.read('config.ini')
             self.LoadSettingsFromConfigFile()
             
-        self.modelList = [] 
+        self.modelList = []
+        self.step = ""
             
         ####pre-slice setup
         
@@ -301,12 +301,15 @@ class Main(QtGui.QMainWindow):
         self.slicepreview.setPixmap(self.pmscaled)
     
         ########
-        self.ChangeWorkspacePostSlice()
+        self.ChangeWorkspacePreSlice()
         
     def __del__(self):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__     
-        self.printer.close()      #close serial connection to printer if open
+        if hasattr(self, 'printer'):
+            self.printer.close()      #close serial connection to printer if open
+        self.renPre.GetRenderWindow().Finalize()
+        self.renPost.GetRenderWindow().Finalize()
         
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
@@ -318,6 +321,13 @@ class Main(QtGui.QMainWindow):
         self.ui.consoletext.ensureCursorVisible()
         
     def ChangeWorkspacePreSlice(self):
+        if self.ui.workspacePost.isVisible():
+            response = QtGui.QMessageBox.information(self, 'Changing to Pre-slicing mode',"""By changing to pre-slicing mode you will have to re-slice later.
+Would you like to continue and re-enter pre-slice mode?""", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if response == QtGui.QMessageBox.Yes:
+                pass
+            elif response  == QtGui.QMessageBox.No:
+                return
         self.ui.preSliceBar.show()
         self.ui.sliceListBar.hide()
         self.ui.printJobInfoBar.hide()
@@ -331,6 +341,14 @@ class Main(QtGui.QMainWindow):
         self.ui.actionPostSlice.setChecked(False)
             
     def ChangeWorkspacePostSlice(self):
+        if self.ui.workspacePre.isVisible():
+            response = QtGui.QMessageBox.information(self, 'Changing to Post-slicing mode',"""You must first slice a model before you can view it in post-slice mode.
+Would you like to slice what is currently in the pre-slice view now?""", QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if response == QtGui.QMessageBox.Yes:
+                self.SliceModel()
+                self.EnterPostSliceMode("test")
+            elif response  == QtGui.QMessageBox.No:
+                return
         self.ui.preSliceBar.hide()
         self.ui.sliceListBar.show()
         self.ui.printJobInfoBar.show()
@@ -345,7 +363,47 @@ class Main(QtGui.QMainWindow):
           
         self.ui.actionPreSlice.setChecked(False)
         self.ui.actionPostSlice.setChecked(True)
+    
+    def SavePrintJobAs(self):
+        self.outputFile = str(QFileDialog.getSaveFileName(self, "Save file", "", ".3dlp"))
+        os.chdir(os.path.split(str(self.outputFile))[0]) #change to base dir of the selected filename
+        self.zfile = zipfile.ZipFile(os.path.split(str(self.outputFile))[1], 'w')
+        if self.step == "":
+            self.SaveConfig()
+        elif self.step == "pre":
+            self.SavePreSliceLayout()
+        elif self.step == "post":
+            self.SaveConfig()
+            
+    def SavePreSliceLayout(self):
+        objectTransformMatricies = []
+        for object in self.modelList:
+            objectTransformMatricies.append((object.transform.GetMatrix(), object.transform.GetOrientation(), object.transform.GetPosition(), object.transform.GetScale()))
+        print objectTransformMatricies
+            
+    def SaveConfig(self):
+        Config = ConfigParser()
+        Config.add_section('print_settings')
+        Config.set('print_settings', 'layer_thickness', self.layerincrement)
+        Config.add_section('preview_settings')
+        base, file = os.path.split(str(self.filename)) #can't be QString
+        Config.set('preview_settings', 'STL_name', file)
+        
+        stringio = StringIO.StringIO()
+        Config.write(stringio)        
+ 
+        self.zfile.writestr("printconfiguration.ini", stringio.getvalue())#arcname = "printconfiguration.ini")
 
+        stringio2 = StringIO.StringIO()
+        pickle.dump(self.sliceCorrelations, stringio2)
+        
+        self.zfile.writestr("slices.p", stringio2.getvalue()) #pickle and save the layer-plane correlations 
+        self.zfile.write(str(self.filename), arcname = file)    
+        self.zfile.close()
+
+    def SavePrintJob(self):
+        pass
+    
     def OpenPrintJob(self):
         self._3dlpfile = zipfile.ZipFile(str(QtGui.QFileDialog.getOpenFileName(self, 'Open 3DLP Print Job', '.', '*.3dlp')))
         self.FileList = []
@@ -397,6 +455,7 @@ class Main(QtGui.QMainWindow):
         self.slicepreview.resize(self.ui.frame_2.geometry().width(), self.ui.frame_2.geometry().height())
 
     def AddModel(self):
+        self.step = "pre"
         filename = QtGui.QFileDialog.getOpenFileName(self, 'Open 3D Model', '.', '*.stl')
         if filename == '': #user hit cancel
             return
@@ -942,51 +1001,26 @@ class Main(QtGui.QMainWindow):
         self.ModelViewPre.Render()
     
     def UpdateScale(self, scale):
-        
-        return
         modelObject = self.modelList[self.ui.modelList.currentRow()]
-        transform = modelObject.transform
+        orientation = modelObject.transform.GetOrientation()
+        position = modelObject.transform.GetPosition()
         
-        self.reader = vtk.vtkSTLReader()
-        self.reader.SetFileName(str(self.filename))   
+        modelObject.transform = vtk.vtkTransform()
+        modelObject.transform.RotateX(orientation[0])
+        modelObject.transform.RotateY(orientation[1])
+        modelObject.transform.RotateZ(orientation[2])
+        modelObject.transform.Translate(position[0], position[1], position[2])
         
-        self.mapper = vtk.vtkPolyDataMapper()
-        self.mapper.SetInputConnection(self.reader.GetOutputPort())
-        
-        #create model actor
-        self.actor = vtk.vtkActor()
-        self.actor.GetProperty().SetColor(1,1,1)
-        self.actor.GetProperty().SetOpacity(1)
-        self.actor.SetMapper(self.mapper)
-
-        #create outline mapper
-        self.outline = vtk.vtkOutlineFilter()
-        self.outline.SetInputConnection(self.reader.GetOutputPort())
-        self.outlineMapper = vtk.vtkPolyDataMapper()
-        self.outlineMapper.SetInputConnection(self.outline.GetOutputPort())
-        
-        #create outline actor
-        self.outlineActor = vtk.vtkActor()
-        self.outlineActor.SetMapper(self.outlineMapper)
-        
-        #add actors to parent render window
-        self.parent.renPre.AddActor(self.actor)
-        self.parent.renPre.AddActor(self.outlineActor)   
-
-        
-        delta = modelObject.PreviousScale - modelObject.CurrentScale
-        modelObject.transform
-        #transform.Scale((float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0, (float(scale)-modelObject.CurrentScale)/100.0)
-        transform.Scale
-        modelObject.CurrentScale = modelObject.CurrentScale + (float(scale)-modelObject.CurrentScale)
+        #now scale it to the new value and update the window
+        modelObject.transform.Scale(float(scale)/100,float(scale)/100,float(scale)/100)
         transformFilter = vtk.vtkTransformPolyDataFilter()
         transformFilter.SetTransform(modelObject.transform)
         transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
-        self.ren.Render()
-        self.ModelView.Render()
+        self.renPre.Render()
+        self.ModelViewPre.Render()
         
     def SliceModel(self):
         try:
@@ -1244,6 +1278,8 @@ def main():
     window=Main()
     window.show()
     splash.finish(window)
+    
+    window.resizeEvent("")
     
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())

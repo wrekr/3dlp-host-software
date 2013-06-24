@@ -352,7 +352,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
-    <addaction name="actionSave_as_print_jobn"/>
+    <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="separator"/>
     <addaction name="actionPrint"/>
@@ -2690,13 +2690,13 @@
                     <number>0</number>
                    </property>
                    <property name="minimum">
-                    <double>-100.000000000000000</double>
+                    <double>0.000000000000000</double>
                    </property>
                    <property name="maximum">
-                    <double>200.000000000000000</double>
+                    <double>500.000000000000000</double>
                    </property>
                    <property name="singleStep">
-                    <double>0.010000000000000</double>
+                    <double>1.000000000000000</double>
                    </property>
                    <property name="value">
                     <double>100.000000000000000</double>
@@ -2959,7 +2959,7 @@
     <string>Connect to Printer</string>
    </property>
   </action>
-  <action name="actionSave_as_print_jobn">
+  <action name="actionSave">
    <property name="icon">
     <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Save.ico</normaloff>:/_icons/icons/printer/Save.ico</iconset>
@@ -3122,7 +3122,6 @@
   <zorder>sliceListBar</zorder>
   <zorder>printJobInfoBar</zorder>
   <zorder>preSliceBar</zorder>
-  <zorder>dockWidget</zorder>
  </widget>
  <resources>
   <include location="resource.qrc"/>
@@ -3592,6 +3591,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>actionSave_As</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SavePrintJobAs()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSave</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>SavePrintJob()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>applyprintingsettings()</slot>
@@ -3634,5 +3665,7 @@
   <slot>UpdatePositionZ()</slot>
   <slot>SliceModel()</slot>
   <slot>UpdateModelOpacityPost()</slot>
+  <slot>SavePrintJobAs()</slot>
+  <slot>SavePrintJob()</slot>
  </slots>
 </ui>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp_v2.ui'
 #
-# Created: Sun Jun 23 16:36:13 2013
+# Created: Sun Jun 23 20:31:53 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -1094,9 +1094,9 @@ class Ui_MainWindow(object):
         self.scale = QtGui.QDoubleSpinBox(self.Transform_groupbox)
         self.scale.setMinimumSize(QtCore.QSize(55, 0))
         self.scale.setDecimals(0)
-        self.scale.setMinimum(-100.0)
-        self.scale.setMaximum(200.0)
-        self.scale.setSingleStep(0.01)
+        self.scale.setMinimum(0.0)
+        self.scale.setMaximum(500.0)
+        self.scale.setSingleStep(1.0)
         self.scale.setProperty("value", 100.0)
         self.scale.setObjectName(_fromUtf8("scale"))
         self.horizontalLayout_14.addWidget(self.scale)
@@ -1231,13 +1231,13 @@ class Ui_MainWindow(object):
         self.actionConnect_To_Printer_2.setText(QtGui.QApplication.translate("MainWindow", "Connect", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect_To_Printer_2.setToolTip(QtGui.QApplication.translate("MainWindow", "Connect to Printer", None, QtGui.QApplication.UnicodeUTF8))
         self.actionConnect_To_Printer_2.setObjectName(_fromUtf8("actionConnect_To_Printer_2"))
-        self.actionSave_as_print_jobn = QtGui.QAction(MainWindow)
+        self.actionSave = QtGui.QAction(MainWindow)
         icon31 = QtGui.QIcon()
         icon31.addPixmap(QtGui.QPixmap(_fromUtf8(":/_icons/icons/printer/Save.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.actionSave_as_print_jobn.setIcon(icon31)
-        self.actionSave_as_print_jobn.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave_as_print_jobn.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionSave_as_print_jobn.setObjectName(_fromUtf8("actionSave_as_print_jobn"))
+        self.actionSave.setIcon(icon31)
+        self.actionSave.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setShortcut(QtGui.QApplication.translate("MainWindow", "Ctrl+S", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSave.setObjectName(_fromUtf8("actionSave"))
         self.actionNew = QtGui.QAction(MainWindow)
         icon32 = QtGui.QIcon()
         icon32.addPixmap(QtGui.QPixmap(_fromUtf8(":/_icons/icons/printer/Project.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
@@ -1323,7 +1323,7 @@ class Ui_MainWindow(object):
         self.menuTools.addAction(self.actionSave_current_settings_as_default)
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
-        self.menuFile.addAction(self.actionSave_as_print_jobn)
+        self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionSave_As)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionPrint)
@@ -1387,6 +1387,8 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.toolButton_6, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.GoToLastLayer)
         QtCore.QObject.connect(self.toolButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.IncrementSlicingPlaneNegative)
         QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.IncrementSlicingPlanePositive)
+        QtCore.QObject.connect(self.actionSave_As, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.SavePrintJobAs)
+        QtCore.QObject.connect(self.actionSave, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.SavePrintJob)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

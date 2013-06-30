@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file '3dlp_v2.ui'
 #
-# Created: Sun Jun 23 20:31:53 2013
+# Created: Sun Jun 30 00:17:57 2013
 #      by: PyQt4 UI code generator 4.8.5
 #
 # WARNING! All changes made in this file will be lost!
@@ -1314,6 +1314,12 @@ class Ui_MainWindow(object):
         self.actionRemove_Model.setIcon(icon38)
         self.actionRemove_Model.setText(QtGui.QApplication.translate("MainWindow", "Remove Model", None, QtGui.QApplication.UnicodeUTF8))
         self.actionRemove_Model.setObjectName(_fromUtf8("actionRemove_Model"))
+        self.actionConcatenate_STL_Files = QtGui.QAction(MainWindow)
+        icon39 = QtGui.QIcon()
+        icon39.addPixmap(QtGui.QPixmap(_fromUtf8(":/_icons/icons/printer/Constructor.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.actionConcatenate_STL_Files.setIcon(icon39)
+        self.actionConcatenate_STL_Files.setText(QtGui.QApplication.translate("MainWindow", "Concatenate STL Files", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionConcatenate_STL_Files.setObjectName(_fromUtf8("actionConcatenate_STL_Files"))
         self.menuAbout.addAction(self.actionAbout)
         self.menuAbout.addAction(self.actionHelp)
         self.menuTools.addAction(self.actionConnect_To_Printer_2)
@@ -1337,6 +1343,7 @@ class Ui_MainWindow(object):
         self.menuEdit.addAction(self.actionPreferences_2)
         self.menuEdit.addAction(self.actionAdd_Model)
         self.menuEdit.addAction(self.actionRemove_Model)
+        self.menuEdit.addAction(self.actionConcatenate_STL_Files)
         self.menuShow_Workspace.addAction(self.actionPreSlice)
         self.menuShow_Workspace.addAction(self.actionPostSlice)
         self.menuWindow_2.addAction(self.menuShow_Workspace.menuAction())
@@ -1355,6 +1362,8 @@ class Ui_MainWindow(object):
         self.toolBar_3.addAction(self.actionPostSlice)
         self.toolBar_3.addSeparator()
         self.toolBar_3.addAction(self.actionSlice)
+        self.toolBar_3.addAction(self.actionConcatenate_STL_Files)
+        self.toolBar_3.addSeparator()
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -1389,6 +1398,8 @@ class Ui_MainWindow(object):
         QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL(_fromUtf8("clicked()")), MainWindow.IncrementSlicingPlanePositive)
         QtCore.QObject.connect(self.actionSave_As, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.SavePrintJobAs)
         QtCore.QObject.connect(self.actionSave, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.SavePrintJob)
+        QtCore.QObject.connect(self.actionConcatenate_STL_Files, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.ConcatenateSTLs)
+        QtCore.QObject.connect(self.actionNew, QtCore.SIGNAL(_fromUtf8("triggered()")), MainWindow.NewPrintJob)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):

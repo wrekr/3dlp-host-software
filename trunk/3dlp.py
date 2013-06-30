@@ -35,8 +35,10 @@ import shutil
 
 import slicer
 
-#**********************************
+from newHardware import Ui_dialogHardware
+from newResin import Ui_dialogResin
 
+#**********************************
 import os
 from qtgui import Ui_MainWindow #import generated class from ui file from designer 
 
@@ -47,6 +49,11 @@ try:
     from PyQt4.QtCore import QString
 except ImportError:
     QString = str
+    
+try:
+    _fromUtf8 = QtCore.QString.fromUtf8
+except AttributeError:
+    _fromUtf8 = lambda s: s
 
 class MyInteractorStyle(vtk.vtkInteractorStyleTrackballCamera): #defines all the mouse interactions for the render views
     def __init__(self,parent=None):
@@ -130,12 +137,24 @@ class StartManualControl(QtGui.QDialog, Ui_Manual_Control):
     def activateX(self):
         pass
     
+class hardwareProfile():
+    def __init__(self):
+        self.name = ""
+        self.COM = ""
+        self.leadscrewPitchZ = 0
+        self.stepsPerRevZ = 0
+        self.steppingMode = ""
+        self.layerThickness = ""
+        self.projectorResolution = (0,0)
+        self.buildAreaSize = (0,0)
+        self.pixelSize = (0,0)
+    
 class _3dlpfile():
     def __init__(self):
-        print "init"
         self.name = ""
         self.description = ""
         self.notes = ""
+        self.hardwareProfile = None
         
 class model():
     def __init__(self, parent, filename):
@@ -178,6 +197,580 @@ class model():
         self.parent.renPre.AddActor(self.actor)
         self.parent.renPre.AddActor(self.outlineActor)
         
+class NewHardwareProfileDialog(QtGui.QDialog):
+    def __init__(self, parent, mainparent):
+        super(NewHardwareProfileDialog, self).__init__(parent)
+        self.setWindowTitle("Define New Hardware Profile")
+        self.resize(558, 375)
+        
+        self.verticalLayout_6 = QtGui.QVBoxLayout(self)
+        self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
+        self.verticalLayout_5 = QtGui.QVBoxLayout()
+        self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem)
+        self.label = QtGui.QLabel(self)
+        font = QtGui.QFont()
+        font.setPointSize(14)
+        self.label.setFont(font)
+        self.label.setText(QtGui.QApplication.translate("dialogHardware", "Define New Hardware Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.horizontalLayout.addWidget(self.label)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout.addItem(spacerItem1)
+        self.verticalLayout_5.addLayout(self.horizontalLayout)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox.setTitle(QtGui.QApplication.translate("dialogHardware", "Controller Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setObjectName(_fromUtf8("groupBox"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout(self.groupBox)
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout_7 = QtGui.QHBoxLayout()
+        self.horizontalLayout_7.setContentsMargins(-1, -1, 0, -1)
+        self.horizontalLayout_7.setObjectName(_fromUtf8("horizontalLayout_7"))
+        self.radio_ramps = QtGui.QRadioButton(self.groupBox)
+        self.radio_ramps.setText(QtGui.QApplication.translate("dialogHardware", "RAMPS", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_ramps.setChecked(True)
+        self.radio_ramps.setObjectName(_fromUtf8("radio_ramps"))
+        self.horizontalLayout_7.addWidget(self.radio_ramps)
+        self.radio_arduinoUno = QtGui.QRadioButton(self.groupBox)
+        self.radio_arduinoUno.setEnabled(False)
+        self.radio_arduinoUno.setText(QtGui.QApplication.translate("dialogHardware", "Arduino Uno", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_arduinoUno.setChecked(False)
+        self.radio_arduinoUno.setObjectName(_fromUtf8("radio_arduinoUno"))
+        self.horizontalLayout_7.addWidget(self.radio_arduinoUno)
+        self.radio_arduinoMega = QtGui.QRadioButton(self.groupBox)
+        self.radio_arduinoMega.setEnabled(False)
+        self.radio_arduinoMega.setText(QtGui.QApplication.translate("dialogHardware", "Arduino Mega", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_arduinoMega.setObjectName(_fromUtf8("radio_arduinoMega"))
+        self.horizontalLayout_7.addWidget(self.radio_arduinoMega)
+        self.radio_pyMCU = QtGui.QRadioButton(self.groupBox)
+        self.radio_pyMCU.setEnabled(False)
+        self.radio_pyMCU.setText(QtGui.QApplication.translate("dialogHardware", "PyMCU", None, QtGui.QApplication.UnicodeUTF8))
+        self.radio_pyMCU.setObjectName(_fromUtf8("radio_pyMCU"))
+        self.horizontalLayout_7.addWidget(self.radio_pyMCU)
+        self.verticalLayout.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_8 = QtGui.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName(_fromUtf8("horizontalLayout_8"))
+        self.label_29 = QtGui.QLabel(self.groupBox)
+        self.label_29.setText(QtGui.QApplication.translate("dialogHardware", "COM Port:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_29.setObjectName(_fromUtf8("label_29"))
+        self.horizontalLayout_8.addWidget(self.label_29)
+        self.pickcom = QtGui.QComboBox(self.groupBox)
+        self.pickcom.setObjectName(_fromUtf8("pickcom"))
+        self.horizontalLayout_8.addWidget(self.pickcom)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_8.addItem(spacerItem2)
+        self.verticalLayout.addLayout(self.horizontalLayout_8)
+        self.verticalLayout_2.addLayout(self.verticalLayout)
+        self.horizontalLayout_2.addWidget(self.groupBox)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem3)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_2)
+        self.groupBox_7 = QtGui.QGroupBox(self)
+        self.groupBox_7.setTitle(QtGui.QApplication.translate("dialogHardware", "Hardware Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_7.setObjectName(_fromUtf8("groupBox_7"))
+        self.horizontalLayout_4 = QtGui.QHBoxLayout(self.groupBox_7)
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        self.horizontalLayout_3 = QtGui.QHBoxLayout()
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.verticalLayout_4 = QtGui.QVBoxLayout()
+        self.verticalLayout_4.setObjectName(_fromUtf8("verticalLayout_4"))
+        self.horizontalLayout_22 = QtGui.QHBoxLayout()
+        self.horizontalLayout_22.setObjectName(_fromUtf8("horizontalLayout_22"))
+        self.label_6 = QtGui.QLabel(self.groupBox_7)
+        self.label_6.setText(QtGui.QApplication.translate("dialogHardware", "Z Axis Leadscrew Pitch:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.horizontalLayout_22.addWidget(self.label_6)
+        self.pitchZ = QtGui.QLineEdit(self.groupBox_7)
+        self.pitchZ.setObjectName(_fromUtf8("pitchZ"))
+        self.horizontalLayout_22.addWidget(self.pitchZ)
+        self.label_7 = QtGui.QLabel(self.groupBox_7)
+        self.label_7.setText(QtGui.QApplication.translate("dialogHardware", "mm/rev", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.horizontalLayout_22.addWidget(self.label_7)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_22.addItem(spacerItem4)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_22)
+        self.horizontalLayout_23 = QtGui.QHBoxLayout()
+        self.horizontalLayout_23.setObjectName(_fromUtf8("horizontalLayout_23"))
+        self.label_8 = QtGui.QLabel(self.groupBox_7)
+        self.label_8.setText(QtGui.QApplication.translate("dialogHardware", "Z Axis Steps/rev:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.horizontalLayout_23.addWidget(self.label_8)
+        self.stepsPerRevZ = QtGui.QLineEdit(self.groupBox_7)
+        self.stepsPerRevZ.setObjectName(_fromUtf8("stepsPerRevZ"))
+        self.horizontalLayout_23.addWidget(self.stepsPerRevZ)
+        self.label_9 = QtGui.QLabel(self.groupBox_7)
+        self.label_9.setText(QtGui.QApplication.translate("dialogHardware", "steps", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.horizontalLayout_23.addWidget(self.label_9)
+        spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem5)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_23)
+        self.horizontalLayout_9 = QtGui.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(_fromUtf8("horizontalLayout_9"))
+        self.label_10 = QtGui.QLabel(self.groupBox_7)
+        self.label_10.setText(QtGui.QApplication.translate("dialogHardware", "Layer Thickness:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.horizontalLayout_9.addWidget(self.label_10)
+        self.layerThickness = QtGui.QLineEdit(self.groupBox_7)
+        self.layerThickness.setObjectName(_fromUtf8("layerThickness"))
+        self.horizontalLayout_9.addWidget(self.layerThickness)
+        self.label_13 = QtGui.QLabel(self.groupBox_7)
+        self.label_13.setText(QtGui.QApplication.translate("dialogHardware", "um", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_13.setObjectName(_fromUtf8("label_13"))
+        self.horizontalLayout_9.addWidget(self.label_13)
+        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_9.addItem(spacerItem6)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_9)
+        self.horizontalLayout_10 = QtGui.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(_fromUtf8("horizontalLayout_10"))
+        self.label_11 = QtGui.QLabel(self.groupBox_7)
+        self.label_11.setText(QtGui.QApplication.translate("dialogHardware", "Projector Resolution (pixels):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.horizontalLayout_10.addWidget(self.label_11)
+        self.projectorResolutionX = QtGui.QLineEdit(self.groupBox_7)
+        self.projectorResolutionX.setObjectName(_fromUtf8("projectorResolutionX"))
+        self.horizontalLayout_10.addWidget(self.projectorResolutionX)
+        self.label_12 = QtGui.QLabel(self.groupBox_7)
+        self.label_12.setText(QtGui.QApplication.translate("dialogHardware", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_12.setObjectName(_fromUtf8("label_12"))
+        self.horizontalLayout_10.addWidget(self.label_12)
+        self.projectorResolutionY = QtGui.QLineEdit(self.groupBox_7)
+        self.projectorResolutionY.setObjectName(_fromUtf8("projectorResolutionY"))
+        self.horizontalLayout_10.addWidget(self.projectorResolutionY)
+        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_10.addItem(spacerItem7)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_10)
+        self.horizontalLayout_11 = QtGui.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(_fromUtf8("horizontalLayout_11"))
+        self.label_14 = QtGui.QLabel(self.groupBox_7)
+        self.label_14.setText(QtGui.QApplication.translate("dialogHardware", "Build Area Size (mm):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_14.setObjectName(_fromUtf8("label_14"))
+        self.horizontalLayout_11.addWidget(self.label_14)
+        self.buildAreaX = QtGui.QLineEdit(self.groupBox_7)
+        self.buildAreaX.setObjectName(_fromUtf8("buildAreaX"))
+        self.horizontalLayout_11.addWidget(self.buildAreaX)
+        self.label_15 = QtGui.QLabel(self.groupBox_7)
+        self.label_15.setText(QtGui.QApplication.translate("dialogHardware", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_15.setObjectName(_fromUtf8("label_15"))
+        self.horizontalLayout_11.addWidget(self.label_15)
+        self.buildAreaY = QtGui.QLineEdit(self.groupBox_7)
+        self.buildAreaY.setObjectName(_fromUtf8("buildAreaY"))
+        self.horizontalLayout_11.addWidget(self.buildAreaY)
+        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_11.addItem(spacerItem8)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_11)
+        self.horizontalLayout_12 = QtGui.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(_fromUtf8("horizontalLayout_12"))
+        self.label_16 = QtGui.QLabel(self.groupBox_7)
+        self.label_16.setText(QtGui.QApplication.translate("dialogHardware", "Pixel Size (um):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_16.setObjectName(_fromUtf8("label_16"))
+        self.horizontalLayout_12.addWidget(self.label_16)
+        self.pixelSizeX = QtGui.QLabel(self.groupBox_7)
+        self.pixelSizeX.setText(QtGui.QApplication.translate("dialogHardware", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pixelSizeX.setObjectName(_fromUtf8("pixelSizeX"))
+        self.horizontalLayout_12.addWidget(self.pixelSizeX)
+        self.label_17 = QtGui.QLabel(self.groupBox_7)
+        self.label_17.setText(QtGui.QApplication.translate("dialogHardware", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_17.setObjectName(_fromUtf8("label_17"))
+        self.horizontalLayout_12.addWidget(self.label_17)
+        self.pixelSizeY = QtGui.QLabel(self.groupBox_7)
+        self.pixelSizeY.setText(QtGui.QApplication.translate("dialogHardware", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pixelSizeY.setObjectName(_fromUtf8("pixelSizeY"))
+        self.horizontalLayout_12.addWidget(self.pixelSizeY)
+        spacerItem9 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_12.addItem(spacerItem9)
+        self.verticalLayout_4.addLayout(self.horizontalLayout_12)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_4)
+        self.groupBox_4 = QtGui.QGroupBox(self.groupBox_7)
+        self.groupBox_4.setTitle(QtGui.QApplication.translate("dialogHardware", "Stepping Mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_4.setObjectName(_fromUtf8("groupBox_4"))
+        self.horizontalLayout_13 = QtGui.QHBoxLayout(self.groupBox_4)
+        self.horizontalLayout_13.setObjectName(_fromUtf8("horizontalLayout_13"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.fullStep = QtGui.QRadioButton(self.groupBox_4)
+        self.fullStep.setText(QtGui.QApplication.translate("dialogHardware", "Full Stepping", None, QtGui.QApplication.UnicodeUTF8))
+        self.fullStep.setChecked(True)
+        self.fullStep.setObjectName(_fromUtf8("fullStep"))
+        self.verticalLayout_3.addWidget(self.fullStep)
+        self.halfStep = QtGui.QRadioButton(self.groupBox_4)
+        self.halfStep.setText(QtGui.QApplication.translate("dialogHardware", "1/2 Microstepping", None, QtGui.QApplication.UnicodeUTF8))
+        self.halfStep.setObjectName(_fromUtf8("halfStep"))
+        self.verticalLayout_3.addWidget(self.halfStep)
+        self.quarterStep = QtGui.QRadioButton(self.groupBox_4)
+        self.quarterStep.setText(QtGui.QApplication.translate("dialogHardware", "1/4 Microstepping", None, QtGui.QApplication.UnicodeUTF8))
+        self.quarterStep.setObjectName(_fromUtf8("quarterStep"))
+        self.verticalLayout_3.addWidget(self.quarterStep)
+        self.eighthStep = QtGui.QRadioButton(self.groupBox_4)
+        self.eighthStep.setText(QtGui.QApplication.translate("dialogHardware", "1/8 Microstepping", None, QtGui.QApplication.UnicodeUTF8))
+        self.eighthStep.setObjectName(_fromUtf8("eighthStep"))
+        self.verticalLayout_3.addWidget(self.eighthStep)
+        self.sixteenthStep = QtGui.QRadioButton(self.groupBox_4)
+        self.sixteenthStep.setText(QtGui.QApplication.translate("dialogHardware", "1/16 Microstepping", None, QtGui.QApplication.UnicodeUTF8))
+        self.sixteenthStep.setObjectName(_fromUtf8("sixteenthStep"))
+        self.verticalLayout_3.addWidget(self.sixteenthStep)
+        self.horizontalLayout_13.addLayout(self.verticalLayout_3)
+        self.horizontalLayout_3.addWidget(self.groupBox_4)
+        self.horizontalLayout_4.addLayout(self.horizontalLayout_3)
+        self.verticalLayout_5.addWidget(self.groupBox_7)
+        spacerItem10 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem10)
+        self.buttonBox = QtGui.QDialogButtonBox(self)
+        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
+        self.verticalLayout_5.addWidget(self.buttonBox)
+        self.verticalLayout_6.addLayout(self.verticalLayout_5)
+        
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), self.reject)
+        QtCore.QObject.connect(self.buildAreaX, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.CalculatePixelSize)
+        QtCore.QObject.connect(self.buildAreaY, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.CalculatePixelSize)
+        QtCore.QObject.connect(self.projectorResolutionX, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.CalculatePixelSize)
+        QtCore.QObject.connect(self.projectorResolutionY, QtCore.SIGNAL(_fromUtf8("textChanged(QString)")), self.CalculatePixelSize)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        self.pixelSizeX.setText("")
+        self.pixelSizeY.setText("")
+        
+    def CalculatePixelSize(self):
+        self.pixelSizeX.setText(str((float(str(self.buildAreaX.text()))/float(str(self.projectorResolutionX.text())))*1000))
+        self.pixelSizeY.setText(str((float(str(self.buildAreaY.text()))/float(str(self.projectorResolutionY.text())))*1000))
+
+class wizardNewGeneral(QtGui.QWizardPage):
+    def __init__(self, parent, mainparent):
+        super(wizardNewGeneral, self).__init__(parent)
+        self.parent = mainparent
+        self.setTitle("General Print Job Settings")
+        self.setSubTitle("test general settings page")    
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self)
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.verticalLayout_8 = QtGui.QVBoxLayout()
+        self.verticalLayout_8.setObjectName(_fromUtf8("verticalLayout_8"))
+        self.groupBox_2 = QtGui.QGroupBox(self)
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("WizardPage", "General Information", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setObjectName(_fromUtf8("groupBox_2"))
+        self.verticalLayout_6 = QtGui.QVBoxLayout(self.groupBox_2)
+        self.verticalLayout_6.setObjectName(_fromUtf8("verticalLayout_6"))
+        self.verticalLayout = QtGui.QVBoxLayout()
+        self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
+        self.horizontalLayout = QtGui.QHBoxLayout()
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.label = QtGui.QLabel(self.groupBox_2)
+        self.label.setText(QtGui.QApplication.translate("WizardPage", "Job Name:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setObjectName(_fromUtf8("label"))
+        self.horizontalLayout.addWidget(self.label)
+        self.jobName = QtGui.QLineEdit(self.groupBox_2)
+        self.jobName.setObjectName(_fromUtf8("jobName"))
+        self.horizontalLayout.addWidget(self.jobName)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_2 = QtGui.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.label_2 = QtGui.QLabel(self.groupBox_2)
+        self.label_2.setText(QtGui.QApplication.translate("WizardPage", "Description:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setObjectName(_fromUtf8("label_2"))
+        self.horizontalLayout_2.addWidget(self.label_2)
+        self.jobDescription = QtGui.QLineEdit(self.groupBox_2)
+        self.jobDescription.setObjectName(_fromUtf8("jobDescription"))
+        self.horizontalLayout_2.addWidget(self.jobDescription)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName(_fromUtf8("horizontalLayout_4"))
+        self.label_4 = QtGui.QLabel(self.groupBox_2)
+        self.label_4.setText(QtGui.QApplication.translate("WizardPage", "Notes:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_4.setObjectName(_fromUtf8("label_4"))
+        self.horizontalLayout_4.addWidget(self.label_4)
+        self.jobNotes = QtGui.QTextEdit(self.groupBox_2)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.jobNotes.sizePolicy().hasHeightForWidth())
+        self.jobNotes.setSizePolicy(sizePolicy)
+        self.jobNotes.setObjectName(_fromUtf8("jobNotes"))
+        self.horizontalLayout_4.addWidget(self.jobNotes)
+        self.verticalLayout.addLayout(self.horizontalLayout_4)
+        self.verticalLayout_6.addLayout(self.verticalLayout)
+        self.verticalLayout_8.addWidget(self.groupBox_2)
+        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_8.addItem(spacerItem)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_8)
+        
+    def initializePage(self):
+        pass
+        
+    def validatePage(self):
+        self.parent.printJob.name = self.jobName.text()
+        self.parent.printJob.description = self.jobDescription.text()
+        self.parent.printJob.notes = self.jobNotes.toPlainText()
+        return True
+        
+class wizardNewHardware(QtGui.QWizardPage):
+    def __init__(self, parent, mainparent):
+        super(wizardNewHardware, self).__init__(parent)
+        self.setTitle("Print Job Hardware Settings")
+        self.setSubTitle("test hardware settings page")    
+        self.parent = mainparent
+        self.profile = None
+        
+        self.horizontalLayout = QtGui.QHBoxLayout(self)
+        self.horizontalLayout.setObjectName(_fromUtf8("horizontalLayout"))
+        self.verticalLayout_3 = QtGui.QVBoxLayout()
+        self.verticalLayout_3.setObjectName(_fromUtf8("verticalLayout_3"))
+        self.horizontalLayout_6 = QtGui.QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(_fromUtf8("horizontalLayout_6"))
+        self.label_5 = QtGui.QLabel(self)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Maximum, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_5.sizePolicy().hasHeightForWidth())
+        self.label_5.setSizePolicy(sizePolicy)
+        self.label_5.setText(QtGui.QApplication.translate("WizardPage", "Load an existing hardware profile:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_5.setObjectName(_fromUtf8("label_5"))
+        self.horizontalLayout_6.addWidget(self.label_5)
+        self.comboBox = QtGui.QComboBox(self)
+        self.comboBox.setObjectName(_fromUtf8("comboBox"))
+        self.horizontalLayout_6.addWidget(self.comboBox)
+        self.toolButton = QtGui.QToolButton(self)
+        self.toolButton.setText(QtGui.QApplication.translate("WizardPage", "Create New Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.toolButton.setObjectName(_fromUtf8("toolButton"))
+        self.horizontalLayout_6.addWidget(self.toolButton)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
+        self.line = QtGui.QFrame(self)
+        self.line.setFrameShape(QtGui.QFrame.HLine)
+        self.line.setFrameShadow(QtGui.QFrame.Sunken)
+        self.line.setObjectName(_fromUtf8("line"))
+        self.verticalLayout_3.addWidget(self.line)
+        spacerItem = QtGui.QSpacerItem(681, 13, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem)
+        self.groupBox_3 = QtGui.QGroupBox(self)
+        self.groupBox_3.setTitle(QtGui.QApplication.translate("WizardPage", "Selected Hardware Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_3.setObjectName(_fromUtf8("groupBox_3"))
+        self.verticalLayout_17 = QtGui.QVBoxLayout(self.groupBox_3)
+        self.verticalLayout_17.setObjectName(_fromUtf8("verticalLayout_17"))
+        self.verticalLayout_16 = QtGui.QVBoxLayout()
+        self.verticalLayout_16.setObjectName(_fromUtf8("verticalLayout_16"))
+        self.horizontalLayout_31 = QtGui.QHBoxLayout()
+        self.horizontalLayout_31.setObjectName(_fromUtf8("horizontalLayout_31"))
+        self.groupBox_10 = QtGui.QGroupBox(self.groupBox_3)
+        self.groupBox_10.setTitle(QtGui.QApplication.translate("WizardPage", "Controller Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_10.setObjectName(_fromUtf8("groupBox_10"))
+        self.verticalLayout_14 = QtGui.QVBoxLayout(self.groupBox_10)
+        self.verticalLayout_14.setObjectName(_fromUtf8("verticalLayout_14"))
+        self.verticalLayout_5 = QtGui.QVBoxLayout()
+        self.verticalLayout_5.setObjectName(_fromUtf8("verticalLayout_5"))
+        self.horizontalLayout_24 = QtGui.QHBoxLayout()
+        self.horizontalLayout_24.setObjectName(_fromUtf8("horizontalLayout_24"))
+        self.label_46 = QtGui.QLabel(self.groupBox_10)
+        self.label_46.setText(QtGui.QApplication.translate("WizardPage", "Controller Type:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_46.setObjectName(_fromUtf8("label_46"))
+        self.horizontalLayout_24.addWidget(self.label_46)
+        self.controller = QtGui.QLabel(self.groupBox_10)
+        self.controller.setText(QtGui.QApplication.translate("WizardPage", "RAMPS", None, QtGui.QApplication.UnicodeUTF8))
+        self.controller.setObjectName(_fromUtf8("controller"))
+        self.horizontalLayout_24.addWidget(self.controller)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_24)
+        self.horizontalLayout_30 = QtGui.QHBoxLayout()
+        self.horizontalLayout_30.setObjectName(_fromUtf8("horizontalLayout_30"))
+        self.label_48 = QtGui.QLabel(self.groupBox_10)
+        self.label_48.setText(QtGui.QApplication.translate("WizardPage", "COM Port:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_48.setObjectName(_fromUtf8("label_48"))
+        self.horizontalLayout_30.addWidget(self.label_48)
+        self.port = QtGui.QLabel(self.groupBox_10)
+        self.port.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.port.setObjectName(_fromUtf8("port"))
+        self.horizontalLayout_30.addWidget(self.port)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_30)
+        self.verticalLayout_14.addLayout(self.verticalLayout_5)
+        self.horizontalLayout_31.addWidget(self.groupBox_10)
+        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_31.addItem(spacerItem1)
+        self.verticalLayout_16.addLayout(self.horizontalLayout_31)
+        self.groupBox_7 = QtGui.QGroupBox(self.groupBox_3)
+        self.groupBox_7.setTitle(QtGui.QApplication.translate("WizardPage", "Hardware Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_7.setObjectName(_fromUtf8("groupBox_7"))
+        self.horizontalLayout_3 = QtGui.QHBoxLayout(self.groupBox_7)
+        self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
+        self.verticalLayout_2 = QtGui.QVBoxLayout()
+        self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
+        self.horizontalLayout_22 = QtGui.QHBoxLayout()
+        self.horizontalLayout_22.setObjectName(_fromUtf8("horizontalLayout_22"))
+        self.label_6 = QtGui.QLabel(self.groupBox_7)
+        self.label_6.setText(QtGui.QApplication.translate("WizardPage", "Z Axis Leadscrew Pitch:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_6.setObjectName(_fromUtf8("label_6"))
+        self.horizontalLayout_22.addWidget(self.label_6)
+        self.pitchZ = QtGui.QLabel(self.groupBox_7)
+        self.pitchZ.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pitchZ.setObjectName(_fromUtf8("pitch"))
+        self.horizontalLayout_22.addWidget(self.pitchZ)
+        self.label_7 = QtGui.QLabel(self.groupBox_7)
+        self.label_7.setText(QtGui.QApplication.translate("WizardPage", "mm/rev", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_7.setObjectName(_fromUtf8("label_7"))
+        self.horizontalLayout_22.addWidget(self.label_7)
+        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_22.addItem(spacerItem2)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_22)
+        self.horizontalLayout_23 = QtGui.QHBoxLayout()
+        self.horizontalLayout_23.setObjectName(_fromUtf8("horizontalLayout_23"))
+        self.label_8 = QtGui.QLabel(self.groupBox_7)
+        self.label_8.setText(QtGui.QApplication.translate("WizardPage", "Z Axis Steps/rev:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_8.setObjectName(_fromUtf8("label_8"))
+        self.horizontalLayout_23.addWidget(self.label_8)
+        self.stepsPerRevZ = QtGui.QLabel(self.groupBox_7)
+        self.stepsPerRevZ.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.stepsPerRevZ.setObjectName(_fromUtf8("stepsPerRev"))
+        self.horizontalLayout_23.addWidget(self.stepsPerRevZ)
+        self.label_9 = QtGui.QLabel(self.groupBox_7)
+        self.label_9.setText(QtGui.QApplication.translate("WizardPage", "steps", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_9.setObjectName(_fromUtf8("label_9"))
+        self.horizontalLayout_23.addWidget(self.label_9)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_23.addItem(spacerItem3)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_23)
+        self.horizontalLayout_34 = QtGui.QHBoxLayout()
+        self.horizontalLayout_34.setObjectName(_fromUtf8("horizontalLayout_34"))
+        self.label_53 = QtGui.QLabel(self.groupBox_7)
+        self.label_53.setText(QtGui.QApplication.translate("WizardPage", "Stepping Mode:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_53.setObjectName(_fromUtf8("label_53"))
+        self.horizontalLayout_34.addWidget(self.label_53)
+        self.steppingMode = QtGui.QLabel(self.groupBox_7)
+        self.steppingMode.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.steppingMode.setObjectName(_fromUtf8("steppingMode"))
+        self.horizontalLayout_34.addWidget(self.steppingMode)
+        spacerItem4 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_34.addItem(spacerItem4)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_34)
+        self.horizontalLayout_9 = QtGui.QHBoxLayout()
+        self.horizontalLayout_9.setObjectName(_fromUtf8("horizontalLayout_9"))
+        self.label_10 = QtGui.QLabel(self.groupBox_7)
+        self.label_10.setText(QtGui.QApplication.translate("WizardPage", "Layer Thickness:", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_10.setObjectName(_fromUtf8("label_10"))
+        self.horizontalLayout_9.addWidget(self.label_10)
+        self.layerThickness = QtGui.QLabel(self.groupBox_7)
+        self.layerThickness.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.layerThickness.setObjectName(_fromUtf8("layerThickness"))
+        self.horizontalLayout_9.addWidget(self.layerThickness)
+        self.label_13 = QtGui.QLabel(self.groupBox_7)
+        self.label_13.setText(QtGui.QApplication.translate("WizardPage", "um", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_13.setObjectName(_fromUtf8("label_13"))
+        self.horizontalLayout_9.addWidget(self.label_13)
+        spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_9.addItem(spacerItem5)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_9)
+        self.horizontalLayout_10 = QtGui.QHBoxLayout()
+        self.horizontalLayout_10.setObjectName(_fromUtf8("horizontalLayout_10"))
+        self.label_11 = QtGui.QLabel(self.groupBox_7)
+        self.label_11.setText(QtGui.QApplication.translate("WizardPage", "Projector Resolution (pixels):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_11.setObjectName(_fromUtf8("label_11"))
+        self.horizontalLayout_10.addWidget(self.label_11)
+        self.resolutionX = QtGui.QLabel(self.groupBox_7)
+        self.resolutionX.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.resolutionX.setObjectName(_fromUtf8("resolutionX"))
+        self.horizontalLayout_10.addWidget(self.resolutionX)
+        self.label_12 = QtGui.QLabel(self.groupBox_7)
+        self.label_12.setText(QtGui.QApplication.translate("WizardPage", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_12.setObjectName(_fromUtf8("label_12"))
+        self.horizontalLayout_10.addWidget(self.label_12)
+        self.resolutionY = QtGui.QLabel(self.groupBox_7)
+        self.resolutionY.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.resolutionY.setObjectName(_fromUtf8("resolutionY"))
+        self.horizontalLayout_10.addWidget(self.resolutionY)
+        spacerItem6 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_10.addItem(spacerItem6)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_10)
+        self.horizontalLayout_11 = QtGui.QHBoxLayout()
+        self.horizontalLayout_11.setObjectName(_fromUtf8("horizontalLayout_11"))
+        self.label_14 = QtGui.QLabel(self.groupBox_7)
+        self.label_14.setText(QtGui.QApplication.translate("WizardPage", "Build Area Size (mm):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_14.setObjectName(_fromUtf8("label_14"))
+        self.horizontalLayout_11.addWidget(self.label_14)
+        self.buildAreaX = QtGui.QLabel(self.groupBox_7)
+        self.buildAreaX.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.buildAreaX.setObjectName(_fromUtf8("buildAreaX"))
+        self.horizontalLayout_11.addWidget(self.buildAreaX)
+        self.label_15 = QtGui.QLabel(self.groupBox_7)
+        self.label_15.setText(QtGui.QApplication.translate("WizardPage", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_15.setObjectName(_fromUtf8("label_15"))
+        self.horizontalLayout_11.addWidget(self.label_15)
+        self.buildAreaY = QtGui.QLabel(self.groupBox_7)
+        self.buildAreaY.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.buildAreaY.setObjectName(_fromUtf8("buildAreaY"))
+        self.horizontalLayout_11.addWidget(self.buildAreaY)
+        spacerItem7 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_11.addItem(spacerItem7)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_11)
+        self.horizontalLayout_12 = QtGui.QHBoxLayout()
+        self.horizontalLayout_12.setObjectName(_fromUtf8("horizontalLayout_12"))
+        self.label_16 = QtGui.QLabel(self.groupBox_7)
+        self.label_16.setText(QtGui.QApplication.translate("WizardPage", "Pixel Size (um):", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_16.setObjectName(_fromUtf8("label_16"))
+        self.horizontalLayout_12.addWidget(self.label_16)
+        self.pixelSizeX = QtGui.QLabel(self.groupBox_7)
+        self.pixelSizeX.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pixelSizeX.setObjectName(_fromUtf8("pixelSizeX"))
+        self.horizontalLayout_12.addWidget(self.pixelSizeX)
+        self.label_17 = QtGui.QLabel(self.groupBox_7)
+        self.label_17.setText(QtGui.QApplication.translate("WizardPage", "x", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_17.setObjectName(_fromUtf8("label_17"))
+        self.horizontalLayout_12.addWidget(self.label_17)
+        self.pixelSizeY = QtGui.QLabel(self.groupBox_7)
+        self.pixelSizeY.setText(QtGui.QApplication.translate("WizardPage", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
+        self.pixelSizeY.setObjectName(_fromUtf8("pixelSizeY"))
+        self.horizontalLayout_12.addWidget(self.pixelSizeY)
+        spacerItem8 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_12.addItem(spacerItem8)
+        self.verticalLayout_2.addLayout(self.horizontalLayout_12)
+        spacerItem9 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem9)
+        self.horizontalLayout_3.addLayout(self.verticalLayout_2)
+        self.verticalLayout_16.addWidget(self.groupBox_7)
+        self.verticalLayout_17.addLayout(self.verticalLayout_16)
+        spacerItem10 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_17.addItem(spacerItem10)
+        self.verticalLayout_3.addWidget(self.groupBox_3)
+        self.horizontalLayout.addLayout(self.verticalLayout_3)
+        
+        QtCore.QObject.connect(self.comboBox, QtCore.SIGNAL(_fromUtf8("currentIndexChanged(int)")), self.ProfileChanged)
+        QtCore.QObject.connect(self.toolButton, QtCore.SIGNAL(_fromUtf8("pressed()")), self.CreateNewProfile)
+        QtCore.QMetaObject.connectSlotsByName(self)
+        
+        self.controller.setText("")
+        self.port.setText("")
+        self.pitchZ.setText("")
+        self.stepsPerRevZ.setText("")
+        self.steppingMode.setText("")
+        self.layerThickness.setText("")
+        self.resolutionX.setText("")
+        self.resolutionY.setText("")
+        self.buildAreaX.setText("")
+        self.buildAreaY.setText("")
+        self.pixelSizeX.setText("")
+        self.pixelSizeY.setText("")
+    
+    def CreateNewProfile(self):
+        profile = hardwareProfile()
+        dialog = NewHardwareProfileDialog(self, self)
+        dialog.exec_()
+    
+    def ProfileChanged(self):
+        pass
+
+    def initializePage(self):
+        pass
+    
+    def validatePage(self):
+        self.parent.printJob.name = self.jobName.text()
+        self.parent.printJob.description = self.jobDescription.text()
+        self.parent.printJob.notes = self.jobNotes.toPlainText()
+        return True
+    
 #######################GUI class and event handling#############################
 class OpenAbout(QtGui.QDialog, Ui_Dialog):
     def __init__(self,parent=None):
@@ -255,7 +848,8 @@ class Main(QtGui.QMainWindow):
             
         self.modelList = []
         self.step = ""
-            
+        self.hardwareProfileList = []
+        
         ####pre-slice setup
         
         self.renPre = vtk.vtkRenderer()
@@ -327,6 +921,7 @@ Would you like to continue and re-enter pre-slice mode?""", QtGui.QMessageBox.Ye
             if response == QtGui.QMessageBox.Yes:
                 pass
             elif response  == QtGui.QMessageBox.No:
+                self.ui.actionPreSlice.setChecked(False)
                 return
         self.ui.preSliceBar.show()
         self.ui.sliceListBar.hide()
@@ -348,7 +943,9 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
                 self.SliceModel()
                 self.EnterPostSliceMode("test")
             elif response  == QtGui.QMessageBox.No:
+                self.ui.actionPostSlice.setChecked(False)
                 return
+            
         self.ui.preSliceBar.hide()
         self.ui.sliceListBar.show()
         self.ui.printJobInfoBar.show()
@@ -363,6 +960,17 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
           
         self.ui.actionPreSlice.setChecked(False)
         self.ui.actionPostSlice.setChecked(True)
+        
+    def NewPrintJob(self):
+        self.printJob = _3dlpfile()
+        
+        wizard = QtGui.QWizard(self)
+        wizard.addPage(wizardNewGeneral(wizard, self))
+        wizard.addPage(wizardNewHardware(wizard, self))
+        wizard.resize(640, 480)
+        wizard.setWizardStyle(QtGui.QWizard.ModernStyle)
+        wizard.WizardOption(QtGui.QWizard.IndependentPages)
+        wizard.exec_()
     
     def SavePrintJobAs(self):
         self.outputFile = str(QFileDialog.getSaveFileName(self, "Save file", "", ".3dlp"))
@@ -371,15 +979,24 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
         if self.step == "":
             self.SaveConfig()
         elif self.step == "pre":
+            self.SaveConfig()
             self.SavePreSliceLayout()
         elif self.step == "post":
             self.SaveConfig()
+            self.SavePreSliceLayout()
+            self.SavePostSlice()
             
     def SavePreSliceLayout(self):
         objectTransformMatricies = []
         for object in self.modelList:
             objectTransformMatricies.append((object.transform.GetMatrix(), object.transform.GetOrientation(), object.transform.GetPosition(), object.transform.GetScale()))
-        print objectTransformMatricies
+            self.zfile.write(str(object.filename), arcname = os.path.split(str(object.filename))[1])
+        stringio = StringIO.StringIO()
+        pickle.dump(objectTransformMatricies, stringio)
+        self.zfile.writestr("matricies.p", stringio.getvalue())
+            
+    def SavePostSlice(self):
+        pass
             
     def SaveConfig(self):
         Config = ConfigParser()
@@ -1019,17 +1636,61 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
         transformFilter.Update()
         modelObject.mapper.SetInputConnection(transformFilter.GetOutputPort())
         modelObject.mapper.Update()
+        modelObject.outlineMapper.Update()
+        
         self.renPre.Render()
         self.ModelViewPre.Render()
         
+    def ConcatenateSTLs(self):
+        filename = str(QFileDialog.getSaveFileName(self, "Save STL file", "", ".stl"))
+        if filename == "":
+            return
+        ap = vtk.vtkAppendPolyData()
+        for modelObject in self.modelList:
+            matrix = modelObject.transform.GetMatrix()
+            
+            transform  = vtk.vtkTransform()
+            transform.SetMatrix(matrix)
+    
+            transformFilter = vtk.vtkTransformPolyDataFilter()
+            transformFilter.SetTransform(transform)
+            transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+            transformFilter.Update()
+            ap.AddInput(transformFilter.GetOutput())
+        
+        writer = vtk.vtkSTLWriter()
+        writer.SetInput(ap.GetOutput())
+        writer.SetFileName(str(filename))
+        writer.Write()
+        
     def SliceModel(self):
-        try:
-            if len(self.modelList)>0: #check to see if a model is loaded, if not it will throw an exception
-                pass
-        except: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
+        if len(self.modelList)>0: #check to see if a model is loaded, if not it will throw an exception
+            pass
+        else: #self.modelActor doesn't exist (hasn't been instantiated with a model yet)
             QtGui.QMessageBox.critical(self, 'Error slicing model',"You must first load a model to slice it!", QtGui.QMessageBox.Ok)   
             return
-        self.outputFile = str(QFileDialog.getSaveFileName(self, "Save file", "", ".3dlp"))
+        outputFile = str(QFileDialog.getSaveFileName(self, "Save 3DLP project file", "", ".3dlp"))
+        #concatenate all models into a single polydata dataset
+        ap = vtk.vtkAppendPolyData()
+        for modelObject in self.modelList:
+            matrix = modelObject.transform.GetMatrix()
+            transform  = vtk.vtkTransform()
+            transform.SetMatrix(matrix)
+            transformFilter = vtk.vtkTransformPolyDataFilter()
+            transformFilter.SetTransform(transform)
+            transformFilter.SetInputConnection(modelObject.reader.GetOutputPort())
+            transformFilter.Update()
+            ap.AddInput(transformFilter.GetOutput())
+        
+        writer = vtk.vtkSTLWriter()
+        writer.SetInput(ap.GetOutput())
+        writer.SetFileName("concat.stl")
+        writer.Write()
+
+        os.chdir(os.path.split(str(outputFile))[0])
+        zfile = zipfile.ZipFile(os.path.split(str(outputFile))[1], 'w')
+        #zfile.
+
         self.slicer = slicer.slicer(self)
         self.slicer.imageheight = 500
         self.slicer.imagewidth = 500
@@ -1037,7 +1698,7 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
         self.slicer.startingdepth = 0
         self.slicer.endingdepth = 20
         self.slicer.layerincrement = 1
-        self.slicer.OpenModel(self.modelList[0].filename)
+        self.slicer.OpenModel("wfu_cbi_skull_cleaned.stl")
         self.slicer.slice()
             
     def LoadSettingsFromConfigFile(self):

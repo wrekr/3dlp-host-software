@@ -1,13 +1,10 @@
 import vtk
 import time
 import os
-from Tkinter import Tk
-from tkFileDialog import askopenfilename
 import ConfigParser
 import cPickle as pickle
 import zipfile
 import StringIO
-import tempfile
 import numpy
 import Image
 from vtk.util.numpy_support import vtk_to_numpy
@@ -31,15 +28,6 @@ class slicer():
         self.outputFile = self.parent.outputFile
         os.chdir(os.path.split(str(self.outputFile))[0]) #change to base dir of the selected filename
         self.zfile = zipfile.ZipFile(os.path.split(str(self.outputFile))[1], 'w')
-    
-    def OpenModel(self, filename):
-        self.filename = filename
-        self.reader = vtk.vtkSTLReader()
-        self.reader.MergingOn()
-        self.reader.SetFileName(str(self.filename))
-        self.clean = vtk.vtkCleanPolyData()
-        self.clean.SetInputConnection(self.reader.GetOutputPort())
-        self.clean.PointMergingOn()
          
     def close_window(self, iren):
         render_window = iren.GetRenderWindow()
@@ -47,9 +35,9 @@ class slicer():
         #iren.TerminateApp()
     
     def slice(self):
-        #create a plane to cut,here it cuts in the XZ direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
+        #create a plane to cut,here it cuts in the XY direction (xz normal=(1,0,0);XY =(0,0,1),YZ =(0,1,0)
         self.slicingplane=vtk.vtkPlane()
-        self.slicingplane.SetOrigin(0,0,20)
+        self.slicingplane.SetOrigin(0,0,0)
         self.slicingplane.SetNormal(0,0,1)
         
         self.cutter=vtk.vtkCutter()         #create cutter
@@ -164,7 +152,6 @@ class slicer():
         self.zfile.write(str(self.filename), arcname = file)    
         
         self.zfile.close()
-        
                
 #slicer = slicer()
 #slicer.imagewidth = 640

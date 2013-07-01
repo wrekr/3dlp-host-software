@@ -85,7 +85,7 @@
    <string>3dlp</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="resource.qrc">
     <normaloff>:/_icons/icons/printer/3d printing.ico</normaloff>:/_icons/icons/printer/3d printing.ico</iconset>
   </property>
   <property name="autoFillBackground">
@@ -229,7 +229,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="resource.qrc">
                       <normaloff>:/icons/icons/media_beginning.png</normaloff>:/icons/icons/media_beginning.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -246,7 +246,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="resource.qrc">
                       <normaloff>:/icons/icons/media_step_back.png</normaloff>:/icons/icons/media_step_back.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -263,7 +263,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="resource.qrc">
                       <normaloff>:/icons/icons/media_step_forward.png</normaloff>:/icons/icons/media_step_forward.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -280,7 +280,7 @@
                      <string>...</string>
                     </property>
                     <property name="icon">
-                     <iconset>
+                     <iconset resource="resource.qrc">
                       <normaloff>:/icons/icons/media_end.png</normaloff>:/icons/icons/media_end.png</iconset>
                     </property>
                     <property name="iconSize">
@@ -343,8 +343,11 @@
     <addaction name="actionConnect_To_Printer_2"/>
     <addaction name="actionOpen_manual_printer_control"/>
     <addaction name="actionSlice"/>
+    <addaction name="actionConcatenate_STL_Files"/>
     <addaction name="actionFirmware_Configurator"/>
     <addaction name="actionSave_current_settings_as_default"/>
+    <addaction name="actionCreate_New_Hardware_Profile"/>
+    <addaction name="actionCreate_New_Resin_Profile"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -373,10 +376,9 @@
      <string>Edit</string>
     </property>
     <addaction name="separator"/>
-    <addaction name="actionPreferences_2"/>
     <addaction name="actionAdd_Model"/>
     <addaction name="actionRemove_Model"/>
-    <addaction name="actionConcatenate_STL_Files"/>
+    <addaction name="actionPrint_Job_Settings"/>
    </widget>
    <widget class="QMenu" name="menuWindow_2">
     <property name="title">
@@ -390,6 +392,7 @@
      <addaction name="actionPostSlice"/>
     </widget>
     <addaction name="menuShow_Workspace"/>
+    <addaction name="action3DLP_Host_Settings"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -1338,7 +1341,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Clone.ico</normaloff>:/_icons/icons/printer/Clone.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1355,7 +1358,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Color palette.ico</normaloff>:/_icons/icons/printer/Color palette.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1372,7 +1375,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/3d rotation.ico</normaloff>:/_icons/icons/printer/3d rotation.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1389,7 +1392,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Clipping.ico</normaloff>:/_icons/icons/printer/Clipping.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1406,7 +1409,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Frame cube.ico</normaloff>:/_icons/icons/printer/Frame cube.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1423,7 +1426,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Predefined views.ico</normaloff>:/_icons/icons/printer/Predefined views.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1440,7 +1443,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Ungroup.ico</normaloff>:/_icons/icons/printer/Ungroup.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1457,7 +1460,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Group.ico</normaloff>:/_icons/icons/printer/Group.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1474,7 +1477,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Object tree.ico</normaloff>:/_icons/icons/printer/Object tree.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1491,7 +1494,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Edit.ico</normaloff>:/_icons/icons/printer/Edit.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1508,7 +1511,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Scale.ico</normaloff>:/_icons/icons/printer/Scale.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1525,7 +1528,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Cube.ico</normaloff>:/_icons/icons/printer/Cube.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1542,7 +1545,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Units.ico</normaloff>:/_icons/icons/printer/Units.ico</iconset>
             </property>
             <property name="iconSize">
@@ -1559,7 +1562,7 @@
              <string>...</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Size.ico</normaloff>:/_icons/icons/printer/Size.ico</iconset>
             </property>
             <property name="iconSize">
@@ -2403,7 +2406,7 @@
              <string>Slice</string>
             </property>
             <property name="icon">
-             <iconset>
+             <iconset resource="resource.qrc">
               <normaloff>:/_icons/icons/printer/Clipping.ico</normaloff>:/_icons/icons/printer/Clipping.ico</iconset>
             </property>
             <property name="iconSize">
@@ -2802,7 +2805,7 @@
   </widget>
   <action name="actionQuit">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Close.ico</normaloff>:/_icons/icons/printer/Close.ico</iconset>
    </property>
    <property name="text">
@@ -2811,7 +2814,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Open.ico</normaloff>:/_icons/icons/printer/Open.ico</iconset>
    </property>
    <property name="text">
@@ -2823,7 +2826,7 @@
   </action>
   <action name="actionAbout">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/about.png</normaloff>:/icons/icons/about.png</iconset>
    </property>
    <property name="text">
@@ -2832,7 +2835,7 @@
   </action>
   <action name="actionHelp">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/question_and_answer.png</normaloff>:/icons/icons/question_and_answer.png</iconset>
    </property>
    <property name="text">
@@ -2844,7 +2847,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/notebook_preferences.png</normaloff>:/icons/icons/notebook_preferences.png</iconset>
    </property>
    <property name="text">
@@ -2853,7 +2856,7 @@
   </action>
   <action name="actionOpen_manual_printer_control">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Hammer.ico</normaloff>:/_icons/icons/printer/Hammer.ico</iconset>
    </property>
    <property name="text">
@@ -2862,7 +2865,7 @@
   </action>
   <action name="actionPreferences">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Settings.ico</normaloff>:/_icons/icons/printer/Settings.ico</iconset>
    </property>
    <property name="text">
@@ -2874,7 +2877,7 @@
   </action>
   <action name="actionNext_Slice">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/media_step_forward.png</normaloff>:/icons/icons/media_step_forward.png</iconset>
    </property>
    <property name="text">
@@ -2886,7 +2889,7 @@
   </action>
   <action name="actionPrevious_Slice">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/media_step_back.png</normaloff>:/icons/icons/media_step_back.png</iconset>
    </property>
    <property name="text">
@@ -2898,7 +2901,7 @@
   </action>
   <action name="actionFirst_Slice">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/media_beginning.png</normaloff>:/icons/icons/media_beginning.png</iconset>
    </property>
    <property name="text">
@@ -2910,7 +2913,7 @@
   </action>
   <action name="actionLast_Slice">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/media_end.png</normaloff>:/icons/icons/media_end.png</iconset>
    </property>
    <property name="text">
@@ -2922,7 +2925,7 @@
   </action>
   <action name="actionSet_Model_Opacity">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/icons/icons/replace.png</normaloff>:/icons/icons/replace.png</iconset>
    </property>
    <property name="text">
@@ -2934,7 +2937,7 @@
   </action>
   <action name="actionGo_To_Layer">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Search.ico</normaloff>:/_icons/icons/printer/Search.ico</iconset>
    </property>
    <property name="text">
@@ -2943,7 +2946,7 @@
   </action>
   <action name="actionFirmware_Configurator">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Configuration.ico</normaloff>:/_icons/icons/printer/Configuration.ico</iconset>
    </property>
    <property name="text">
@@ -2952,7 +2955,7 @@
   </action>
   <action name="actionConnect_To_Printer_2">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Start 3d-printing.ico</normaloff>:/_icons/icons/printer/Start 3d-printing.ico</iconset>
    </property>
    <property name="text">
@@ -2964,7 +2967,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Save.ico</normaloff>:/_icons/icons/printer/Save.ico</iconset>
    </property>
    <property name="text">
@@ -2976,7 +2979,7 @@
   </action>
   <action name="actionNew">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Project.ico</normaloff>:/_icons/icons/printer/Project.ico</iconset>
    </property>
    <property name="text">
@@ -2988,7 +2991,7 @@
   </action>
   <action name="actionSave_As">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Save.ico</normaloff>:/_icons/icons/printer/Save.ico</iconset>
    </property>
    <property name="text">
@@ -3000,7 +3003,7 @@
   </action>
   <action name="actionPrint">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/3d printing.ico</normaloff>:/_icons/icons/printer/3d printing.ico</iconset>
    </property>
    <property name="text">
@@ -3015,7 +3018,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/3D object.ico</normaloff>:/_icons/icons/printer/3D object.ico</iconset>
    </property>
    <property name="text">
@@ -3027,7 +3030,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Tools.ico</normaloff>:/_icons/icons/printer/Tools.ico</iconset>
    </property>
    <property name="text">
@@ -3039,7 +3042,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Layers.ico</normaloff>:/_icons/icons/printer/Layers.ico</iconset>
    </property>
    <property name="text">
@@ -3051,7 +3054,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Cartesian.ico</normaloff>:/_icons/icons/printer/Cartesian.ico</iconset>
    </property>
    <property name="text">
@@ -3060,11 +3063,11 @@
   </action>
   <action name="actionPreferences_2">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Settings.ico</normaloff>:/_icons/icons/printer/Settings.ico</iconset>
    </property>
    <property name="text">
-    <string>Preferences...</string>
+    <string>Print Job Settings</string>
    </property>
   </action>
   <action name="actionPreSlice">
@@ -3072,7 +3075,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Objects.ico</normaloff>:/_icons/icons/printer/Objects.ico</iconset>
    </property>
    <property name="text">
@@ -3084,7 +3087,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Layers.ico</normaloff>:/_icons/icons/printer/Layers.ico</iconset>
    </property>
    <property name="text">
@@ -3093,7 +3096,7 @@
   </action>
   <action name="actionSlice">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Clipping.ico</normaloff>:/_icons/icons/printer/Clipping.ico</iconset>
    </property>
    <property name="text">
@@ -3105,7 +3108,7 @@
   </action>
   <action name="actionAdd_Model">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/3D object.ico</normaloff>:/_icons/icons/printer/3D object.ico</iconset>
    </property>
    <property name="text">
@@ -3114,7 +3117,7 @@
   </action>
   <action name="actionRemove_Model">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Delete.ico</normaloff>:/_icons/icons/printer/Delete.ico</iconset>
    </property>
    <property name="text">
@@ -3123,11 +3126,47 @@
   </action>
   <action name="actionConcatenate_STL_Files">
    <property name="icon">
-    <iconset>
+    <iconset resource="resource.qrc">
      <normaloff>:/_icons/icons/printer/Constructor.ico</normaloff>:/_icons/icons/printer/Constructor.ico</iconset>
    </property>
    <property name="text">
     <string>Concatenate STL Files</string>
+   </property>
+  </action>
+  <action name="actionCreate_New_Hardware_Profile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/3d-printer settings.ico</normaloff>:/_icons/icons/printer/3d-printer settings.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Create New Hardware Profile</string>
+   </property>
+  </action>
+  <action name="action3DLP_Host_Settings">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/Tools.ico</normaloff>:/_icons/icons/printer/Tools.ico</iconset>
+   </property>
+   <property name="text">
+    <string>3DLP Host Settings</string>
+   </property>
+  </action>
+  <action name="actionPrint_Job_Settings">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/Configuration.ico</normaloff>:/_icons/icons/printer/Configuration.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Print Job Settings</string>
+   </property>
+  </action>
+  <action name="actionCreate_New_Resin_Profile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/_icons/icons/printer/Flask.ico</normaloff>:/_icons/icons/printer/Flask.ico</iconset>
+   </property>
+   <property name="text">
+    <string>Create New Resin Profile</string>
    </property>
   </action>
   <zorder>toolbar</zorder>
@@ -3658,8 +3697,56 @@
    <slot>NewPrintJob()</slot>
    <hints>
     <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
      <x>640</x>
      <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionCreate_New_Hardware_Profile</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>CreateNewHardwareProfile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionPrint_Job_Settings</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>OpenPrintJobSettings()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>640</x>
+     <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionCreate_New_Resin_Profile</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>CreateNewResinProfile()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>640</x>
@@ -3713,5 +3800,8 @@
   <slot>SavePrintJob()</slot>
   <slot>ConcatenateSTLs()</slot>
   <slot>NewPrintJob()</slot>
+  <slot>CreateNewHardwareProfile()</slot>
+  <slot>OpenPrintJobSettings()</slot>
+  <slot>CreateNewResinProfile()</slot>
  </slots>
 </ui>

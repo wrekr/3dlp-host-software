@@ -2413,7 +2413,7 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
         wizard.exec_()
         outfile = str(QFileDialog.getSaveFileName(self, "Save 3DLP Print Job file", "", ".3dlp"))
         self.SavePrintJobAs(outfile)
-    
+        
     def SavePrintJobAs(self, filename):
         os.chdir(os.path.split(str(filename))[0]) #change to base dir of the selected filename
         self.zfile = zipfile.ZipFile(os.path.split(str(filename))[1], 'w')
@@ -2440,22 +2440,20 @@ Would you like to slice what is currently in the pre-slice view now?""", QtGui.Q
         pass
             
     def SaveConfig(self):
-        
         #print job object
         #hardware profiles
         
+#        Config = ConfigParser()
+#        Config.add_section('print_settings')
+#        Config.set('print_settings', 'layer_thickness', self.layerincrement)
+#        Config.add_section('preview_settings')
+#        base, file = os.path.split(str(self.filename)) #can't be QString
+#        Config.set('preview_settings', 'STL_name', file)
         
-        Config = ConfigParser()
-        Config.add_section('print_settings')
-        Config.set('print_settings', 'layer_thickness', self.layerincrement)
-        Config.add_section('preview_settings')
-        base, file = os.path.split(str(self.filename)) #can't be QString
-        Config.set('preview_settings', 'STL_name', file)
-        
-        stringio = StringIO.StringIO()
-        Config.write(stringio)        
+#        stringio = StringIO.StringIO()
+#        Config.write(stringio)        
  
-        self.zfile.writestr("printconfiguration.ini", stringio.getvalue())#arcname = "printconfiguration.ini")
+#        self.zfile.writestr("printconfiguration.ini", stringio.getvalue())#arcname = "printconfiguration.ini")
 
         stringio2 = StringIO.StringIO()
         pickle.dump(self.sliceCorrelations, stringio2)
